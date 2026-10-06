@@ -12,13 +12,13 @@ An owned Champion ability can be upgraded to rank two or three on its original b
 
 | Ability | Core rules | Game adaptation, rank one |
 | --- | --- | --- |
-| Shield Bash — Sentinel | Quick-action shove: push a creature 5 ft or knock it prone. | K, mutually exclusive with Sentinel Initiate. Shove enemies in front 80 px and stagger for 1.2 seconds. 25 stamina, 3-second cooldown. |
-| Sentinel Initiate | Throw an off-hand weapon or shield within 15 ft for 1d4 bludgeoning; it returns. | K, mutually exclusive with Shield Bash. A returning shield hits enemies once each for 35 damage; 320 px range. Blocking is unavailable while airborne. 25 stamina, 5-second cooldown. |
+| Shield Bash — Sentinel | Quick-action shove: push a creature 5 ft or knock it prone. | K, mutually exclusive with Sentinel Initiate. Shove enemies in front 80 px and stagger for 1.2 seconds. 25 stamina, no cooldown. |
+| Sentinel Initiate | Throw an off-hand weapon or shield within 15 ft for 1d4 bludgeoning; it returns. | K, mutually exclusive with Shield Bash. A returning shield hits enemies once each for 35 damage; 320 px range. Blocking is unavailable while airborne. 25 stamina, no cooldown; can throw again as soon as the shield returns. |
 | Protector — Sentinel | While wielding a shield, impose disadvantage on attacks targeting a creature within 5 ft. | Passive: intercept a nearby survivor’s attacker while the shield is available, pushing the enemy away and briefly staggering it. 120 px radius and 0.8-second recovery. Does not grant unlimited immunity to survivors. |
-| Rallying Cry — Champion | Give an ally a d6 morale bonus for one check, attack, or save. | Call nine allied arrows from beyond the bridge into an area ahead, dealing 20 damage per impact. 30 stamina, 18-second cooldown. |
-| Battle Focus — Champion | +2 melee attack/damage, physical resistance and situational parry. Forbids spells and concentration. | Eight seconds of +75% sword damage and invulnerability. Blocks all spell casts and ends Warrior’s Shield; an existing physical vine wall remains. 20 stamina, 22-second cooldown. |
-| Crippling Strike — Devastator | A die chooses immobilisation, action denial, reduced AR, or extra damage. | Prime the next sword hit for +50% damage and immobilise struck targets for three seconds. Priming lasts eight seconds; consumes on a landed attack. 20 stamina, 8-second cooldown. |
-| Strike Through — Devastator | Distribute melee damage among targets; requires a two-handed or heavy weapon. | Double sword reach for eight seconds, including Elowen’s one-handed sword. 20 stamina, 14-second cooldown. |
+| Rallying Cry — Champion | Give an ally a d6 morale bonus for one check, attack, or save. | Call nine allied arrows from beyond the bridge into an area ahead, dealing 20 damage per impact. No stamina cost; 10-second cooldown. |
+| Battle Focus — Champion | +2 melee attack/damage, physical resistance and situational parry. Forbids spells and concentration. | Eight seconds of +75% sword damage and invulnerability. Blocks all spell casts and ends Warrior’s Shield; an existing physical vine wall remains. 20 stamina, no cooldown; reusing refreshes the duration. |
+| Crippling Strike — Devastator | A die chooses immobilisation, action denial, reduced AR, or extra damage. | Prime the next sword hit for +50% damage and immobilise struck targets for three seconds. Priming lasts eight seconds; consumes on a landed attack. 20 stamina, no cooldown. |
+| Strike Through — Devastator | Distribute melee damage among targets; requires a two-handed or heavy weapon. | Double sword reach for eight seconds, including Elowen’s one-handed sword. 20 stamina, no cooldown; reusing refreshes the duration. |
 
 ## Rank upgrades
 
@@ -27,7 +27,7 @@ Each rank after the first grants:
 - Shield Bash: +20 px shove and +0.3 seconds stagger.
 - Sentinel Initiate: +10 damage and +60 px throw range.
 - Protector: +30 px protection radius; recovery becomes 0.8 / rank seconds.
-- Rallying Cry: +3 arrows and +5 damage per arrow.
+- Rallying Cry: cooldown reduced by two seconds (10 / 8 / 6 seconds at ranks one / two / three), +3 arrows and +5 damage per arrow.
 - Battle Focus: +2 seconds duration and +25 percentage points sword damage.
 - Crippling Strike: +1 second immobilisation and +25 percentage points next-hit damage.
 - Strike Through: +3 seconds duration, retaining exactly double reach.

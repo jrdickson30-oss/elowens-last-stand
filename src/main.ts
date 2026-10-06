@@ -15,7 +15,7 @@ document.querySelector('#sound')!.addEventListener('click',()=>{muted=!muted;doc
 class Stand extends Phaser.Scene{
  spritePool:Phaser.GameObjects.Image[]=[];spriteIndex=0;art!:Phaser.GameObjects.Graphics;hud!:Phaser.GameObjects.Graphics;labels!:Phaser.GameObjects.Text;keys!:Record<string,Phaser.Input.Keyboard.Key>;
  phase='title';wave=1;x=500;y=G;vy=0;face=1;hp=100;stamina=100;energy=100;damage=27;spellDamage=43;shieldCost=14;rescued=0;lost=0;kills=0;spawned=0;total=0;timer=0;clock=0;swing=0;attackCd=0;inv=0;blocking=false;crouching=false;enemies:Enemy[]=[];survivors:Survivor[]=[];shots:Shot[]=[];particles:Particle[]=[];paused=false;touch=new Set<string>();upgrades:string[]=[];waveKills=0;
- spellCooldowns:Partial<Record<SpellId,number>>={};wardTime=0;bashCd=0;bashTime=0;
+ spellCooldowns:Partial<Record<SpellId,number>>={};wardTime=0;bashTime=0;
  wall:{x:number,hp:number,max:number}|null=null;previousKeys=new Set<string>();pendingPress=new Set<string>();
  shieldAbility:'bash'|'throw'|null=null;kActive:ActiveAbilityId|null=null;abilitySlots:(ActiveAbilityId|null)[]=[null,null,null];
  abilityRanks:Partial<Record<ChampionId,number>>={};abilityCooldowns:Partial<Record<ChampionId,number>>={};focusTime=0;reachTime=0;crippleTime=0;protectorCd=0;
@@ -33,20 +33,21 @@ class Stand extends Phaser.Scene{
  background(){if(this.textures.exists('forest'))this.add.image(W/2,H/2,'forest').setDisplaySize(W,H);else{const g=this.add.graphics();g.fillGradientStyle(0x102b32,0x253d37,0x172729,0x17302c,1);g.fillRect(0,0,W,H);let seed=7;const rand=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};for(let layer=0;layer<3;layer++){for(let i=0;i<22;i++){const x=rand()*W;g.fillStyle([0x34524e,0x233e3b,0x152e2c][layer]);g.fillRect(x,60+rand()*160,20+layer*18,550);g.fillTriangle(x-120,140,x+110,150,x,20)}}g.fillStyle(0x3a4b3d);g.fillRect(0,G,W,34);g.fillStyle(0x182827);g.fillRect(0,G+34,W,H-G);for(let i=0;i<60;i++){g.fillStyle(i%2?0x65705a:0x4f5d4c);g.fillRect(i*24,G,22,8)}for(let i=0;i<3;i++){g.fillStyle(0x0d2024);g.fillEllipse(90+i*165,G+115,120,155)}}const g=this.add.graphics();g.fillStyle(0x061619,.25);g.fillRect(0,0,W,100);g.fillGradientStyle(0x081519,0x081519,0x081519,0x081519,0,0,.8,.8);g.fillRect(0,630,W,90);g.fillStyle(0x817d58);g.fillRect(351,G-100,8,100);g.fillStyle(0xae5942);g.fillTriangle(359,G-98,401,G-87,359,G-64);g.fillStyle(0x334641);g.fillRect(310,G-10,76,10);this.add.text(300,G+25,'← THE CROSSING',{fontFamily:'Arial',fontSize:'10px',color:'#a8ae8a',letterSpacing:2});}
  title(){overlay.innerHTML=`<div class="panel"><div class="gold">THE LAST LIGHT AT GREYFALL</div><h2>They’re counting on you.</h2><p>The dead are coming. Hold the bridge while the survivors flee.<br>Your sword is their last defence. Your Chaos is their last hope.</p><button class="primary" id="begin">TAKE YOUR STAND →</button><p>Eight waves · Build your Champion · Chaosbound magic</p></div>`;document.querySelector('#begin')!.addEventListener('click',()=>this.begin());}
  controls(){const bar=document.createElement('div');bar.className='touch';bar.innerHTML='<div><button data-key="A">◀</button><button data-key="D">▶</button><button data-key="SPACE">↑</button><button data-key="S">↓</button></div><div><button data-key="J">⚔</button><button data-key="L">▣</button><button data-key="K">K</button></div>';document.querySelector('.game-shell')!.append(bar);bar.querySelectorAll<HTMLButtonElement>('button').forEach(b=>{b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture(e.pointerId);this.touch.add(b.dataset.key!)};b.onpointerup=b.onpointercancel=()=>this.touch.delete(b.dataset.key!)});}
- begin(){this.hp=this.stamina=this.energy=100;this.x=500;this.y=G;this.vy=0;this.wave=1;this.rescued=this.lost=this.kills=0;this.damage=27;this.spellDamage=43;this.shieldCost=14;this.upgrades=[];this.shieldAbility=null;this.kActive=null;this.abilitySlots=[null,null,null];this.abilityRanks={};this.abilityCooldowns={};this.focusTime=this.reachTime=this.crippleTime=this.protectorCd=0;this.shieldFlight=null;this.arrows=[];this.shots=[];this.particles=[];this.attackCd=this.inv=this.swing=0;this.paused=false;this.spellCooldowns={};this.wardTime=this.bashCd=this.bashTime=0;this.wall=null;this.previousKeys.clear();this.pendingPress.clear();this.message='';this.messageTime=0;if(!document.querySelector('.touch'))this.controls();this.startWave();}
- startWave(){overlay.innerHTML='';this.phase='play';this.enemies=[];this.survivors=Array.from({length:5},(_,i)=>({x:680+i*48,t:i*.4}));this.spawned=0;this.waveKills=0;this.wall=null;this.wardTime=this.focusTime=this.reachTime=this.crippleTime=0;this.shieldFlight=null;this.arrows=[];this.shots=[];this.abilityCooldowns={};this.spellCooldowns={};this.bashCd=0;this.total=5+this.wave*3;this.timer=1.4;this.clock=0;this.energy=100;this.stamina=100;this.hp=Math.min(100,this.hp+22);}
+ begin(){this.hp=this.stamina=this.energy=100;this.x=500;this.y=G;this.vy=0;this.wave=1;this.rescued=this.lost=this.kills=0;this.damage=27;this.spellDamage=43;this.shieldCost=14;this.upgrades=[];this.shieldAbility=null;this.kActive=null;this.abilitySlots=[null,null,null];this.abilityRanks={};this.abilityCooldowns={};this.focusTime=this.reachTime=this.crippleTime=this.protectorCd=0;this.shieldFlight=null;this.arrows=[];this.shots=[];this.particles=[];this.attackCd=this.inv=this.swing=0;this.paused=false;this.spellCooldowns={};this.wardTime=this.bashTime=0;this.wall=null;this.previousKeys.clear();this.pendingPress.clear();this.message='';this.messageTime=0;if(!document.querySelector('.touch'))this.controls();this.startWave();}
+ startWave(){overlay.innerHTML='';this.phase='play';this.enemies=[];this.survivors=Array.from({length:5},(_,i)=>({x:680+i*48,t:i*.4}));this.spawned=0;this.waveKills=0;this.wall=null;this.wardTime=this.focusTime=this.reachTime=this.crippleTime=0;this.shieldFlight=null;this.arrows=[];this.shots=[];this.abilityCooldowns={};this.spellCooldowns={};this.total=5+this.wave*3;this.timer=1.4;this.clock=0;this.energy=100;this.stamina=100;this.hp=Math.min(100,this.hp+22);}
  down(k:string){return this.keys[k].isDown||this.touch.has(k)}
  burst(x:number,y:number,color:number,n=12){for(let i=0;i<n;i++)this.particles.push({x,y,vx:Phaser.Math.Between(-140,140),vy:Phaser.Math.Between(-180,40),life:Phaser.Math.FloatBetween(.2,.65),color})}
  hurt(e:Enemy,d:number,dir=this.face){if(e.hp<=0)return;e.hp-=d;this.burst(e.x,G-40,0xb8c78b,8);e.x+=dir*15;if(e.hp<=0){this.kills++;this.waveKills++;this.burst(e.x,G-30,0xc69d57,16);tone(100)}}
  hasActiveSlot(){return this.abilitySlots.includes(null)||(!this.shieldAbility&&!this.kActive)}
  nextActiveKey(){const empty=this.abilitySlots.indexOf(null);return empty>=0?ABILITY_SLOTS[empty]:'K'}
  rank(id:ChampionId){return this.abilityRanks[id]??1}
+ abilityCooldown(id:ChampionId){const ability=CHAMPION_ABILITIES.find(a=>a.id===id)!;return id==='rally'?ability.cooldown-2*(this.rank(id)-1):ability.cooldown}
  abilityKey(id:ChampionId){return id==='bash'||id==='throw'?'K':id==='protector'?'PASSIVE':this.kActive===id?'K':ABILITY_SLOTS[this.abilitySlots.indexOf(id as ActiveAbilityId)]??'U / I / O / K'}
  rankDescription(id:ChampionId){return {
   bash:'Each rank adds 20 px shove distance and 0.3 seconds stagger.',
   throw:'Each rank adds 10 shield damage and 60 px throw range.',
   protector:'Each rank extends protection by 30 px and improves interception recovery.',
-  rally:'Each rank adds three arrows and +5 damage per arrow.',
+  rally:'Each rank reduces the cooldown by two seconds (10 / 8 / 6 seconds), adds three arrows and +5 damage per arrow.',
   focus:'Each rank adds two seconds of invulnerability and +25% sword damage.',
   cripple:'Each rank adds one second immobilisation and +25% next-hit damage.',
   reach:'Each rank adds three seconds of doubled melee reach.'
@@ -106,9 +107,8 @@ class Stand extends Phaser.Scene{
  }
  bash(){
   if(this.shieldAbility!=='bash'){this.notify('Shield Bash unlocks between waves.');return}
-  if(this.bashCd>0)return;
   if(this.stamina<25){this.notify('Not enough stamina for Shield Bash.');return}
-  this.stamina-=25;this.bashCd=3;this.bashTime=.3;tone(190);
+  this.stamina-=25;this.bashTime=.3;tone(190);
   for(const e of this.enemies){if(e.hp>0&&(e.x-this.x)*this.face>-8&&(e.x-this.x)*this.face<100&&Math.abs(this.y-G)<70){e.x+=this.face*(80+20*(this.rank('bash')-1));e.stunned=1.2+.3*(this.rank('bash')-1);this.burst(e.x,G-40,0xe9d794)}}
  }
  activateAbilityKey(key:string){
@@ -116,10 +116,10 @@ class Stand extends Phaser.Scene{
   if(!id){this.notify(`Unlock an ability for ${key} between waves.`);return}
   if(id==='bash'){this.bash();return}
   const ability=CHAMPION_ABILITIES.find(a=>a.id===id)!;
-  if((this.abilityCooldowns[id]??0)>0){this.notify(`${ability.name} is recharging.`);return}
+  if(ability.cooldown>0&&(this.abilityCooldowns[id]??0)>0){this.notify(`${ability.name} is recharging.`);return}
   if(this.stamina<ability.cost){this.notify('Not enough stamina.');return}
   if(id==='throw'&&this.shieldFlight)return;
-  this.stamina-=ability.cost;this.abilityCooldowns[id]=ability.cooldown;
+  this.stamina-=ability.cost;if(ability.cooldown>0)this.abilityCooldowns[id]=this.abilityCooldown(id);
   if(id==='throw'){this.shieldFlight={x:this.x+this.face*25,y:this.y-45,dir:this.face,originX:this.x,returning:false,hits:new Set()};this.blocking=false}
   if(id==='rally'){const center=Phaser.Math.Clamp(this.x+this.face*230,420,1110);this.arrows=Array.from({length:9+3*(this.rank('rally')-1)},(_,i)=>({targetX:center-140+i*280/(8+3*(this.rank('rally')-1)),delay:i*.08,progress:0}));this.notify('Rallying Cry! Archers, loose!')}
   if(id==='focus'){this.focusTime=8+2*(this.rank('focus')-1);this.wardTime=0;this.notify('Battle Focus: invulnerable. Spells unavailable.')}
@@ -149,16 +149,16 @@ class Stand extends Phaser.Scene{
   }
   for(const b of Array.from(this.championbar.querySelectorAll<HTMLButtonElement>('button'))){
    const key=b.dataset.abilityKey!;const id=key==='K'?(this.shieldAbility??this.kActive):this.abilitySlots[ABILITY_SLOTS.indexOf(key as typeof ABILITY_SLOTS[number])];const ability=CHAMPION_ABILITIES.find(a=>a.id===id);
-   const cd=id==='bash'?this.bashCd:id?this.abilityCooldowns[id]??0:0;
+   const cd=id?this.abilityCooldowns[id]??0:0;
    const active=id==='focus'?this.focusTime:id==='reach'?this.reachTime:id==='cripple'?this.crippleTime:0;
-   const status=!id?'EMPTY':id==='throw'&&this.shieldFlight?'RETURNING':active>0?`ACTIVE ${Math.ceil(active)}s`:cd>0?`${cd.toFixed(1)}s`:`${ability!.cost} STAMINA`;
+   const status=!id?'EMPTY':id==='throw'&&this.shieldFlight?'RETURNING':active>0?`ACTIVE ${Math.ceil(active)}s`:cd>0?`${cd.toFixed(1)}s`:id==='rally'?`READY · ${this.abilityCooldown(id)}s`:`${ability!.cost} STAMINA`;
    const name=ability?`${ability.name} · ${this.rank(ability.id)}`:(key==='K'?'Shield ability':'Champion ability');const stamp=name+status;if(b.dataset.status===stamp)continue;b.dataset.status=stamp;b.querySelector('span')!.textContent=name;b.querySelector('small')!.textContent=status;b.classList.toggle('locked',!id);b.classList.toggle('active',active>0);b.setAttribute('aria-label',`${name}, key ${key}, ${status}`);
   }
   this.championbar.querySelector('.passive-status small')!.textContent=this.upgrades.includes('protector')?`PASSIVE · RANK ${this.rank('protector')}`:'PASSIVE · LOCKED';
  }
  end(win:boolean){this.phase=win?'win':'dead';overlay.innerHTML=`<div class="panel"><div class="gold">${win?'THE CROSSING IS SAFE':'GREYFALL REMEMBERS'}</div><h2>${win?'You held the line.':'The last light fades.'}</h2><p>${this.rescued} survivors escaped · ${this.kills} undead defeated${this.lost?` · ${this.lost} survivors lost`:''}<br>${win?'For one more night, there is hope.':'Rise again. They still need you.'}</p><button class="primary" id="retry">${win?'STAND AGAIN':'TRY AGAIN'} →</button></div>`;document.querySelector('#retry')!.addEventListener('click',()=>this.begin())}
  update(_time:number,delta:number){const dt=Math.min(delta/1000,.04);if(Phaser.Input.Keyboard.JustDown(this.keys.ESC)&&this.phase==='play'){this.paused=!this.paused;overlay.innerHTML=this.paused?'<div class="panel"><div class="gold">A MOMENT OF STILLNESS</div><h2>Paused</h2><p>Press Escape to return to the crossing.</p><button class="primary" id="resume">RESUME</button></div>':'';document.querySelector('#resume')?.addEventListener('click',()=>{this.paused=false;overlay.innerHTML=''})}if(this.phase==='play'&&!this.paused)this.tick(dt);this.draw();this.updateHotbar();this.previousKeys=new Set(Object.keys(this.keys).filter(k=>this.down(k)));this.pendingPress.clear();}
- tick(dt:number){this.tickChampion(dt);for(const id of Object.keys(this.spellCooldowns) as SpellId[])this.spellCooldowns[id]=Math.max(0,(this.spellCooldowns[id]??0)-dt);this.wardTime=Math.max(0,this.wardTime-dt);this.bashCd=Math.max(0,this.bashCd-dt);this.bashTime=Math.max(0,this.bashTime-dt);this.messageTime=Math.max(0,this.messageTime-dt);this.clock+=dt;this.timer-=dt;this.attackCd-=dt;this.inv-=dt;this.swing=Math.max(0,this.swing-dt);this.blocking=this.down('L')&&this.stamina>5&&!this.shieldFlight;this.crouching=this.down('S')&&this.y>=G;const move=(this.down('D')?1:0)-(this.down('A')?1:0);if(move){this.face=move;this.x=Phaser.Math.Clamp(this.x+move*dt*(this.blocking||this.crouching?90:215),355,1000)}if(this.down('SPACE')&&this.y>=G&&!this.crouching){this.vy=-450;this.y-=1;tone(260)}this.vy+=1100*dt;this.y+=this.vy*dt;if(this.y>=G){this.y=G;this.vy=0}this.stamina=Math.min(100,this.stamina+dt*(this.blocking?4:24));this.energy=Math.min(100,this.energy+dt*7);
+ tick(dt:number){this.tickChampion(dt);for(const id of Object.keys(this.spellCooldowns) as SpellId[])this.spellCooldowns[id]=Math.max(0,(this.spellCooldowns[id]??0)-dt);this.wardTime=Math.max(0,this.wardTime-dt);this.bashTime=Math.max(0,this.bashTime-dt);this.messageTime=Math.max(0,this.messageTime-dt);this.clock+=dt;this.timer-=dt;this.attackCd-=dt;this.inv-=dt;this.swing=Math.max(0,this.swing-dt);this.blocking=this.down('L')&&this.stamina>5&&!this.shieldFlight;this.crouching=this.down('S')&&this.y>=G;const move=(this.down('D')?1:0)-(this.down('A')?1:0);if(move){this.face=move;this.x=Phaser.Math.Clamp(this.x+move*dt*(this.blocking||this.crouching?90:215),355,1000)}if(this.down('SPACE')&&this.y>=G&&!this.crouching){this.vy=-450;this.y-=1;tone(260)}this.vy+=1100*dt;this.y+=this.vy*dt;if(this.y>=G){this.y=G;this.vy=0}this.stamina=Math.min(100,this.stamina+dt*(this.blocking?4:24));this.energy=Math.min(100,this.energy+dt*7);
  for(const key of ['K',...ABILITY_SLOTS])if(this.pressed(key))this.activateAbilityKey(key);
  if(this.down('J')&&this.attackCd<=0&&!this.blocking){
   this.attackCd=.42;this.swing=.22;tone(180);let landed=false;const range=115*(this.reachTime>0?2:1);
