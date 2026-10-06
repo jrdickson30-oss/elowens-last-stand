@@ -1,0 +1,19 @@
+{
+  "image": "Elowen-idle-spritesheet.png",
+  "frameWidth": 192,
+  "frameHeight": 208,
+  "frameCount": 6,
+  "columns": 6,
+  "rows": 1,
+  "durationsMs": [
+    220,
+    220,
+    220,
+    220,
+    220,
+    220
+  ],
+  "loop": true,
+  "direction": "right",
+  "status": "draft; preview at game scale before integrating"
+}
