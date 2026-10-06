@@ -7,7 +7,7 @@ await page.goto(process.env.GAME_URL||'http://127.0.0.1:5173');await page.getByR
 await page.waitForTimeout(200);
 await page.keyboard.down('D');await page.waitForTimeout(250);await page.keyboard.up('D');
 assert(await page.evaluate(()=>window.elowen.x>520),'movement');
-await page.keyboard.down('Space');await page.waitForTimeout(100);assert(await page.evaluate(()=>window.elowen.y<400),'jump');await page.keyboard.up('Space');await page.waitForFunction(()=>window.elowen.y>=422);
+await page.keyboard.down('Space');await page.waitForFunction(()=>window.elowen.y<400);await page.keyboard.up('Space');await page.waitForFunction(()=>window.elowen.y>=422);
 await page.keyboard.down('S');await page.waitForTimeout(80);assert(await page.evaluate(()=>window.elowen.crouching),'crouch');await page.keyboard.up('S');
 await page.evaluate(()=>{const s=window.elowen;s.enemies=[{x:s.x+65,hp:76,max:76,next:10,speed:0,kind:0}];s.timer=999;});
 await page.keyboard.down('J');await page.waitForTimeout(80);await page.keyboard.up('J');assert(await page.evaluate(()=>window.elowen.enemies[0].hp<76),'sword damage');
@@ -19,9 +19,9 @@ await page.evaluate(()=>{const s=window.elowen;s.energy=100;s.stamina=100;s.enem
 await page.keyboard.press('1');await page.keyboard.press('K');
 assert(await page.evaluate(()=>window.elowen.energy===100&&window.elowen.stamina===100),'locked actions');
 await page.evaluate(()=>{const s=window.elowen;s.survivors=[{x:76,t:0}];});await page.waitForTimeout(100);assert(await page.evaluate(()=>window.elowen.rescued>0),'survivor escape');
-await page.keyboard.press('Escape');assert(await page.getByText('Paused',{exact:true}).isVisible());await page.getByRole('button',{name:'RESUME'}).click();
-await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.locator('[data-up="bash"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.wave===2&&window.elowen.upgrades.includes('bash')),'wave upgrade');
-await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.locator('[data-up="volley"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.wave===3),'third wave');
+await page.keyboard.press('Escape');await page.getByText('Paused',{exact:true}).waitFor({state:'visible'});await page.getByRole('button',{name:'RESUME'}).click();
+await page.evaluate(()=>{const s=window.elowen;s.wave=3;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.locator('[data-up="bash"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.level===2&&window.elowen.wave===1&&window.elowen.upgrades.includes('bash')),'wave upgrade');
+await page.evaluate(()=>{const s=window.elowen;s.wave=3;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.locator('[data-up="volley"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.level===3&&window.elowen.wave===1),'third level');
 // Actual upgrade unlocks the reserved K ability.
 await page.evaluate(()=>{const s=window.elowen;s.enemies=[{x:s.x+65,hp:100,max:100,next:10,speed:0,kind:0}];s.timer=999;s.stamina=100;});
 await page.keyboard.press('K');await page.waitForTimeout(80);
@@ -42,16 +42,16 @@ assert(await page.evaluate(()=>window.elowen.enemies[0].hp<160&&window.elowen.en
 await fixture([140]);await page.evaluate(()=>window.elowen.enemies[0].next=.1);await page.keyboard.press('5');await page.waitForTimeout(250);
 assert(await page.evaluate(()=>window.elowen.wall&&window.elowen.wall.hp<110&&window.elowen.enemies[0].x===window.elowen.x+140),'Vine wall intercepts and takes attacks');
 await page.evaluate(()=>{const s=window.elowen;s.wall.hp=1;s.enemies[0].next=0;});await page.waitForTimeout(100);assert(await page.evaluate(()=>window.elowen.wall===null),'Vine wall can be destroyed');
-await fixture([]);await page.keyboard.press('E');const after=await page.evaluate(()=>window.elowen.energy);await page.keyboard.press('E');assert(await page.evaluate(()=>window.elowen.energy>=0)&&await page.evaluate(()=>window.elowen.energy)>after-1,'cooldown prevents duplicate cast');
+await fixture([]);await page.keyboard.press('E');await page.waitForFunction(()=>window.elowen.energy<100);const after=await page.evaluate(()=>window.elowen.energy);await page.keyboard.press('E');await page.waitForFunction(()=>window.elowen.message==='Ember Strike is recharging.');assert(await page.evaluate(()=>window.elowen.energy>=0)&&await page.evaluate(()=>window.elowen.energy)>after-1,'cooldown prevents duplicate cast');
 await page.evaluate(()=>{window.elowen.energy=0;window.elowen.spellCooldowns={};});await page.keyboard.press('4');assert(await page.evaluate(()=>window.elowen.energy<2),'insufficient Chaos blocks cast');
 await fixture([]);await page.getByRole('button',{name:/Wall of Vines, key 5/}).click();assert(await page.evaluate(()=>!!window.elowen.wall),'clickable spell controls');
 await page.screenshot({path:'/tmp/elowen-game.png'});
-await page.evaluate(()=>{const s=window.elowen;s.wave=8;s.enemies=[];s.survivors=[];s.spawned=s.total;});
-await page.waitForFunction(()=>window.elowen.phase==='upgrade');assert.equal(await page.getByRole('button',{name:'STAND AGAIN'}).count(),0,'wave eight no longer ends the run');
-await page.locator('[data-up="bash"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.wave===9&&window.elowen.total===32),'ninth wave starts after an upgrade');
-await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.waitForFunction(()=>window.elowen.phase==='upgrade');
-await page.locator('[data-up="bash"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.wave===10&&window.elowen.total===35),'tenth wave starts after the ninth upgrade opportunity');
-await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.waitForFunction(()=>window.elowen.phase==='win');
-await page.getByRole('button',{name:'STAND AGAIN'}).click();assert(await page.evaluate(()=>window.elowen.wave===1),'victory after wave ten and restart');
+await page.evaluate(()=>{const s=window.elowen;s.applyLevel(8);s.wave=3;s.enemies=[];s.survivors=[];s.spawned=s.total;});
+await page.waitForFunction(()=>window.elowen.phase==='upgrade');assert.equal(await page.getByRole('button',{name:'STAND AGAIN'}).count(),0,'level eight does not end the campaign');
+await page.locator('[data-up="bash"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.level===9&&window.elowen.wave===1&&window.elowen.total===32),'ninth level starts after an upgrade');
+await page.evaluate(()=>{const s=window.elowen;s.wave=3;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.waitForFunction(()=>window.elowen.phase==='upgrade');
+await page.locator('[data-up="bash"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.level===10&&window.elowen.wave===1&&window.elowen.total===35),'tenth level starts after the ninth upgrade opportunity');
+await page.evaluate(()=>{const s=window.elowen;s.wave=3;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.waitForFunction(()=>window.elowen.phase==='win');
+await page.getByRole('button',{name:'STAND AGAIN'}).click();assert(await page.evaluate(()=>window.elowen.level===1&&window.elowen.wave===1),'victory after level ten and restart');
 await page.evaluate(()=>window.elowen.hp=0);await page.getByRole('button',{name:'TRY AGAIN'}).click();assert(await page.evaluate(()=>window.elowen.hp===100),'defeat restart');assert(await page.evaluate(()=>!window.elowen.wall&&window.elowen.wardTime===0&&!window.elowen.upgrades.length),'restart clears spell state');
 assert.deepEqual(errors,[]);console.log('PASS: movement, jump, sword, shield, Ember Strike, survivor escape, pause, upgrades, all six spell bindings and effects, unlock gates, cooldowns, Shield Bash, victory, defeat, restart; no browser errors.');await browser.close();

@@ -4,7 +4,7 @@ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'
 const page=await browser.newPage({viewport:{width:1440,height:1100}});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(process.env.GAME_URL||'http://127.0.0.1:5173');await page.locator('#begin').click();
-async function intermission(){await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.waitForFunction(()=>window.elowen.phase==='upgrade')}
+async function intermission(){await page.evaluate(()=>{const s=window.elowen;s.wave=3;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.waitForFunction(()=>window.elowen.phase==='upgrade')}
 async function choose(id){await page.locator(`[data-up="${id}"]`).click();await page.locator('#next-wave').click()}
 async function fixture(offsets=[]){await page.evaluate(dx=>{const s=window.elowen;s.enemies=dx.map(x=>({x:s.x+x,hp:160,max:160,next:10,speed:0,kind:0}));s.survivors=[];s.timer=999;s.spawned=0;s.stamina=s.energy=s.hp=100;s.abilityCooldowns={};s.attackCd=0;s.inv=0;s.focusTime=s.reachTime=s.crippleTime=0;s.wardTime=0;s.shots=[];s.arrows=[];s.wall=null;s.protectorCd=0;},offsets)}
 async function tap(key){await page.keyboard.down(key);await page.waitForTimeout(50);await page.keyboard.up(key)}
@@ -41,7 +41,7 @@ await fixture([200,260]);await tap('J');assert(await page.evaluate(()=>window.el
 assert(await page.evaluate(()=>{const s=window.elowen;s.reachTime=1;s.stamina=100;s.activateAbilityKey('U');return s.reachTime===8&&s.stamina===80&&!s.abilityCooldowns.reach}),'Strike Through can refresh immediately for stamina without a cooldown');
 await page.evaluate(()=>{const s=window.elowen;s.reachTime=.01;s.attackCd=0});await page.waitForFunction(()=>window.elowen.reachTime===0);await tap('J');assert(await page.evaluate(()=>window.elowen.enemies[0].hp===160-window.elowen.damage),'extended reach expires');
 await fixture([]);await page.evaluate(()=>window.elowen.stamina=0);await tap('U');assert(await page.evaluate(()=>window.elowen.reachTime===0),'Champion abilities require stamina');
-await page.keyboard.press('Escape');const before=await page.evaluate(()=>window.elowen.stamina);await page.locator('[data-ability-key="U"]').click();assert(await page.evaluate(()=>window.elowen.stamina)===before,'paused ability buttons are inert');await page.locator('#resume').click();
+await page.keyboard.press('Escape');await page.locator('#resume').waitFor({state:'visible'});const before=await page.evaluate(()=>window.elowen.stamina);await page.locator('[data-ability-key="U"]').click();assert(await page.evaluate(()=>window.elowen.stamina)===before,'paused ability buttons are inert');await page.locator('#resume').click();
 // Skipping shield talents leaves K available for a fourth permanent active ability.
 await page.evaluate(()=>window.elowen.begin());
 await intermission();await choose('rally');await intermission();await choose('focus');await intermission();await choose('cripple');

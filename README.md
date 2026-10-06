@@ -1,6 +1,6 @@
 # Elowen’s Last Stand
 
-A side-on browser defence prototype built with TypeScript, Phaser, and Vite. Elowen holds Greyfall’s bridge through ten increasingly difficult waves while survivors escape.
+A side-on browser defence prototype built with TypeScript, Phaser, and Vite. Elowen protects refugees through a ten-level campaign, with three waves per level, from Greyfall Town to her final stand at the river crossing.
 
 ## Run
 
@@ -15,17 +15,30 @@ npm run dev
 
 A/D: move. Space: jump. S: crouch. J: sword. L: hold shield. E: Ember Strike. 1: Ice Lance. 2: Warrior’s Shield. 3: Hunter’s Volley. 4: Stoneshard Barrage. 5: Wall of Vines. U/I/O/K: Champion abilities after unlocking. K can hold Shield Bash, Sentinel Initiate, or a fourth general active ability. Escape: pause. Touch controls are available on narrow screens. Sound is optional and enabled by the header button.
 
-Sword attacks hit enemies in front of Elowen. Blocking frontal strikes consumes stamina; Ember Strike consumes regenerating Chaos Energy. Zombies reaching the bridge cause health loss. Each wave evacuates five survivors. Between rounds choose one spell, Champion ability, or rank upgrade. Clear the tenth wave to win; health reaching zero ends the run.
+Sword attacks hit enemies in front of Elowen. Blocking frontal strikes consumes stamina; Ember Strike consumes regenerating Chaos Energy. Zombies reaching the bridge cause health loss. Each wave evacuates five survivors. Clear all three waves of a level to choose one spell, Champion ability, or rank upgrade. Clear level ten’s final wave to reach Elowen’s sacrifice ending; health reaching zero ends the run.
 
-All six spells are separate casts with Chaos costs and individual cooldowns, shown on the clickable spell bar. Ember Strike starts unlocked. After each of the first nine waves, choose one new spell, Champion ability, or rank upgrade. All choices are permanent for that run.
+All six spells are separate casts with Chaos costs and individual cooldowns, shown on the clickable spell bar. Ember Strike starts unlocked. After each of the first nine levels, choose one new spell, Champion ability, or rank upgrade. All choices are permanent for that run.
 
-General Champion abilities fill U, I, O, then K. If K is empty, it can instead hold Shield Bash or Sentinel Initiate; those two choices exclude each other. Once K is committed, it cannot be replaced. Skipping both shield talents leaves K available for a fourth general active, so no button is wasted. Protector is passive and does not consume a button. Owned Champion abilities can be upgraded to rank three without changing their identity or assigned key. There are no loadout swaps between waves.
+General Champion abilities fill U, I, O, then K. If K is empty, it can instead hold Shield Bash or Sentinel Initiate; those two choices exclude each other. Once K is committed, it cannot be replaced. Skipping both shield talents leaves K available for a fourth general active, so no button is wasted. Protector is passive and does not consume a button. Owned Champion abilities can be upgraded to rank three without changing their identity or assigned key. There are no loadout swaps between waves or levels.
 
 Ice Lance deals piercing impact damage and explodes at impact or maximum range. Warrior’s Shield is a six-second magical ward that halves enemy attack damage. Hunter’s Volley distributes four guaranteed radiant hits to enemies ahead. Stoneshard Barrage hits a short forward cone. Wall of Vines creates a physical barrier with health that zombies can destroy. Champion abilities use stamina without cooldowns, except Rallying Cry, which costs no stamina and has a 10-second cooldown (8 and 6 seconds at higher ranks). Sentinel Initiate can be thrown again once the shield returns. Reusing Battle Focus or Strike Through refreshes its duration. Shield Bash shoves and staggers targets in front, spending stamina rather than Chaos. Values and timings are real-time adaptations rather than tabletop dice rules.
 
-Elowen starts at level one and gains a level before each new wave. Champion progression adds 12 maximum SP (health) per level, reaching 208 at level ten. Extra weapon dice at levels 2, 8, and 10 become fixed average damage bonuses; armour milestones reduce enemy attack damage. The HUD and between-wave summary show level, SP, proficiency tier, and bonuses. [Character progression](docs/character-progression.md) records the source table and real-time adaptations.
+Elowen starts at level one and gains a level after completing all three waves of the previous level. Champion progression adds 12 maximum SP (health) per level, reaching 208 at level ten. Extra weapon dice at levels 2, 8, and 10 become fixed average damage bonuses; armour milestones reduce enemy attack damage. The HUD shows health/stamina/Chaos bars and Elowen’s level/title, alongside location and wave. The level-up screen shows health and sword changes; PB, AR, and dice statistics are not shown during play. [Character progression](docs/character-progression.md) records the source table and real-time adaptations.
 
 [Champion ability research](docs/champion-abilities.md) records printed effects, proposed adaptations, and path restrictions. The selected Champion abilities are implemented with the game-specific changes requested by the user.
+
+## Campaign
+
+| Character levels | Environment | Objective |
+| --- | --- | --- |
+| 1–2 | Greyfall Town | Help refugees flee the attacking dead. |
+| 3–5 | Grasslands | Protect the caravan across open country. |
+| 6–8 | River Road | Keep the route to the crossing clear. |
+| 9–10 | Greyfall Crossing | Hold the bridge until the last refugees escape. |
+
+There are three waves in every level (30 in total) and nine character upgrade choices. Waves two and three add two and four enemies respectively to that level’s base count. Enemy types and baseline speed scale with character level. Wave breaks refill stamina/Chaos; health carries over. A character level adds 12 current/maximum SP plus the existing 22 SP recovery, capped at maximum health.
+
+Clearing the final wave starts a short scripted ending: Elowen destroys the bridge and sacrifices herself, then the campaign epilogue appears. This is a completed campaign rather than a combat defeat. Restart clears the story state and returns to level one in town.
 
 ## Validation
 
@@ -35,9 +48,9 @@ npm run build
 npm test
 ```
 
-The browser smoke test uses `/usr/bin/chromium`; set `CHROMIUM_PATH` for another installation. It exercises movement, jumping, sword hits, shield defence, ranged damage and resource use, survivor escape, pause/resume, round upgrades, all six spells and their unlock/cooldown/resource gates, permanent Champion choices, rank upgrades, all Champion effects, a flexible K slot, all ten character levels, health growth and recovery, weapon/armour milestones, victory, defeat and restart. Wave transition scenarios are arranged by the test; this is not an autonomous full gameplay balance test.
+The browser smoke test uses `/usr/bin/chromium`; set `CHROMIUM_PATH` for another installation. It exercises movement, jumping, sword hits, shield defence, ranged damage and resource use, survivor escape, pause/resume, round upgrades, all six spells and their unlock/cooldown/resource gates, permanent Champion choices, rank upgrades, all Champion effects, a flexible K slot, all 30 waves, four environment sections, Elowen’s sacrifice ending, all ten character levels, health growth and recovery, weapon/armour milestones, victory, defeat and restart. Wave transition scenarios are arranged by the test; this is not an autonomous full gameplay balance test.
 
-Elowen’s playable sprite is adapted from the user-supplied pixel sprite and character design sheet: golden hair, pointed ears, silver armour, navy-and-gold cloak and kite shield, and blue jewellery. The scenery and enemy artwork were generated for the prototype. Detailed character poses currently use simple movement effects; full frame-by-frame combat animation is a later art pass. The full character reference sheet is not included in the published game. No backend, accounts or secret keys are required.
+Elowen’s playable sprite is adapted from the user-supplied pixel sprite and character design sheet: golden hair, pointed ears, silver armour, navy-and-gold cloak and kite shield, and blue jewellery. The bridge backdrop and enemy artwork were generated for the prototype. Town, grassland, and road scenery use cached procedural pixel graphics for this functional campaign pass. Detailed character poses currently use simple movement effects; full frame-by-frame combat animation is a later art pass. The full character reference sheet is not included in the published game. No backend, accounts or secret keys are required.
 
 ## Browser hosting
 

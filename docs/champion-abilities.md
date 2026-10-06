@@ -4,7 +4,7 @@ Source: the user-provided **Chaosbound – Core Rules**, Champion class and Sent
 
 ## Permanent choices
 
-J remains the sword and L remains shield/block. Champion actions fill U, I, O, then K as selected. K may instead hold Shield Bash or Sentinel Initiate; selecting either excludes the other. If both shield talents are skipped, K remains available for a fourth general active. After a key is committed it cannot be reassigned for that run. Protector is passive and consumes no key. All of these are offered between waves alongside spell unlocks. There are nine upgrade rounds in the ten-wave prototype.
+J remains the sword and L remains shield/block. Champion actions fill U, I, O, then K as selected. K may instead hold Shield Bash or Sentinel Initiate; selecting either excludes the other. If both shield talents are skipped, K remains available for a fourth general active. After a key is committed it cannot be reassigned for that run. Protector is passive and consumes no key. All of these are offered between character levels alongside spell unlocks. There are nine upgrade choices in the ten-level campaign, which has three waves per level.
 
 An owned Champion ability can be upgraded to rank two or three on its original button. No upgrade replaces it with a different ability. A new run clears selections and ranks.
 
