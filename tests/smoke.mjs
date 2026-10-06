@@ -34,7 +34,7 @@ assert(await page.evaluate(()=>window.elowen.enemies.every(e=>e.hp<160)&&window.
 await fixture([560]);await page.keyboard.press('1');await page.waitForTimeout(900);
 assert(await page.evaluate(()=>window.elowen.enemies[0].hp<160),'Ice Lance explodes on a miss at range');
 await fixture([35]);await page.evaluate(()=>{window.elowen.hp=100;window.elowen.inv=0;window.elowen.enemies[0].next=.1;});await page.keyboard.press('2');await page.waitForTimeout(250);
-assert(await page.evaluate(()=>window.elowen.wardTime>0&&window.elowen.hp===94.5),'Warrior’s Shield halves attack damage');
+assert(await page.evaluate(()=>window.elowen.wardTime>0&&window.elowen.hp===95),'Warrior’s Shield halves attack damage after armour');
 await fixture([140,200,260,320]);await page.keyboard.press('3');await page.waitForTimeout(80);
 assert(await page.evaluate(()=>window.elowen.enemies.every(e=>e.hp===141)),'Hunter’s Volley strikes four targets');
 await fixture([70,140,-70,300]);await page.keyboard.press('4');await page.waitForTimeout(80);

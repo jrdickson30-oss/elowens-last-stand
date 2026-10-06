@@ -23,6 +23,8 @@ General Champion abilities fill U, I, O, then K. If K is empty, it can instead h
 
 Ice Lance deals piercing impact damage and explodes at impact or maximum range. Warrior’s Shield is a six-second magical ward that halves enemy attack damage. Hunter’s Volley distributes four guaranteed radiant hits to enemies ahead. Stoneshard Barrage hits a short forward cone. Wall of Vines creates a physical barrier with health that zombies can destroy. Champion abilities use stamina without cooldowns, except Rallying Cry, which costs no stamina and has a 10-second cooldown (8 and 6 seconds at higher ranks). Sentinel Initiate can be thrown again once the shield returns. Reusing Battle Focus or Strike Through refreshes its duration. Shield Bash shoves and staggers targets in front, spending stamina rather than Chaos. Values and timings are real-time adaptations rather than tabletop dice rules.
 
+Elowen starts at level one and gains a level before each new wave. Champion progression adds 12 maximum SP (health) per level, reaching 208 at level ten. Extra weapon dice at levels 2, 8, and 10 become fixed average damage bonuses; armour milestones reduce enemy attack damage. The HUD and between-wave summary show level, SP, proficiency tier, and bonuses. [Character progression](docs/character-progression.md) records the source table and real-time adaptations.
+
 [Champion ability research](docs/champion-abilities.md) records printed effects, proposed adaptations, and path restrictions. The selected Champion abilities are implemented with the game-specific changes requested by the user.
 
 ## Validation
@@ -33,7 +35,7 @@ npm run build
 npm test
 ```
 
-The browser smoke test uses `/usr/bin/chromium`; set `CHROMIUM_PATH` for another installation. It exercises movement, jumping, sword hits, shield defence, ranged damage and resource use, survivor escape, pause/resume, round upgrades, all six spells and their unlock/cooldown/resource gates, permanent Champion choices, rank upgrades, all Champion effects, a flexible K slot, victory, defeat and restart. Wave transition scenarios are arranged by the test; this is not an autonomous full gameplay balance test.
+The browser smoke test uses `/usr/bin/chromium`; set `CHROMIUM_PATH` for another installation. It exercises movement, jumping, sword hits, shield defence, ranged damage and resource use, survivor escape, pause/resume, round upgrades, all six spells and their unlock/cooldown/resource gates, permanent Champion choices, rank upgrades, all Champion effects, a flexible K slot, all ten character levels, health growth and recovery, weapon/armour milestones, victory, defeat and restart. Wave transition scenarios are arranged by the test; this is not an autonomous full gameplay balance test.
 
 Elowen’s playable sprite is adapted from the user-supplied pixel sprite and character design sheet: golden hair, pointed ears, silver armour, navy-and-gold cloak and kite shield, and blue jewellery. The scenery and enemy artwork were generated for the prototype. Detailed character poses currently use simple movement effects; full frame-by-frame combat animation is a later art pass. The full character reference sheet is not included in the published game. No backend, accounts or secret keys are required.
 
