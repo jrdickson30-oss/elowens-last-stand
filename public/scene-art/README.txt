@@ -3,7 +3,7 @@ Elowen's Last Stand — detailed pixel-art scene backgrounds
 Five full-resolution PNGs, generated from the campaign scene references.
 Native image dimensions: 1672 x 941 pixels, approximately 16:9.
 
-level-01-greyfall-town.png — Level 1: Greyfall's refuge gate and town under attack at dusk, with a dry cobblestone market square, village well and market awnings in the foreground.
+level-01-greyfall-town.png — Level 1: Greyfall's refuge gate and town under attack at dusk, with an open cobblestone market square, village well and market awnings in the foreground. The walking lane has no low boundary wall.
 level-02-greyfall-town-burning.png — Level 2: the same cobblestone town square with more extensive fires and smoke.
 levels-03-05-grasslands.png — Levels 3–5: open country, a covered wagon, fences and mountain silhouettes.
 levels-06-08-river-road.png — Levels 6–8: a wooded road overlooking the approaching river.

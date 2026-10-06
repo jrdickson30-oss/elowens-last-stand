@@ -7,9 +7,9 @@ const brazier = (x: number, y: number): Fire => ({ x, y, size: 5, smoke: false }
 const roof = (x: number, y: number, size = 12): Fire => ({ x, y, size, smoke: true });
 
 export const SCENE_ART: SceneArt[] = [
-  { key: 'town-art', file: 'level-01-greyfall-town.png', kind: 0, ground: 516, revision: 'market-square-1',
+  { key: 'town-art', file: 'level-01-greyfall-town.png', kind: 0, ground: 516, revision: 'market-square-2',
     fires: [brazier(.046,.439),brazier(.254,.443),brazier(.645,.443),brazier(.94,.455),roof(.535,.311,8),roof(.797,.278),roof(.911,.218)] },
-  { key: 'burning-town-art', file: 'level-02-greyfall-town-burning.png', kind: 1, ground: 516, revision: 'market-square-1',
+  { key: 'burning-town-art', file: 'level-02-greyfall-town-burning.png', kind: 1, ground: 516, revision: 'market-square-2',
     fires: [brazier(.046,.439),brazier(.254,.443),brazier(.645,.443),brazier(.94,.455),roof(.297,.352),roof(.411,.356),roof(.503,.318),roof(.581,.344),roof(.774,.285),roof(.871,.245),roof(.927,.206),roof(.684,.083,8)] },
   { key: 'grasslands-art', file: 'levels-03-05-grasslands.png', kind: 2, ground: 522, fires: [] },
   { key: 'river-road-art', file: 'levels-06-08-river-road.png', kind: 3, ground: 524, fires: [] },
