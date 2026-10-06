@@ -35,7 +35,7 @@ npm test
 
 The browser smoke test uses `/usr/bin/chromium`; set `CHROMIUM_PATH` for another installation. It exercises movement, jumping, sword hits, shield defence, ranged damage and resource use, survivor escape, pause/resume, round upgrades, all six spells and their unlock/cooldown/resource gates, permanent Champion choices, rank upgrades, all Champion effects, a flexible K slot, victory, defeat and restart. Wave transition scenarios are arranged by the test; this is not an autonomous full gameplay balance test.
 
-Scene and character artwork are generated specifically for this prototype. Detailed character poses currently use simple movement effects; full frame-by-frame combat animation is a later art pass. The uploaded reference images are visual direction and are not redistributed in the game. No backend, accounts or secret keys are required.
+Elowen’s playable sprite is adapted from the user-supplied pixel sprite and character design sheet: golden hair, pointed ears, silver armour, navy-and-gold cloak and kite shield, and blue jewellery. The scenery and enemy artwork were generated for the prototype. Detailed character poses currently use simple movement effects; full frame-by-frame combat animation is a later art pass. The full character reference sheet is not included in the published game. No backend, accounts or secret keys are required.
 
 ## Browser hosting
 
