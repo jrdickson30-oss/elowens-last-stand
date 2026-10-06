@@ -1,0 +1,153 @@
+import Phaser from 'phaser';
+
+export const SWORD_RANGE = 115;
+export const SWORD_INTERVAL = .42;
+type Action = 'slash' | 'thrust' | 'reach' | 'jump';
+type Metadata = {
+  frameWidth: number; frameHeight: number; frameCount: number; columns: number;
+  durationsMs: number[]; groundY?: number; anchor?: {x: number; groundY: number};
+  rearFootAnchorX?: number;
+};
+type Clip = {key: string; meta: Metadata; scale: number; anchor: number; feet: number[]};
+type Bounds = {left: number; top: number; right: number; bottom: number};
+const assets: Record<Action, {file: string; bodyHeight: number}> = {
+  slash: {file: 'sword-attack', bodyHeight: 191},
+  thrust: {file: 'sword-thrust', bodyHeight: 174},
+  reach: {file: 'strike-through', bodyHeight: 191},
+  jump: {file: 'jump', bodyHeight: 188},
+};
+
+export function preloadHeroActions(scene: Phaser.Scene) {
+  for(const [id,asset] of Object.entries(assets)) {
+    const path=`elowen-${asset.file}/Elowen-${asset.file}`;
+    scene.load.json(`hero-${id}-meta`,new URL(path+'.json',document.baseURI).href);
+    // The supplied Strike Through uses the same sword poses. Its separate
+    // effect layers let us extend the energy without stretching the heroine.
+    if(id!=='reach')scene.load.image(`hero-${id}`,new URL(path+'-spritesheet.png',document.baseURI).href);
+  }
+  for(const frame of [3,4])scene.load.image(`hero-energy-${frame}`,new URL(`elowen-strike-through/effects/0${frame}.png`,document.baseURI).href);
+}
+
+function pixels(texture: Phaser.Textures.Texture) {
+  const source=texture.getSourceImage() as HTMLImageElement;
+  const canvas=document.createElement('canvas');canvas.width=source.width;canvas.height=source.height;
+  const ctx=canvas.getContext('2d')!;ctx.drawImage(source,0,0);
+  return {data:ctx.getImageData(0,0,source.width,source.height).data,width:source.width};
+}
+function bounds(data: Uint8ClampedArray, width: number, x: number, y: number, w: number, h: number, threshold=90): Bounds {
+  let left=w,top=h,right=-1,bottom=-1;
+  for(let py=0;py<h;py++)for(let px=0;px<w;px++)if(data[((y+py)*width+x+px)*4+3]>threshold) {
+    left=Math.min(left,px);top=Math.min(top,py);right=Math.max(right,px);bottom=Math.max(bottom,py);
+  }
+  return {left,top,right:right+1,bottom:bottom+1};
+}
+
+export class HeroAnimator {
+  clips: Partial<Record<Action,Clip>> = {};
+  nextAttack: 'slash'|'thrust' = 'slash';
+  attack: {kind: Exclude<Action,'jump'>; elapsed: number; range: number; face: number; fresh?: boolean}|null = null;
+  airborne=false;
+  jumpElapsed=0;
+  landingTime=0;
+  beam: Phaser.GameObjects.Image;
+  effects = new Map<number,Bounds>();
+  constructor(readonly scene: Phaser.Scene) {
+    for(const [id,asset] of Object.entries(assets)) {
+      if(id==='reach')continue;
+      const key=`hero-${id}`,meta=scene.cache.json.get(key+'-meta') as Metadata|undefined;
+      if(!scene.textures.exists(key)||!meta)continue;
+      const texture=scene.textures.get(key),source=pixels(texture),feet:number[]=[];
+      for(let frame=0;frame<meta.frameCount;frame++) {
+        const column=frame%meta.columns,row=Math.floor(frame/meta.columns);
+        texture.add(`pose-${frame}`,0,column*meta.frameWidth,row*meta.frameHeight,meta.frameWidth,meta.frameHeight);
+        // Jump poses include vertical displacement in the sheet. Anchor each
+        // pose's feet to the physics position instead of applying it twice.
+        feet.push(id==='jump'?bounds(source.data,source.width,column*meta.frameWidth,row*meta.frameHeight,meta.frameWidth,meta.frameHeight,0).bottom:meta.anchor?.groundY??meta.groundY??meta.frameHeight);
+      }
+      texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+      const anchor=meta.anchor?.x??(meta.rearFootAnchorX!==undefined?meta.rearFootAnchorX+48:meta.frameWidth/2);
+      // Body height excludes an overhead sword and padding. One constant
+      // scale per clip preserves the proportions of every pose.
+      this.clips[id as Action]={key,meta,scale:96/asset.bodyHeight,anchor,feet};
+    }
+    const reachMeta=scene.cache.json.get('hero-reach-meta') as Metadata|undefined;
+    if(this.clips.slash&&reachMeta)this.clips.reach={...this.clips.slash,meta:{...reachMeta,frameWidth:this.clips.slash.meta.frameWidth}};
+    for(const frame of [3,4]) {
+      const key=`hero-energy-${frame}`;
+      if(!scene.textures.exists(key))continue;
+      const texture=scene.textures.get(key),source=texture.getSourceImage() as HTMLImageElement;
+      const read=pixels(texture),box=bounds(read.data,read.width,0,0,source.width,source.height,0);
+      if(box.right<=box.left||box.bottom<=box.top)continue;
+      texture.add('energy',0,box.left,box.top,box.right-box.left,box.bottom-box.top);
+      texture.setFilter(Phaser.Textures.FilterMode.NEAREST);this.effects.set(frame,box);
+    }
+    this.beam=scene.add.image(0,0,'hero-energy-3').setDepth(1.5).setVisible(false);
+  }
+  reset() {
+    this.attack=null;this.nextAttack='slash';this.airborne=false;this.jumpElapsed=this.landingTime=0;this.beam.setVisible(false);
+  }
+  startAttack(range: number, face: number, extended: boolean) {
+    const kind=extended?'reach':this.nextAttack;
+    if(!extended)this.nextAttack=this.nextAttack==='slash'?'thrust':'slash';
+    this.attack=this.clips[kind]?{kind,elapsed:0,range,face,fresh:true}:null;
+  }
+  startJump() {this.airborne=true;this.jumpElapsed=0;this.landingTime=0;}
+  tick(dt: number, y: number, ground: number, blocking: boolean, playing: boolean) {
+    if(!playing){this.attack=null;this.airborne=false;this.landingTime=0;return}
+    if(this.attack) {
+      if(this.attack.fresh)this.attack.fresh=false;
+      else this.attack.elapsed+=dt;
+      if(blocking||this.attack.elapsed>=SWORD_INTERVAL)this.attack=null;
+    }
+    if(y<ground) {
+      if(!this.airborne)this.jumpElapsed=0;
+      this.airborne=true;this.jumpElapsed+=dt;this.landingTime=0;
+    } else {
+      if(this.airborne)this.landingTime=(this.clips.jump?.meta.durationsMs[5]??180)/1000;
+      else this.landingTime=Math.max(0,this.landingTime-dt);
+      this.airborne=false;
+    }
+  }
+  attackFrame() {
+    if(!this.attack)return 0;
+    const durations=this.clips[this.attack.kind]!.meta.durationsMs;
+    const total=durations.reduce((sum,ms)=>sum+ms,0);
+    let elapsed=this.attack.elapsed/SWORD_INTERVAL*total;
+    for(let frame=0;frame<durations.length;frame++) {
+      if(elapsed<durations[frame])return frame;
+      elapsed-=durations[frame];
+    }
+    return durations.length-1;
+  }
+  pose(vy: number) {
+    if(this.attack)return {kind:this.attack.kind,frame:this.attackFrame(),face:this.attack.face};
+    if(this.clips.jump&&(this.airborne||this.landingTime>0)) {
+      const frame=!this.airborne?5:this.jumpElapsed<.06?0:vy<-250?1:vy<-80?2:vy<=80?3:4;
+      return {kind:'jump' as const,frame,face:null};
+    }
+    return null;
+  }
+  render(image: Phaser.GameObjects.Image, x: number, y: number, face: number, vy: number, crouch: boolean) {
+    const pose=this.pose(vy);if(!pose)return false;
+    const clip=this.clips[pose.kind]!,dir=pose.face??face;
+    const anchor=clip.anchor/clip.meta.frameWidth;
+    image.setTexture(clip.key,`pose-${pose.frame}`).setOrigin(dir<0?1-anchor:anchor,clip.feet[pose.frame]/clip.meta.frameHeight)
+      .setPosition(x,y).setFlipX(dir<0).setScale(clip.scale*(crouch?.65:1)).setAngle(0).setVisible(true);
+    image.setData('heroAction',pose.kind).setData('heroFrame',pose.frame);
+    return true;
+  }
+  renderBeam(x: number, y: number, crouch: boolean) {
+    this.beam.setVisible(false);
+    if(this.attack?.kind!=='reach')return;
+    const frame=this.attackFrame(),box=this.effects.get(frame);
+    if(!box)return;
+    const clip=this.clips.reach!,scale=clip.scale*(crouch?.65:1),dir=this.attack.face;
+    const start=Math.max(0,(box.left-clip.anchor)*scale),width=this.attack.range-start;
+    // The far edge uses the very same range snapshot as the hit test. Flip
+    // around the near edge for left-facing strikes; keep the body scale fixed.
+    this.beam.setTexture(`hero-energy-${frame}`,'energy').setOrigin(dir<0?1:0,0).setFlipX(dir<0)
+      .setPosition(x+dir*start,y+(box.top-clip.feet[frame])*scale)
+      .setDisplaySize(width,(box.bottom-box.top)*scale).setVisible(true);
+    this.beam.setData('reach',this.attack.range).setData('farX',x+dir*this.attack.range);
+  }
+}

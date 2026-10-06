@@ -1,0 +1,9 @@
+{
+  "repairedFrame": 1,
+  "repair": "remove supernumerary arm crossing over head; one-handed sword hold",
+  "otherFramesUnchanged": true,
+  "dimensions": [
+    256,
+    320
+  ]
+}

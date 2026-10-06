@@ -1,0 +1,27 @@
+{
+  "image": "Elowen-sword-thrust-spritesheet.png",
+  "frameWidth": 320,
+  "frameHeight": 320,
+  "frameCount": 6,
+  "columns": 6,
+  "durationsMs": [
+    140,
+    110,
+    70,
+    110,
+    100,
+    180
+  ],
+  "playOnceInGame": true,
+  "phases": [
+    "ready",
+    "draw back",
+    "drive forward",
+    "full extension",
+    "retract",
+    "recovery"
+  ],
+  "rearFootAnchorX": 72,
+  "groundY": 308,
+  "direction": "right"
+}

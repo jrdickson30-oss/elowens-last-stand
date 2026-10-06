@@ -1,0 +1,30 @@
+{
+  "image": "Elowen-sword-attack-spritesheet.png",
+  "frameWidth": 256,
+  "frameHeight": 320,
+  "frameCount": 6,
+  "columns": 6,
+  "durationsMs": [
+    120,
+    120,
+    70,
+    70,
+    120,
+    200
+  ],
+  "loopInPreview": true,
+  "playOnceInGame": true,
+  "phases": [
+    "windup",
+    "raised sword",
+    "downstroke",
+    "impact",
+    "follow through",
+    "recovery"
+  ],
+  "anchor": {
+    "x": 128,
+    "groundY": 308
+  },
+  "direction": "right"
+}

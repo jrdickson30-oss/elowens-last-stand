@@ -1,0 +1,63 @@
+{
+  "sourceBounds": [
+    [
+      22,
+      204,
+      305,
+      523
+    ],
+    [
+      355,
+      214,
+      629,
+      523
+    ],
+    [
+      680,
+      222,
+      1061,
+      523
+    ],
+    [
+      1041,
+      229,
+      1502,
+      523
+    ],
+    [
+      1493,
+      214,
+      1801,
+      523
+    ],
+    [
+      1838,
+      204,
+      2136,
+      523
+    ]
+  ],
+  "sharedScale": 0.5464220431927425,
+  "chromaReport": {
+    "algorithm": "edge-local-chroma-spill-suppression",
+    "strength": 1,
+    "edge_radius": 5,
+    "spill_tolerance": 0.25,
+    "minimum_saturation": 0.1,
+    "changed_pixels": 3709,
+    "decontaminated_pixels": 0,
+    "spill_suppressed_pixels": 3709,
+    "rejected_pixels": 0,
+    "changed_by_cell": {
+      "r0c3": 735,
+      "r0c4": 654,
+      "r0c2": 640,
+      "r0c1": 603,
+      "r0c0": 542,
+      "r0c5": 535
+    },
+    "alpha_preserved": true
+  },
+  "residualGreenPixelsCorrected": 66,
+  "frames": 6
+}

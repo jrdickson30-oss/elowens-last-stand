@@ -1,0 +1,20 @@
+{
+  "method": "replace remaining red/pink spill within a hair-only mask with nearby existing golden hair pixels",
+  "pixelsPerFrame": [
+    745,
+    716,
+    745,
+    789,
+    699,
+    717
+  ],
+  "alphaPreserved": true,
+  "redSpillPixelsPerFrame": [
+    241,
+    230,
+    265,
+    237,
+    186,
+    277
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "image": "Elowen-strike-through-spritesheet.png",
+  "frameWidth": 384,
+  "frameHeight": 320,
+  "frameCount": 6,
+  "columns": 6,
+  "rows": 1,
+  "durationsMs": [
+    120,
+    120,
+    70,
+    100,
+    130,
+    200
+  ],
+  "baseAnimation": "corrected standard sword slash",
+  "effectFrames": [
+    3,
+    4
+  ],
+  "effectIncludedInFrames": true,
+  "separateEffectPngs": "effects/",
+  "playOnceInGame": true,
+  "groundY": 308
+}

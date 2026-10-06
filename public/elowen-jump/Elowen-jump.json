@@ -1,0 +1,26 @@
+{
+  "image": "Elowen-jump-spritesheet.png",
+  "frameWidth": 192,
+  "frameHeight": 288,
+  "frameCount": 6,
+  "columns": 6,
+  "durationsMs": [
+    120,
+    100,
+    100,
+    160,
+    100,
+    180
+  ],
+  "direction": "right",
+  "phases": [
+    "crouch",
+    "launch",
+    "rise",
+    "apex",
+    "fall",
+    "landing"
+  ],
+  "bakedVerticalMotion": true,
+  "note": "Preview includes vertical displacement; game physics must account for it to avoid double-moving the sprite."
+}
