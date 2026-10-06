@@ -75,7 +75,7 @@ export function buildEnvironment(scene: Phaser.Scene, level: number) {
   g.fillGradientStyle(0x081519, 0x081519, 0x081519, 0x081519, 0, 0, .8, .8);g.fillRect(0, 630, W, 90);
   g.fillStyle(0x817d58);g.fillRect(351, G - 100, 8, 100);g.fillStyle(0xae5942);g.fillTriangle(359, G - 98, 401, G - 87, 359, G - 64);
   // Bake static geometry once, preserving WebGL gradients and transparency.
-  const scenery = scene.add.renderTexture(0, 0, W, H);
+  const scenery = scene.add.renderTexture(0, 0, W, H).setOrigin(0, 0);
   scenery.draw(g);
   g.destroy();
   root.add(scenery);

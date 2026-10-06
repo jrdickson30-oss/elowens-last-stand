@@ -28,6 +28,7 @@ for(const [index,expected] of levels.entries()){
  assert.equal(await page.evaluate(()=>window.elowen.wave),1,'each level starts on wave one');
  const environment=expected[0]<=2?'town':expected[0]<=5?'grasslands':expected[0]<=8?'road':'bridge';
  assert.equal(await page.evaluate(()=>window.elowen.scenery.getData('environment')),environment,'campaign environment matches level');
+ assert(await page.evaluate(()=>{const scenery=window.elowen.scenery.list.find(o=>o.type==='RenderTexture');const bounds=scenery.getBounds();return bounds.x===0&&bounds.y===0&&bounds.width===1280&&bounds.height===720}),'scenery covers the full playfield without clipping');
  assert(!/PB|AR|Proficiency|dice/.test(await page.evaluate(()=>window.elowen.data.get('statusText').text)),'HUD contains no rules statistics');
  await page.evaluate(()=>{const s=window.elowen;s.survivors=[];s.timer=999;s.spawned=0;s.enemies=[{x:s.x+60,hp:1000,max:1000,next:999,speed:0,kind:0}];s.attackCd=0;s.hp=s.maxHp;});
  await page.keyboard.down('J');await page.waitForFunction(()=>window.elowen.enemies[0].hp<1000);await page.keyboard.up('J');
