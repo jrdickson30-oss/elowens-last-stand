@@ -1,11 +1,14 @@
 import Phaser from 'phaser';
 import { chapterForLevel } from './campaign';
+import { addAnimatedArt } from './ambience';
 
 const W = 1280, H = 720, G = 422;
 
 // Functional scenery for the campaign; combat always uses the same ground.
 export function buildEnvironment(scene: Phaser.Scene, level: number) {
   const chapter = chapterForLevel(level);
+  const animated=addAnimatedArt(scene,level,chapter.environment,chapter.escape);
+  if(animated)return animated;
   const root = scene.add.container(0, 0).setDepth(0).setData('environment', chapter.environment);
   const g = scene.add.graphics();
   root.add(g);
