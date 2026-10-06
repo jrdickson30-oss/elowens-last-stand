@@ -46,6 +46,12 @@ await fixture([]);await page.keyboard.press('E');const after=await page.evaluate
 await page.evaluate(()=>{window.elowen.energy=0;window.elowen.spellCooldowns={};});await page.keyboard.press('4');assert(await page.evaluate(()=>window.elowen.energy<2),'insufficient Chaos blocks cast');
 await fixture([]);await page.getByRole('button',{name:/Wall of Vines, key 5/}).click();assert(await page.evaluate(()=>!!window.elowen.wall),'clickable spell controls');
 await page.screenshot({path:'/tmp/elowen-game.png'});
-await page.evaluate(()=>{const s=window.elowen;s.wave=8;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.getByRole('button',{name:'STAND AGAIN'}).click();assert(await page.evaluate(()=>window.elowen.wave===1),'victory restart');
+await page.evaluate(()=>{const s=window.elowen;s.wave=8;s.enemies=[];s.survivors=[];s.spawned=s.total;});
+await page.waitForFunction(()=>window.elowen.phase==='upgrade');assert.equal(await page.getByRole('button',{name:'STAND AGAIN'}).count(),0,'wave eight no longer ends the run');
+await page.locator('[data-up="bash"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.wave===9&&window.elowen.total===32),'ninth wave starts after an upgrade');
+await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.waitForFunction(()=>window.elowen.phase==='upgrade');
+await page.locator('[data-up="bash"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.wave===10&&window.elowen.total===35),'tenth wave starts after the ninth upgrade opportunity');
+await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.waitForFunction(()=>window.elowen.phase==='win');
+await page.getByRole('button',{name:'STAND AGAIN'}).click();assert(await page.evaluate(()=>window.elowen.wave===1),'victory after wave ten and restart');
 await page.evaluate(()=>window.elowen.hp=0);await page.getByRole('button',{name:'TRY AGAIN'}).click();assert(await page.evaluate(()=>window.elowen.hp===100),'defeat restart');assert(await page.evaluate(()=>!window.elowen.wall&&window.elowen.wardTime===0&&!window.elowen.upgrades.length),'restart clears spell state');
 assert.deepEqual(errors,[]);console.log('PASS: movement, jump, sword, shield, Ember Strike, survivor escape, pause, upgrades, all six spell bindings and effects, unlock gates, cooldowns, Shield Bash, victory, defeat, restart; no browser errors.');await browser.close();

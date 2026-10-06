@@ -1,6 +1,6 @@
 # Elowen’s Last Stand
 
-A side-on browser defence prototype built with TypeScript, Phaser, and Vite. Elowen holds Greyfall’s bridge through eight increasingly difficult waves while survivors escape.
+A side-on browser defence prototype built with TypeScript, Phaser, and Vite. Elowen holds Greyfall’s bridge through ten increasingly difficult waves while survivors escape.
 
 ## Run
 
@@ -15,9 +15,9 @@ npm run dev
 
 A/D: move. Space: jump. S: crouch. J: sword. L: hold shield. E: Ember Strike. 1: Ice Lance. 2: Warrior’s Shield. 3: Hunter’s Volley. 4: Stoneshard Barrage. 5: Wall of Vines. U/I/O/K: Champion abilities after unlocking. K can hold Shield Bash, Sentinel Initiate, or a fourth general active ability. Escape: pause. Touch controls are available on narrow screens. Sound is optional and enabled by the header button.
 
-Sword attacks hit enemies in front of Elowen. Blocking frontal strikes consumes stamina; Ember Strike consumes regenerating Chaos Energy. Zombies reaching the bridge cause health loss. Each wave evacuates five survivors. Between rounds select one of three upgrades. Clear the eighth wave to win; health reaching zero ends the run.
+Sword attacks hit enemies in front of Elowen. Blocking frontal strikes consumes stamina; Ember Strike consumes regenerating Chaos Energy. Zombies reaching the bridge cause health loss. Each wave evacuates five survivors. Between rounds choose one spell, Champion ability, or rank upgrade. Clear the tenth wave to win; health reaching zero ends the run.
 
-All six spells are separate casts with Chaos costs and individual cooldowns, shown on the clickable spell bar. Ember Strike starts unlocked. After each of the first seven waves, choose one new spell, Champion ability, or rank upgrade. All choices are permanent for that run.
+All six spells are separate casts with Chaos costs and individual cooldowns, shown on the clickable spell bar. Ember Strike starts unlocked. After each of the first nine waves, choose one new spell, Champion ability, or rank upgrade. All choices are permanent for that run.
 
 General Champion abilities fill U, I, O, then K. If K is empty, it can instead hold Shield Bash or Sentinel Initiate; those two choices exclude each other. Once K is committed, it cannot be replaced. Skipping both shield talents leaves K available for a fourth general active, so no button is wasted. Protector is passive and does not consume a button. Owned Champion abilities can be upgraded to rank three without changing their identity or assigned key. There are no loadout swaps between waves.
 
