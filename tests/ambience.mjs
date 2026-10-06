@@ -36,10 +36,13 @@ try {
  }
  await level(1,'town-art');
  let a=await snapshot(0),b=await snapshot(3);
+ assert(await page.evaluate(()=>window.elowen.scenery.getData('ambient').layers.ripples.length===0),'town cobblestones have no water overlays');
+ assert.equal(await changed(a,b,[420,500,360,140],0),0,'town square foreground remains still');
  assert(await changed(a,b,[1100,130,80,80])>.05,'rooftop fire flickers');
  assert(await changed(a,b,[1120,70,60,100])>.01,'smoke rises above burning roofs');
  assert.equal(await changed(a,b,[80,260,60,90]),0,'refuge gate remains rigid');
  await level(2,'burning-town-art');
+ assert(await page.evaluate(()=>window.elowen.scenery.getData('ambient').layers.ripples.length===0),'burning town cobblestones have no water overlays');
  assert(await page.evaluate(()=>window.elowen.scenery.getData('ambient').config.fires.filter(f=>f.smoke).length>=8),'burning-town variant has additional smoke plumes');
  a=await snapshot(0);b=await snapshot(3);
  assert(await changed(a,b,[450,220,200,110])>.02,'additional town fires animate');

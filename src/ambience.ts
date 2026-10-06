@@ -2,14 +2,14 @@ import Phaser from 'phaser';
 
 const W = 1280, H = 720, G = 422;
 type Fire = { x: number; y: number; size: number; smoke: boolean };
-type SceneArt = { key: string; file: string; kind: number; ground: number; fires: Fire[] };
+type SceneArt = { key: string; file: string; kind: number; ground: number; fires: Fire[]; revision?: string };
 const brazier = (x: number, y: number): Fire => ({ x, y, size: 5, smoke: false });
 const roof = (x: number, y: number, size = 12): Fire => ({ x, y, size, smoke: true });
 
 export const SCENE_ART: SceneArt[] = [
-  { key: 'town-art', file: 'level-01-greyfall-town.png', kind: 0, ground: 516,
+  { key: 'town-art', file: 'level-01-greyfall-town.png', kind: 0, ground: 516, revision: 'market-square-1',
     fires: [brazier(.046,.439),brazier(.254,.443),brazier(.645,.443),brazier(.94,.455),roof(.535,.311,8),roof(.797,.278),roof(.911,.218)] },
-  { key: 'burning-town-art', file: 'level-02-greyfall-town-burning.png', kind: 1, ground: 516,
+  { key: 'burning-town-art', file: 'level-02-greyfall-town-burning.png', kind: 1, ground: 516, revision: 'market-square-1',
     fires: [brazier(.046,.439),brazier(.254,.443),brazier(.645,.443),brazier(.94,.455),roof(.297,.352),roof(.411,.356),roof(.503,.318),roof(.581,.344),roof(.774,.285),roof(.871,.245),roof(.927,.206),roof(.684,.083,8)] },
   { key: 'grasslands-art', file: 'levels-03-05-grasslands.png', kind: 2, ground: 522, fires: [] },
   { key: 'river-road-art', file: 'levels-06-08-river-road.png', kind: 3, ground: 524, fires: [] },
@@ -133,8 +133,6 @@ class LandscapeLayers {
       for(let i=0;i<5;i++)ripple(360+i*85,363+(i%2)*14,18,i*2.1,5,i<2);
     } else if(config.kind===3) {
       for(let i=0;i<10;i++)ripple(25+(i*37)%210,652+(i*13)%44,28,i*1.3,8,i%3===0);
-    } else if(config.kind<2) {
-      for(let i=0;i<12;i++)ripple(70+i*98,696+(i%2)*7,28,i*.91,4,i%4===0);
     }
     const bough=(x:number,y:number,width:number,phase:number,swing:number,flip=false)=>{
       if(!scene.textures.exists('wind-bough'))return;
