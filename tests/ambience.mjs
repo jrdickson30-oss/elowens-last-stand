@@ -26,13 +26,13 @@ try {
    return new Promise(resolve=>s.game.renderer.snapshotArea(0,0,1280,720,im=>resolve(im.src),'image/png'));
   },{time,broken});
  }
- async function changed(a,b,rect) {
-  return page.evaluate(async ({a,b,rect})=>{
+ async function changed(a,b,rect,threshold=8) {
+  return page.evaluate(async ({a,b,rect,threshold})=>{
    async function pixels(src){const im=new Image();im.src=src;await im.decode();const c=document.createElement('canvas');c.width=1280;c.height=720;const ctx=c.getContext('2d');ctx.drawImage(im,0,0);return ctx.getImageData(...rect).data}
    const first=await pixels(a),second=await pixels(b);let count=0;
-   for(let i=0;i<first.length;i+=4)if(Math.abs(first[i]-second[i])+Math.abs(first[i+1]-second[i+1])+Math.abs(first[i+2]-second[i+2])>8)count++;
+   for(let i=0;i<first.length;i+=4)if(Math.abs(first[i]-second[i])+Math.abs(first[i+1]-second[i+1])+Math.abs(first[i+2]-second[i+2])>threshold)count++;
    return count/(first.length/4);
-  },{a,b,rect});
+  },{a,b,rect,threshold});
  }
  await level(1,'town-art');
  let a=await snapshot(0),b=await snapshot(3);
@@ -48,18 +48,31 @@ try {
  assert(await changed(a,b,[270,365,600,48])>.005,'grass moves in the wind');
  await level(6,'river-road-art');
  a=await snapshot(0);b=await snapshot(3);
- assert(await changed(a,b,[950,150,230,200])>.005,'tree foliage sways');
+ assert(await changed(a,b,[950,150,230,200])>.03,'independent tree branches visibly sway');
+ assert.equal(await changed(a,b,[1075,345,45,35]),0,'lower tree trunk and stone wall remain fixed');
+ const branches=await page.evaluate(()=>window.elowen.scenery.getData('ambient').layers.boughs.map(b=>({x:b.sprite.x,y:b.sprite.y,rotation:b.sprite.rotation})));
+ await snapshot(5);
+ assert(await page.evaluate(branches=>window.elowen.scenery.getData('ambient').layers.boughs.every((b,i)=>b.sprite.x===branches[i].x&&b.sprite.y===branches[i].y&&b.sprite.rotation!==branches[i].rotation),branches),'branches rotate around fixed attachments');
  const textureCount=await page.evaluate(()=>Object.keys(window.elowen.textures.list).length);
  await level(9,'bridge-art');
  a=await snapshot(0);b=await snapshot(3);
- assert(await changed(a,b,[120,570,1040,130])>.4,'foreground river flows and ripples');
- assert(await changed(a,b,[350,580,230,120])>.4,'sunlight reflection moves with the water');
+ const waterMotion=await changed(a,b,[120,570,1040,130],0);
+ assert(waterMotion>.001&&waterMotion<.06,'sparse ripple overlays move while over 94% of river pixels stay identical');
+ const reflectionMotion=await changed(a,b,[350,580,230,120],0);
+ assert(reflectionMotion>.001&&reflectionMotion<.06,'small sunlight highlights move without warping the reflection');
+ const brightnessChange=await page.evaluate(async ({a,b})=>{
+  async function mean(src){const im=new Image();im.src=src;await im.decode();const c=document.createElement('canvas');c.width=1280;c.height=720;const ctx=c.getContext('2d');ctx.drawImage(im,0,0);const data=ctx.getImageData(120,570,1040,130).data;let sum=0;for(let i=0;i<data.length;i+=4)sum+=data[i]+data[i+1]+data[i+2];return sum/(data.length/4)/3}
+  return Math.abs(await mean(a)-await mean(b));
+ },{a,b});
+ assert(brightnessChange<.25,'overall water brightness remains steady');
+ const flow=await page.evaluate(()=>{const a=window.elowen.scenery.getData('ambient');a.time=4;a.update(0,false);const before=a.layers.ripples.map(r=>({y:r.sprite.y,wrap:(4+r.phase)%14>=13.5}));a.time=4.5;a.update(0,false);return a.layers.ripples.every((r,i)=>before[i].wrap||r.sprite.y>before[i].y&&r.sprite.y-before[i].y<1)});
+ assert(flow,'slow current moves toward the viewer at less than two pixels per second');
  assert.equal(await changed(a,b,[705,402,80,15]),0,'bridge parapet remains rigid');
  assert.equal(await changed(a,b,[800,420,70,24]),0,'stone deck remains rigid');
  b=await snapshot(15);
  assert(await changed(a,b,[300,30,650,115])>.1,'clouds drift');
  const destroyed=await snapshot(3,true);
- assert(await changed(await snapshot(3),destroyed,[355,430,230,160])>.7,'destroyed bridge reveals animated river');
+ assert(await changed(await snapshot(3),destroyed,[355,430,230,160])>.7,'destroyed bridge reveals river');
  // Rebuild repeatedly: temporary GPU textures must be released with their scenes.
  for(const value of [1,3,6,9])await level(value,value===1?'town-art':value===3?'grasslands-art':value===6?'river-road-art':'bridge-art');
  assert.equal(await page.evaluate(()=>Object.keys(window.elowen.textures.list).length),textureCount,'scene transitions do not leak textures');
@@ -71,5 +84,5 @@ try {
  await page.locator('#resume').click();
  await page.waitForFunction(time=>window.elowen.scenery.getData('ambient').time>time,paused);
  assert.deepEqual(errors,[]);
- console.log('PASS: all five artworks, fixed ground and masonry, cloud/grass/tree motion, flowing river and reflections, fire/smoke, animated destruction, pause/resume, scene cleanup; no browser errors.');
+ console.log('PASS: all five artworks, fixed ground and masonry, cloud/grass/tree motion, sparse river and reflection sprites, steady water brightness, fire/smoke, animated destruction, pause/resume, scene cleanup; no browser errors.');
 } finally {await browser.close()}

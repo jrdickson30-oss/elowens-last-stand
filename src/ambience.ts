@@ -21,7 +21,7 @@ export function artForLevel(level: number) {
 }
 
 // Animate the original artwork by material, rather than moving the whole camera.
-// UVs are measured from the image's top; flow goes towards increasing Y (the viewer).
+// Water stays untouched. Ripples and foliage are independent sprites below.
 const fragment = `
 precision highp float;
 uniform vec2 resolution;
@@ -41,45 +41,11 @@ float oval(vec2 p, vec2 center, vec2 radius) {
 vec4 art(vec2 p) {
   return texture2D(iChannel0,clamp(p,vec2(.0005),vec2(.9995)));
 }
-float water(vec2 p) {
-  float result=0.0;
-  if(uKind>3.5) {
-    // Foreground, three arch openings, and the upstream river are separate masks.
-    float bank=.730+.025*pow(abs(p.x-.5)*2.0,4.0);
-    result=smoothstep(bank,bank+.018,p.y);
-    float a=.640+.075*pow((p.x-.233)/.142,2.0);
-    float b=.639+.085*pow((p.x-.506)/.142,2.0);
-    float c=.656+.065*pow((p.x-.777)/.115,2.0);
-    result=max(result,band(p.x,.092,.371,.012)*smoothstep(a,a+.012,p.y));
-    result=max(result,band(p.x,.365,.647,.012)*smoothstep(b,b+.012,p.y));
-    result=max(result,band(p.x,.662,.891,.012)*smoothstep(c,c+.012,p.y));
-    float depth=clamp((p.y-.416)/.110,0.0,1.0);
-    float left=mix(.31,.135,depth),right=mix(.46,.84,depth);
-    result=max(result,band(p.y,.416,.531,.008)*band(p.x,left,right,.018));
-  } else if(uKind<1.5) {
-    result=smoothstep(.885+.018*sin(p.x*10.0),.915+.018*sin(p.x*10.0),p.y);
-  } else if(uKind>2.5) {
-    result=band(p.x,0.0,.32,.012)*smoothstep(.765+p.x*.65,.790+p.x*.65,p.y);
-    result=max(result,band(p.y,.388,.478,.012)*band(p.x,.285,.379,.02));
-  } else {
-    result=band(p.y,.285,.352,.016)*band(p.x,.650,.733,.015);
-  }
-  return clamp(result,0.0,1.0);
-}
 float sky(vec2 p) {
   if(uKind>3.5) return 1.0-smoothstep(.24,.29,p.y);
   if(uKind<1.5) return max(band(p.x,.275,.610,.025)*(1.0-smoothstep(.17,.23,p.y)),band(p.x,.61,.99,.025)*(1.0-smoothstep(.035,.08,p.y)));
   if(uKind>2.5) return band(p.x,.275,.640,.03)*(1.0-smoothstep(.14,.20,p.y));
   return 1.0-smoothstep(.095,.145,p.y);
-}
-float foliage(vec2 p, vec3 color) {
-  float green=smoothstep(.005,.065,color.g-max(color.r*.83,color.b*1.04));
-  float area=0.0;
-  if(uKind>3.5) area=band(p.y,.40,.515,.025);
-  else if(uKind>2.5) area=max(band(p.y,.045,.535,.025)*(1.0-band(p.x,.255,.59,.055)),band(p.y,.495,.550,.012));
-  else if(uKind>1.5) area=max(band(p.y,.435,.544,.014),band(p.y,.12,.535,.025)*(1.0-band(p.x,.09,.93,.02)));
-  else area=band(p.y,.555,.865,.03);
-  return green*area;
 }
 float fireArea(vec2 p) {
   if(uKind>1.5) return 0.0;
@@ -105,30 +71,8 @@ void main() {
   float cloud=sky(p);
   vec2 wind=vec2(sin(t*.035)*.012,sin(t*.11)*.00035);
   vec4 color=mix(original,art(p+wind*cloud),cloud);
-  float leaves=foliage(p,original.rgb);
-  if(leaves>.01) {
-    float gust=sin(t*1.1-p.x*8.0)+.35*sin(t*2.0-p.x*17.0+p.y*9.0);
-    float anchor=1.0-smoothstep(.47,.555,p.y);
-    vec2 sway=vec2(gust*(.0007+.0011*anchor),sin(t*1.5+p.x*20.0)*.00035)*leaves;
-    color=mix(color,art(p+sway),leaves);
-  }
-  float wet=water(p);
   bool broken=uBroken>.5&&screen.x>325.0/1280.0&&screen.x<640.0/1280.0&&screen.y>409.0/720.0;
-  if(broken){p.y=.75+(screen.y-409.0/720.0)*.52;wet=1.0;color=art(p);}
-  if(wet>.01) {
-    float near=smoothstep(.65,1.0,p.y);
-    vec2 ripple=vec2(sin(p.y*100.0-t*2.2+p.x*14.0)*(.0007+.0012*near),sin(p.x*125.0+p.y*70.0-t*1.7)*.0006);
-    // Two advected samples crossfade before wrapping: no jump at the flow loop.
-    float phase=fract(t*.08),phase2=fract(phase+.5);
-    vec2 current=vec2((p.x-.5)*.008,.012+.026*near);
-    vec2 a=p+ripple-current*phase, b=p+ripple-current*phase2;
-    float blend=abs(phase*2.0-1.0);
-    vec4 flowing=mix(art(a),art(b),blend);
-    float safe=broken?1.0:min(water(a),water(b));
-    float wave=sin(p.y*155.0-t*3.0+sin(p.x*42.0))*.035+sin(p.y*83.0+p.x*39.0-t*1.7)*.018;
-    flowing.rgb*=1.0+wave;
-    color=mix(color,flowing,wet*safe);
-  }
+  if(broken){p.y=.75+(screen.y-409.0/720.0)*.52;color=art(p);}
   float flame=fireArea(p)*smoothstep(.14,.30,original.r-original.b)*smoothstep(.25,.65,original.r);
   if(flame>.01) {
     float frame=floor(t*15.0)/15.0;
@@ -138,11 +82,98 @@ void main() {
     color=mix(color,burning,flame);
   }
   // Composite only moving materials over the full-detail, stationary artwork.
-  float motion=clamp(cloud+leaves+wet+flame,0.0,1.0);
+  float motion=clamp(cloud+flame,0.0,1.0);
   if(broken)motion=1.0;
   gl_FragColor=vec4(color.rgb*motion,motion);
 }
 `;
+
+type Ripple = { sprite: Phaser.GameObjects.Image; x: number; y: number; width: number; phase: number; travel: number; gold: boolean };
+type Bough = { sprite: Phaser.GameObjects.Image; x: number; y: number; phase: number; swing: number };
+
+// Reusable transparent sprites sit over a stationary clean river. Only a small
+// fraction of its pixels moves; there is no texture warping or brightness pulse.
+class LandscapeLayers {
+  ripples: Ripple[] = [];
+  boughs: Bough[] = [];
+  grass: Bough[] = [];
+  constructor(readonly root: Phaser.GameObjects.Container, readonly config: SceneArt) {
+    const scene=root.scene;
+    for(let frame=0;frame<4;frame++) {
+      const key=`river-ripple-${frame}`;
+      if(scene.textures.exists(key))continue;
+      const g=scene.make.graphics({x:0,y:0});
+      // Four restrained pixel shapes, with separated foam edges rather than
+      // a solid bright stripe. Frames advance once per second.
+      g.fillStyle(0xb4cbd0,.6);g.fillRect(8+frame,3,18,1);g.fillRect(35-frame,4,13,1);
+      g.fillStyle(0xe4ece5,.8);g.fillRect(3+frame,4,7,1);g.fillRect(27,2,5,1);g.fillRect(46-frame,5,10,1);
+      g.generateTexture(key,64,10);g.destroy();
+      scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
+    if(!scene.textures.exists('wind-grass')) {
+      const g=scene.make.graphics({x:0,y:0});
+      g.fillStyle(0x526040);g.fillRect(8,6,2,14);g.fillRect(5,9,2,7);g.fillRect(12,5,2,9);
+      g.fillStyle(0x9a9757);g.fillRect(8,2,1,8);g.fillRect(4,6,1,5);g.fillRect(14,1,1,8);
+      g.generateTexture('wind-grass',20,20);g.destroy();
+      scene.textures.get('wind-grass').setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
+    const ripple=(x:number,y:number,width:number,phase:number,travel=14,gold=false)=>{
+      const sprite=scene.add.image(x,y,'river-ripple-0').setDisplaySize(width,6).setAlpha(gold?.17:.13);
+      if(gold)sprite.setTint(0xffc778);
+      root.add(sprite);this.ripples.push({sprite,x,y,width,phase,travel,gold});
+    };
+    if(config.kind===4) {
+      for(let i=0;i<24;i++) {
+        const x=110+(i*173)%1060,y=564+(i*41)%123;
+        ripple(x,y,32+(i%4)*9,i*.83,16);
+      }
+      // Small highlights move with the same current, without pulsing the
+      // sunset reflection already painted into the background.
+      for(let i=0;i<9;i++)ripple(350+(i*47)%250,570+i*13,25+(i%3)*9,i*1.71,16,true);
+      for(let i=0;i<5;i++)ripple(360+i*85,363+(i%2)*14,18,i*2.1,5,i<2);
+    } else if(config.kind===3) {
+      for(let i=0;i<10;i++)ripple(25+(i*37)%210,652+(i*13)%44,28,i*1.3,8,i%3===0);
+    } else if(config.kind<2) {
+      for(let i=0;i<12;i++)ripple(70+i*98,696+(i%2)*7,28,i*.91,4,i%4===0);
+    }
+    const bough=(x:number,y:number,width:number,phase:number,swing:number,flip=false)=>{
+      if(!scene.textures.exists('wind-bough'))return;
+      const sprite=scene.add.image(x,y,'wind-bough').setOrigin(flip?.02:.98,.76).setFlipX(flip);
+      sprite.setDisplaySize(width,width*.5);root.add(sprite);
+      this.boughs.push({sprite,x,y,phase,swing});
+    };
+    if(config.kind===3) {
+      bough(1265,75,260,.3,.035);bough(1245,185,255,1.2,.028);bough(1225,280,225,2.4,.03);
+      bough(8,65,210,.8,.03,true);bough(5,220,120,2.2,.04,true);
+    } else if(config.kind===2) {
+      bough(4,212,100,.4,.035,true);bough(1276,248,135,1.3,.04);
+    }
+    // Stems pivot about their roots; the walking surface remains fixed.
+    if(config.kind>=2)for(let i=0;i<32;i++) {
+      const x=18+(i*89)%1240,y=config.kind===4?397:409;
+      // Keep grass on the bridge's banks, away from its masonry.
+      if(config.kind===4&&x>120&&x<1180)continue;
+      const sprite=scene.add.image(x,y,'wind-grass').setOrigin(.5,1).setAlpha(.7);
+      sprite.setScale(.55+(i%3)*.15);root.add(sprite);
+      this.grass.push({sprite,x,y,phase:i*.61,swing:.13});
+    }
+  }
+  update(time:number) {
+    for(const r of this.ripples) {
+      const cycle=((time+r.phase)%14)/14;
+      r.sprite.setPosition(r.x+(r.x-W/2)*cycle*.006,r.y+cycle*r.travel);
+      // Fade only the tiny overlay at its loop boundary; the river stays steady.
+      const envelope=Math.min(1,cycle*7,(1-cycle)*7);
+      r.sprite.setAlpha((r.gold?.17:.13)*envelope);
+      r.sprite.setTexture(`river-ripple-${Math.floor(time+r.phase)%4}`);
+      r.sprite.setDisplaySize(r.width,6);
+    }
+    for(const b of [...this.boughs,...this.grass]) {
+      const gust=Math.sin(time*.65+b.phase)+.18*Math.sin(time*1.1+b.phase*2);
+      b.sprite.setRotation(gust*b.swing);
+    }
+  }
+}
 
 class Ambience {
   time = 0;
@@ -150,6 +181,7 @@ class Ambience {
   broken = false;
   shader?: Phaser.GameObjects.Shader;
   smoke: Phaser.GameObjects.Graphics;
+  layers: LandscapeLayers;
   constructor(readonly root: Phaser.GameObjects.Container, readonly config: SceneArt) {
     const scene=root.scene, texture=scene.textures.get(config.key),source=texture.getSourceImage() as HTMLImageElement;
     const ground=config.ground/source.height;
@@ -173,13 +205,16 @@ class Ambience {
       scene.game.events.on(Phaser.Core.Events.POST_RENDER,hide);
       root.once(Phaser.GameObjects.Events.DESTROY,()=>scene.game.events.off(Phaser.Core.Events.POST_RENDER,hide));
     }
+    this.layers=new LandscapeLayers(root,config);
     this.smoke=scene.add.graphics();root.add(this.smoke);
     root.setData('artKey',config.key).setData('ambient',this);
+    this.layers.update(0);
     this.drawSmoke();
   }
   update(dt: number, broken: boolean) {
     this.time+=dt;
     this.frameBudget+=dt;
+    this.layers.update(this.time);
     // The slow ambient effects need 15 art frames per second, independently of combat.
     // Reuse the cached surface between frames, and do no shader work while paused.
     if(dt>0&&this.frameBudget<1/15&&broken===this.broken)return;
