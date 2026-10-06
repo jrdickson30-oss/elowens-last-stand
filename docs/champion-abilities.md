@@ -1,23 +1,37 @@
-# Elowen: Champion ability candidates
+# Elowen’s Champion build
 
-Source: the user-provided **Chaosbound – Core Rules**, Champion chapter, Class Features and Sentinel/Devastator/Templar subsections. The document defines the Champion paths but does not name Elowen or establish her personal lore classification. **Champion → Sentinel** is the strongest recommendation for a sword-and-shield guardian defending evacuees.
+Source: the user-provided **Chaosbound – Core Rules**, Champion class and Sentinel/Devastator subsections. The document does not name Elowen, so Sentinel remains a recommendation rather than a confirmed personal lore classification. The user explicitly requested the game adaptations below, including invulnerability, arrow support, cross-path abilities, and removing Strike Through’s weapon limitation.
 
-| Feature | Rules effect | Proposed game adaptation | Status |
-| --- | --- | --- | --- |
-| Shield Bash — Sentinel, level 3 | Quick-action shove: push a creature 5 ft or knock it prone. | K after unlocking: push nearby enemies in front and stagger them. Costs 25 stamina, three-second cooldown. The group shove/stagger is a real-time adaptation. | Implemented |
-| Protector — Sentinel, level 3 | While wielding a shield, impose disadvantage on an attack targeting a creature within 5 ft. | Passive protection for survivors close to Elowen; reduce an intercepted attack or shove the attacker away. | Candidate |
-| Sentinel Initiate — level 2 | Throw an off-hand weapon or shield within 15 ft for 1d4 bludgeoning; it returns. | Returning shield throw, with a brief period where the shield cannot block. | Candidate |
-| Ricochet — Sentinel, level 3 | The returning throw bounces to another creature within 5 ft of the first, dealing 1d4 bludgeoning. | Upgrade the shield throw to bounce between nearby zombies. Requires Sentinel Initiate. | Candidate |
-| Battle Focus — Champion, level 1 | +2 melee attack/damage, resistance to physical damage, parry attacks equal to AR. No spellcasting or maintaining concentration. One-minute duration with attack-related ending conditions; twice per long rest. | Toggle a temporary melee defence mode. While active, disable spell casts and end concentration effects. Preserve that tradeoff if implemented. | Candidate |
-| Rallying Cry — Champion, level 1 | Grant an ally a d6 morale bonus for one check, attack, or save; limited uses based on Wit. | Survivor support ability, such as a temporary evacuation boost. A speed boost would be an adaptation, not the printed effect. | Candidate |
-| Heavy Armour Training — Champion, level 1 | Ignore the strength requirement for heavy armour. | Baseline equipment proficiency; does not directly grant damage reduction in the printed rule. | Loadout consideration |
+## Permanent choices
 
-## Other Champion paths
+J remains the sword and L remains shield/block. Champion actions fill U, I, O, then K as selected. K may instead hold Shield Bash or Sentinel Initiate; selecting either excludes the other. If both shield talents are skipped, K remains available for a fourth general active. After a key is committed it cannot be reassigned for that run. Protector is passive and consumes no key. All of these are offered between waves alongside spell unlocks. There are seven upgrade rounds in the eight-wave prototype.
 
-**Devastator** focuses on powerful attacks and disruption. Devastator Initiate improves critical-hit chance and can stun on a subsequent die result. Fearsome Roar frightens nearby hostile creatures on a failed Wit save. Crippling Strike (level 4) rolls among four effects: immobilise, prevent actions/reactions, reduce AR, or add damage. These could support an offensive build, but they are separate path features.
+An owned Champion ability can be upgraded to rank two or three on its original button. No upgrade replaces it with a different ability. A new run clears selections and ranks.
 
-Strike Through explicitly requires a **two-handed or heavy weapon**, so it should not automatically become an ordinary one-handed sword cleave. Dance Battle changes turn order, which has no direct equivalent in this real-time game.
+## Implemented abilities
 
-**Templar** includes Break the Lines (an area shove/knockdown), Chaos Weapon (spend Chaos Energy to add magical elemental damage), and Command (give an ally an action). Chaos Weapon would fit a sword-and-spell build mechanically, but belongs to a different Champion path.
+| Ability | Core rules | Game adaptation, rank one |
+| --- | --- | --- |
+| Shield Bash — Sentinel | Quick-action shove: push a creature 5 ft or knock it prone. | K, mutually exclusive with Sentinel Initiate. Shove enemies in front 80 px and stagger for 1.2 seconds. 25 stamina, 3-second cooldown. |
+| Sentinel Initiate | Throw an off-hand weapon or shield within 15 ft for 1d4 bludgeoning; it returns. | K, mutually exclusive with Shield Bash. A returning shield hits enemies once each for 35 damage; 320 px range. Blocking is unavailable while airborne. 25 stamina, 5-second cooldown. |
+| Protector — Sentinel | While wielding a shield, impose disadvantage on attacks targeting a creature within 5 ft. | Passive: intercept a nearby survivor’s attacker while the shield is available, pushing the enemy away and briefly staggering it. 120 px radius and 0.8-second recovery. Does not grant unlimited immunity to survivors. |
+| Rallying Cry — Champion | Give an ally a d6 morale bonus for one check, attack, or save. | Call nine allied arrows from beyond the bridge into an area ahead, dealing 20 damage per impact. 30 stamina, 18-second cooldown. |
+| Battle Focus — Champion | +2 melee attack/damage, physical resistance and situational parry. Forbids spells and concentration. | Eight seconds of +75% sword damage and invulnerability. Blocks all spell casts and ends Warrior’s Shield; an existing physical vine wall remains. 20 stamina, 22-second cooldown. |
+| Crippling Strike — Devastator | A die chooses immobilisation, action denial, reduced AR, or extra damage. | Prime the next sword hit for +50% damage and immobilise struck targets for three seconds. Priming lasts eight seconds; consumes on a landed attack. 20 stamina, 8-second cooldown. |
+| Strike Through — Devastator | Distribute melee damage among targets; requires a two-handed or heavy weapon. | Double sword reach for eight seconds, including Elowen’s one-handed sword. 20 stamina, 14-second cooldown. |
 
-Recommended next Sentinel features: Protector, then Sentinel Initiate and its Ricochet upgrade. Battle Focus should be added only with the printed spellcasting restriction represented visibly.
+## Rank upgrades
+
+Each rank after the first grants:
+
+- Shield Bash: +20 px shove and +0.3 seconds stagger.
+- Sentinel Initiate: +10 damage and +60 px throw range.
+- Protector: +30 px protection radius; recovery becomes 0.8 / rank seconds.
+- Rallying Cry: +3 arrows and +5 damage per arrow.
+- Battle Focus: +2 seconds duration and +25 percentage points sword damage.
+- Crippling Strike: +1 second immobilisation and +25 percentage points next-hit damage.
+- Strike Through: +3 seconds duration, retaining exactly double reach.
+
+## Other rules considerations
+
+Ricochet is a printed Sentinel upgrade for the returning throw; it is not implemented in this build. Heavy Armour Training ignores heavy-armour strength requirements and does not itself grant damage reduction. Fearsome Roar and Dance Battle remain outside the selected game ability list.

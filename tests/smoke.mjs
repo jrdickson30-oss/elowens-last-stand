@@ -20,8 +20,8 @@ await page.keyboard.press('1');await page.keyboard.press('K');
 assert(await page.evaluate(()=>window.elowen.energy===100&&window.elowen.stamina===100),'locked actions');
 await page.evaluate(()=>{const s=window.elowen;s.survivors=[{x:76,t:0}];});await page.waitForTimeout(100);assert(await page.evaluate(()=>window.elowen.rescued>0),'survivor escape');
 await page.keyboard.press('Escape');assert(await page.getByText('Paused',{exact:true}).isVisible());await page.getByRole('button',{name:'RESUME'}).click();
-await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.locator('[data-up="bash"]').click();assert(await page.evaluate(()=>window.elowen.wave===2&&window.elowen.upgrades.includes('bash')),'wave upgrade');
-await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.locator('[data-up="volley"]').click();assert(await page.evaluate(()=>window.elowen.wave===3),'third wave');
+await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.locator('[data-up="bash"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.wave===2&&window.elowen.upgrades.includes('bash')),'wave upgrade');
+await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.locator('[data-up="volley"]').click();await page.locator('#next-wave').click();assert(await page.evaluate(()=>window.elowen.wave===3),'third wave');
 // Actual upgrade unlocks the reserved K ability.
 await page.evaluate(()=>{const s=window.elowen;s.enemies=[{x:s.x+65,hp:100,max:100,next:10,speed:0,kind:0}];s.timer=999;s.stamina=100;});
 await page.keyboard.press('K');await page.waitForTimeout(80);
@@ -46,6 +46,6 @@ await fixture([]);await page.keyboard.press('E');const after=await page.evaluate
 await page.evaluate(()=>{window.elowen.energy=0;window.elowen.spellCooldowns={};});await page.keyboard.press('4');assert(await page.evaluate(()=>window.elowen.energy<2),'insufficient Chaos blocks cast');
 await fixture([]);await page.getByRole('button',{name:/Wall of Vines, key 5/}).click();assert(await page.evaluate(()=>!!window.elowen.wall),'clickable spell controls');
 await page.screenshot({path:'/tmp/elowen-game.png'});
-await page.evaluate(()=>{const s=window.elowen;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.getByRole('button',{name:'STAND AGAIN'}).click();assert(await page.evaluate(()=>window.elowen.wave===1),'victory restart');
+await page.evaluate(()=>{const s=window.elowen;s.wave=8;s.enemies=[];s.survivors=[];s.spawned=s.total;});await page.getByRole('button',{name:'STAND AGAIN'}).click();assert(await page.evaluate(()=>window.elowen.wave===1),'victory restart');
 await page.evaluate(()=>window.elowen.hp=0);await page.getByRole('button',{name:'TRY AGAIN'}).click();assert(await page.evaluate(()=>window.elowen.hp===100),'defeat restart');assert(await page.evaluate(()=>!window.elowen.wall&&window.elowen.wardTime===0&&!window.elowen.upgrades.length),'restart clears spell state');
 assert.deepEqual(errors,[]);console.log('PASS: movement, jump, sword, shield, Ember Strike, survivor escape, pause, upgrades, all six spell bindings and effects, unlock gates, cooldowns, Shield Bash, victory, defeat, restart; no browser errors.');await browser.close();
