@@ -2,11 +2,12 @@ import Phaser from 'phaser';
 
 export const SWORD_RANGE = 115;
 export const SWORD_INTERVAL = .42;
-type Action = 'slash' | 'thrust' | 'reach' | 'jump';
+type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block';
 type Metadata = {
   frameWidth: number; frameHeight: number; frameCount: number; columns: number;
   durationsMs: number[]; groundY?: number; anchor?: {x: number; groundY: number};
   rearFootAnchorX?: number;
+  footAnchors?: number[];
 };
 type Clip = {key: string; meta: Metadata; scale: number; anchor: number; feet: number[]};
 type Bounds = {left: number; top: number; right: number; bottom: number};
@@ -15,6 +16,7 @@ const assets: Record<Action, {file: string; bodyHeight: number}> = {
   thrust: {file: 'sword-thrust', bodyHeight: 174},
   reach: {file: 'strike-through', bodyHeight: 191},
   jump: {file: 'jump', bodyHeight: 188},
+  block: {file: 'block', bodyHeight: 432},
 };
 
 export function preloadHeroActions(scene: Phaser.Scene) {
@@ -45,7 +47,10 @@ function bounds(data: Uint8ClampedArray, width: number, x: number, y: number, w:
 export class HeroAnimator {
   clips: Partial<Record<Action,Clip>> = {};
   nextAttack: 'slash'|'thrust' = 'slash';
-  attack: {kind: Exclude<Action,'jump'>; elapsed: number; range: number; face: number; fresh?: boolean}|null = null;
+  attack: {kind: Exclude<Action,'jump'|'block'>; elapsed: number; range: number; face: number; fresh?: boolean}|null = null;
+  blocking=false;
+  blockElapsed=0;
+  blockImpact: number|null=null;
   airborne=false;
   jumpElapsed=0;
   landingTime=0;
@@ -62,7 +67,7 @@ export class HeroAnimator {
         texture.add(`pose-${frame}`,0,column*meta.frameWidth,row*meta.frameHeight,meta.frameWidth,meta.frameHeight);
         // Jump poses include vertical displacement in the sheet. Anchor each
         // pose's feet to the physics position instead of applying it twice.
-        feet.push(id==='jump'?bounds(source.data,source.width,column*meta.frameWidth,row*meta.frameHeight,meta.frameWidth,meta.frameHeight,0).bottom:meta.anchor?.groundY??meta.groundY??meta.frameHeight);
+        feet.push(meta.footAnchors?.[frame]??(id==='jump'?bounds(source.data,source.width,column*meta.frameWidth,row*meta.frameHeight,meta.frameWidth,meta.frameHeight,0).bottom:meta.anchor?.groundY??meta.groundY??meta.frameHeight));
       }
       texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
       const anchor=meta.anchor?.x??(meta.rearFootAnchorX!==undefined?meta.rearFootAnchorX+48:meta.frameWidth/2);
@@ -84,6 +89,7 @@ export class HeroAnimator {
     this.beam=scene.add.image(0,0,'hero-energy-3').setDepth(1.5).setVisible(false);
   }
   reset() {
+    this.blocking=false;this.blockElapsed=0;this.blockImpact=null;
     this.attack=null;this.nextAttack='slash';this.airborne=false;this.jumpElapsed=this.landingTime=0;this.beam.setVisible(false);
   }
   startAttack(range: number, face: number, extended: boolean) {
@@ -92,8 +98,17 @@ export class HeroAnimator {
     this.attack=this.clips[kind]?{kind,elapsed:0,range,face,fresh:true}:null;
   }
   startJump() {this.airborne=true;this.jumpElapsed=0;this.landingTime=0;}
+  blockedHit() {if(this.clips.block)this.blockImpact=0;}
   tick(dt: number, y: number, ground: number, blocking: boolean, playing: boolean) {
-    if(!playing){this.attack=null;this.airborne=false;this.landingTime=0;return}
+    if(!playing){this.reset();return}
+    if(blocking) {
+      this.blockElapsed=this.blocking?this.blockElapsed+dt:0;
+      if(this.blockImpact!==null) {
+        this.blockImpact+=dt;
+        if(this.blockImpact>=.18)this.blockImpact=null;
+      }
+    } else {this.blockElapsed=0;this.blockImpact=null;}
+    this.blocking=blocking;
     if(this.attack) {
       if(this.attack.fresh)this.attack.fresh=false;
       else this.attack.elapsed+=dt;
@@ -120,6 +135,10 @@ export class HeroAnimator {
     return durations.length-1;
   }
   pose(vy: number) {
+    if(this.blocking&&this.clips.block) {
+      const frame=this.blockImpact!==null?(this.blockImpact<.08?3:4):this.blockElapsed<.09?0:this.blockElapsed<.18?1:this.blockElapsed<.36?2:5;
+      return {kind:'block' as const,frame,face:null};
+    }
     if(this.attack)return {kind:this.attack.kind,frame:this.attackFrame(),face:this.attack.face};
     if(this.clips.jump&&(this.airborne||this.landingTime>0)) {
       const frame=!this.airborne?5:this.jumpElapsed<.06?0:vy<-250?1:vy<-80?2:vy<=80?3:4;
