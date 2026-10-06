@@ -57,3 +57,5 @@ Elowen’s idle animation uses the supplied six-frame sheet in `public/elowen-id
 ## Browser hosting
 
 The GitHub Pages workflow builds and deploys the game when main is updated. Before the first deployment, choose GitHub Actions as the source under repository Settings → Pages. The game uses relative asset paths so it works beneath the repository URL. The game is published at https://jrdickson30-oss.github.io/elowens-last-stand/.
+
+Startup shows artwork-loading progress. Startup exceptions show the error with reload and basic graphics options. Add `?renderer=canvas` to force the Canvas renderer when GPU initialization fails; gameplay and supplied hero animations still work, with the Canvas scenery effects described above. If an older page stays blank after a deployment, try Ctrl + Shift + R.
