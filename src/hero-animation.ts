@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 export const SWORD_RANGE = 115;
 export const SWORD_INTERVAL = .42;
-type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block' | 'walk' | 'guardWalk';
+type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block' | 'walk' | 'guardWalk' | 'crouch';
 type Metadata = {
   frameWidth: number; frameHeight: number; frameCount: number; columns: number;
   durationsMs: number[]; groundY?: number; anchor?: {x: number; groundY: number};
@@ -20,6 +20,7 @@ const assets: Record<Action, {file: string; bodyHeight: number}> = {
   block: {file: 'block', bodyHeight: 432},
   walk: {file: 'walk', bodyHeight: 454},
   guardWalk: {file: 'guard-walk', bodyHeight: 438},
+  crouch: {file: 'crouch', bodyHeight: 410},
 };
 
 export function preloadHeroActions(scene: Phaser.Scene) {
@@ -53,6 +54,7 @@ export class HeroAnimator {
   attack: {kind: 'slash'|'thrust'|'reach'; elapsed: number; range: number; face: number; fresh?: boolean}|null = null;
   moving=false;
   walkElapsed=0;
+  crouchProgress=0;
   blocking=false;
   blockElapsed=0;
   blockImpact: number|null=null;
@@ -94,6 +96,7 @@ export class HeroAnimator {
     this.beam=scene.add.image(0,0,'hero-energy-3').setDepth(1.5).setVisible(false);
   }
   reset() {
+    this.crouchProgress=0;
     this.moving=false;this.walkElapsed=0;
     this.blocking=false;this.blockElapsed=0;this.blockImpact=null;
     this.attack=null;this.nextAttack='slash';this.airborne=false;this.jumpElapsed=this.landingTime=0;this.beam.setVisible(false);
@@ -105,8 +108,9 @@ export class HeroAnimator {
   }
   startJump() {this.airborne=true;this.jumpElapsed=0;this.landingTime=0;}
   blockedHit() {if(this.clips.block)this.blockImpact=0;}
-  tick(dt: number, y: number, ground: number, blocking: boolean, playing: boolean, moving=false) {
+  tick(dt: number, y: number, ground: number, blocking: boolean, playing: boolean, moving=false, crouching=false) {
     if(!playing){this.reset();return}
+    this.crouchProgress=y<ground?0:Phaser.Math.Clamp(this.crouchProgress+(crouching?dt:-dt),0,.4);
     this.moving=moving&&y>=ground;
     this.walkElapsed=this.moving?this.walkElapsed+dt:0;
     if(blocking) {
@@ -153,6 +157,7 @@ export class HeroAnimator {
       const frame=!this.airborne?5:this.jumpElapsed<.06?0:vy<-250?1:vy<-80?2:vy<=80?3:4;
       return {kind:'jump' as const,frame,face:null};
     }
+    if(this.crouchProgress>0&&this.clips.crouch)return {kind:'crouch' as const,frame:Math.min(5,Math.floor(this.crouchProgress/.08)),face:null};
     if(this.moving&&this.clips.walk)return {kind:'walk' as const,frame:this.walkFrame('walk'),face:null};
     return null;
   }
@@ -167,7 +172,7 @@ export class HeroAnimator {
     const clip=this.clips[pose.kind]!,dir=pose.face??face;
     const anchor=clip.anchor/clip.meta.frameWidth;
     image.setTexture(clip.key,`pose-${pose.frame}`).setOrigin(dir<0?1-anchor:anchor,clip.feet[pose.frame]/clip.meta.frameHeight)
-      .setPosition(x,y).setFlipX(dir<0).setScale(clip.scale*(crouch?.65:1)).setAngle(0).setVisible(true);
+      .setPosition(x,y).setFlipX(dir<0).setScale(clip.scale*(crouch&&pose.kind!=='crouch'?.65:1)).setAngle(0).setVisible(true);
     image.setData('heroAction',pose.kind).setData('heroFrame',pose.frame);
     return true;
   }

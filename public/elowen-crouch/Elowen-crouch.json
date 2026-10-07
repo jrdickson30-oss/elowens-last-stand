@@ -1,0 +1,77 @@
+{
+  "image": "Elowen-crouch-spritesheet.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    80,
+    80,
+    80,
+    80,
+    80,
+    80
+  ],
+  "direction": "right",
+  "loop": false,
+  "anchor": {
+    "x": 256,
+    "groundY": 470
+  },
+  "footAnchors": [
+    487,
+    486,
+    486,
+    435,
+    435,
+    436
+  ],
+  "bodyHeight": 400,
+  "frameBounds": [
+    [
+      78,
+      87,
+      468,
+      487
+    ],
+    [
+      75,
+      127,
+      463,
+      486
+    ],
+    [
+      71,
+      174,
+      461,
+      486
+    ],
+    [
+      77,
+      138,
+      486,
+      435
+    ],
+    [
+      83,
+      165,
+      495,
+      435
+    ],
+    [
+      80,
+      184,
+      482,
+      436
+    ]
+  ],
+  "phases": [
+    "standing",
+    "bend",
+    "lower",
+    "crouch",
+    "settle",
+    "hold"
+  ]
+}

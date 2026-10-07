@@ -1,0 +1,4 @@
+{
+  "mode": "built-in image_gen",
+  "prompt": "Edit target: six-frame Elowen crouching sheet. Preserve exactly the character colours, identity, all6poses and progressive standing-to-low-crouch action. Fix ONLY spacing: shrink every full pose uniformly to70% of its current size, SAME proportional scale across all6poses, no resizing crouch up to standing height. Reposition each complete figure inside its own512x512cell, x256 root, feet groundy460. THREE columns TWO rows canvas1536x1024. Entire sword/cloak/hair/shield/feet inside eachcell with minimum60pixels padding all edges including top and bottom. No overlap or pixels belonging to neighbour cell. Firstpose upright, lastpose visiblymuchlower deep crouch bentknees. AllfaceRIGHT. Golden blondehair navycloak silverarmour goldtrimbluegems no magenta. Genuine transparent alpha no gradient/glow/shadow/text. Wide empty transparent gutters. Small figures surrounded by empty cell space. Do not enlarge tofillcanvas."
+}
