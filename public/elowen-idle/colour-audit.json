@@ -1,0 +1,266 @@
+[
+  {
+    "file": "public\\elowen.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\characters.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\elowen-block\\Elowen-block-spritesheet.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\elowen-guard-walk\\Elowen-guard-walk-spritesheet.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\elowen-idle\\Elowen-idle-spritesheet.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\elowen-jump\\Elowen-jump-spritesheet.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\elowen-strike-through\\Elowen-strike-through-spritesheet.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\elowen-sword-attack\\Elowen-sword-attack-spritesheet.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\elowen-sword-thrust\\Elowen-sword-thrust-spritesheet.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\elowen-walk\\Elowen-walk-spritesheet.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\baudron-male-run-v2.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\baudron-female-run-v2.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\half-baudron-male-run-v2.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\half-baudron-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\brownie-male-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\brownie-female-run-v2.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\children-of-chaos-male-run-v2.png",
+    "magentaPixels": 1224,
+    "expectedColours": true,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\children-of-chaos-female-run.png",
+    "magentaPixels": 623,
+    "expectedColours": true,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\cypher-male-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\cypher-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\droich-male-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\droich-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\eilfar-male-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\eilfar-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\faun-male-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\faun-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\flur-wicker-male-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\flur-wicker-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\halfling-male-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\halfling-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\human-male-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\human-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\rottan-rat-male-run-v2.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\rottan-rat-female-run-v3.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\rottan-squirrel-male-run-v2.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\rottan-squirrel-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\rottan-mouse-male-run-v2.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\rottan-mouse-female-run-v3.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\ursa-major-male-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\ursa-major-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\ursa-minor-male-run-v2.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\ursa-minor-female-run-v3.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\wulver-male-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  },
+  {
+    "file": "public\\villagers\\running\\wulver-female-run.png",
+    "magentaPixels": 0,
+    "expectedColours": false,
+    "needsCorrection": false
+  }
+]

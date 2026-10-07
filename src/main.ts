@@ -14,7 +14,7 @@ type Enemy={x:number,hp:number,max:number,next:number,speed:number,kind:number;s
 type Survivor={x:number,t:number,villager:string};
 type Shot={x:number,y:number,dir:number,life:number,spell:SpellId,damage:number};
 type Particle={x:number,y:number,vx:number,vy:number,life:number,color:number};
-type IdleMetadata={frameWidth:number,frameHeight:number,frameCount:number,durationsMs:number[]};
+type IdleMetadata={frameWidth:number,frameHeight:number,frameCount:number,durationsMs:number[],columns?:number,footAnchors?:number[]};
 const overlay=document.querySelector<HTMLDivElement>('#overlay')!;
 let muted=true;
 let audio:AudioContext|undefined;
@@ -39,7 +39,7 @@ class Stand extends Phaser.Scene{
  shieldFlight:{x:number,y:number,dir:number,originX:number,returning:boolean,hits:Set<Enemy>}|null=null;
  arrows:{targetX:number,delay:number,progress:number}[]=[];
  hotbar!:HTMLDivElement;championbar!:HTMLDivElement;message='';messageTime=0;
- preload(){this.load.on('progress',loadingProgress);preloadHeroActions(this);preloadVillagers(this);this.load.image('wind-bough',new URL('scene-art/wind-bough.png',document.baseURI).href);for(const art of SCENE_ART){const url=new URL('scene-art/'+art.file,document.baseURI);if(art.revision)url.searchParams.set('v',art.revision);this.load.image(art.key,url.href);}this.load.image('forest',new URL('forest.png',document.baseURI).href);this.load.image('characters',new URL('characters.png',document.baseURI).href);this.load.image('elowen',new URL('elowen.png',document.baseURI).href);this.load.image('elowen-idle',new URL('elowen-idle/Elowen-idle-spritesheet.png',document.baseURI).href);this.load.json('elowen-idle-meta',new URL('elowen-idle/Elowen-idle.json',document.baseURI).href)}
+ preload(){this.load.on('progress',loadingProgress);preloadHeroActions(this);preloadVillagers(this);this.load.image('wind-bough',new URL('scene-art/wind-bough.png',document.baseURI).href);for(const art of SCENE_ART){const url=new URL('scene-art/'+art.file,document.baseURI);if(art.revision)url.searchParams.set('v',art.revision);this.load.image(art.key,url.href);}this.load.image('forest',new URL('forest.png',document.baseURI).href);this.load.image('characters',new URL('characters.png',document.baseURI).href);this.load.image('elowen',new URL('elowen.png',document.baseURI).href);this.load.image('elowen-idle',new URL('elowen-idle/Elowen-idle-spritesheet.png?v=palette2',document.baseURI).href);this.load.json('elowen-idle-meta',new URL('elowen-idle/Elowen-idle.json?v=palette2',document.baseURI).href)}
  create(){this.background();if(this.textures.exists('characters')){const tex=this.textures.get('characters');const src=tex.getSourceImage() as HTMLImageElement;const canvas=document.createElement('canvas');canvas.width=src.width;canvas.height=src.height;const ctx=canvas.getContext('2d')!;ctx.drawImage(src,0,0);const pixels=ctx.getImageData(0,0,src.width,src.height).data;for(let f=0;f<4;f++){let minX=src.width,minY=src.height,maxX=0,maxY=0;for(let y=0;y<src.height;y++)for(let x=Math.floor(f*src.width/4);x<Math.floor((f+1)*src.width/4);x++){if(pixels[(y*src.width+x)*4+3]>90){minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y)}}tex.add('figure'+f,0,minX,minY,maxX-minX+1,maxY-minY+1)}}if(this.textures.exists('elowen')){
  const texture=this.textures.get('elowen'),source=texture.getSourceImage() as HTMLImageElement;
  const canvas=document.createElement('canvas');canvas.width=source.width;canvas.height=source.height;const context=canvas.getContext('2d')!;context.drawImage(source,0,0);
@@ -58,10 +58,11 @@ class Stand extends Phaser.Scene{
   let left=meta.frameWidth,top=meta.frameHeight,right=-1,bottom=-1;
   // Use one shared crop: trimming each pose separately would move her feet and change her scale.
   for(let frame=0;frame<meta.frameCount;frame++)for(let y=0;y<meta.frameHeight;y++)for(let x=0;x<meta.frameWidth;x++){
-   if(pixels[(y*source.width+frame*meta.frameWidth+x)*4+3]>90){left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x);bottom=Math.max(bottom,y)}
+   const col=frame%(meta.columns??meta.frameCount),row=Math.floor(frame/(meta.columns??meta.frameCount));
+   if(pixels[((row*meta.frameHeight+y)*source.width+col*meta.frameWidth+x)*4+3]>90){const anchoredY=y-(meta.footAnchors?.[frame]??meta.frameHeight);left=Math.min(left,x);top=Math.min(top,anchoredY);right=Math.max(right,x);bottom=Math.max(bottom,anchoredY)}
   }
   if(right<left||bottom<top)return;
-  for(let frame=0;frame<meta.frameCount;frame++)texture.add('idle'+frame,0,frame*meta.frameWidth+left,top,right-left+1,bottom-top+1);
+  for(let frame=0;frame<meta.frameCount;frame++)texture.add('idle'+frame,0,(frame%(meta.columns??meta.frameCount))*meta.frameWidth+left,Math.floor(frame/(meta.columns??meta.frameCount))*meta.frameHeight+(meta.footAnchors?.[frame]??meta.frameHeight)+top,right-left+1,bottom-top+1);
   this.idleDurations=meta.durationsMs.map(ms=>ms/1000);
  }
  tickHeroAnimation(dt:number){

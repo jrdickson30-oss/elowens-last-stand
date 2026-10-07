@@ -9,7 +9,7 @@ try{
   await page.evaluate(()=>{const s=window.elowen;s.x=650;s.heroAnimator.reset()});
   if(guarded)await page.keyboard.down('L');await page.keyboard.down(dir);
   await page.waitForFunction(kind=>window.elowen.heroAnimator.pose(0)?.kind===kind,guarded?'guardWalk':'walk');
-  const frames=await page.evaluate(async()=>{const seen=new Set();for(let i=0;i<30;i++){seen.add(window.elowen.heroAnimator.pose(0)?.frame);await new Promise(r=>setTimeout(r,40))}return [...seen]});
+  const frames=await page.evaluate(async()=>{const seen=new Set();for(let i=0;i<30;i++){window.elowen.x=650;seen.add(window.elowen.heroAnimator.pose(0)?.frame);await new Promise(r=>setTimeout(r,40))}return [...seen]});
   assert.equal(frames.length,6);
   const pose=await page.evaluate(()=>{const s=window.elowen,im=s.spritePool.find(im=>im.visible&&['walk','guardWalk'].includes(im.getData('heroAction')));return {flip:im.flipX,scale:im.scaleY,kind:im.getData('heroAction')}});
   assert.equal(pose.flip,dir==='A');assert.equal(pose.kind,guarded?'guardWalk':'walk');
