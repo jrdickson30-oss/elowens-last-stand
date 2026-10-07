@@ -1,0 +1,90 @@
+{
+  "id": "human-female",
+  "image": "human-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    503,
+    503,
+    503,
+    492,
+    492,
+    492
+  ],
+  "bodyHeight": 486,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      67,
+      8,
+      463,
+      503
+    ],
+    [
+      75,
+      8,
+      459,
+      503
+    ],
+    [
+      64,
+      8,
+      461,
+      496
+    ],
+    [
+      42,
+      7,
+      478,
+      490
+    ],
+    [
+      79,
+      7,
+      484,
+      490
+    ],
+    [
+      76,
+      7,
+      478,
+      492
+    ]
+  ],
+  "frameHashes": [
+    "ecc0326613f63ef923f363cae9966fbbe7e797863260b58abaf7416133307611",
+    "88928e12a33543aef2d2cd512d241a6a1b11c347b418a68014f077196b1c6172",
+    "03cba093c9b63513d8949925e6816c25ca66bad3034fd4197b85d9619306a34d",
+    "6415ef2fb3c6939167206ae6f4b592d5457d937c711f245c8db3ba0173e2d45a",
+    "740271d240e3a0f19d45d2d4c0ba718908c494ff3dca516ac5137cf0d5555a74",
+    "629f74cd67d8e9c5477e2761e3fe31fb1b8835ba70f85e108000317584e55367"
+  ],
+  "reviewed": true,
+  "sha256": "9aa104b23b675c1da7d19f1638b3372a0432bbd913aa21d97f8c19001b975dc0"
+}

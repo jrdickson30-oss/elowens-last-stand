@@ -1,0 +1,90 @@
+{
+  "id": "ursa-minor-female",
+  "image": "ursa-minor-female-run-v3.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    422,
+    422,
+    422,
+    390,
+    390,
+    390
+  ],
+  "bodyHeight": 285,
+  "displayHeight": 68,
+  "frameBounds": [
+    [
+      134,
+      137,
+      468,
+      419
+    ],
+    [
+      119,
+      137,
+      432,
+      422
+    ],
+    [
+      111,
+      137,
+      410,
+      417
+    ],
+    [
+      128,
+      98,
+      483,
+      384
+    ],
+    [
+      119,
+      99,
+      443,
+      390
+    ],
+    [
+      121,
+      98,
+      429,
+      384
+    ]
+  ],
+  "frameHashes": [
+    "03082d49f265041a123563607982761c2b3ecdeb130e47fce5e09cb2100b2a19",
+    "263ec702383860363f662b2188c8bc9c8affb40bdfb2577e590d08d62273532e",
+    "8c91233ba6718492ebfb00b4ab20ecf6d3423fbdc19b5595b7d1a99b59668f60",
+    "cc15837d83e405bc8bf9ab2d5bb8f73180b740ce1f9a119691e50304a6809df8",
+    "79c4fb6a07f074f5874825f024f08db100ffef79e94972743551170854cb68a5",
+    "3d3fb34b73ddb1065ab80deb464458f382040605ab2fe44074adf24138645cca"
+  ],
+  "reviewed": true,
+  "sha256": "5ac7e73107021f5f0a74296136acbf549079e99e68b4ff9e7cd5ebd8f7c4ef75"
+}

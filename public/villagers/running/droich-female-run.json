@@ -1,0 +1,90 @@
+{
+  "id": "droich-female",
+  "image": "droich-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    497,
+    497,
+    497,
+    488,
+    488,
+    488
+  ],
+  "bodyHeight": 467,
+  "displayHeight": 68,
+  "frameBounds": [
+    [
+      50,
+      24,
+      464,
+      497
+    ],
+    [
+      44,
+      24,
+      450,
+      494
+    ],
+    [
+      27,
+      24,
+      451,
+      476
+    ],
+    [
+      42,
+      13,
+      466,
+      488
+    ],
+    [
+      60,
+      16,
+      496,
+      462
+    ],
+    [
+      52,
+      14,
+      465,
+      478
+    ]
+  ],
+  "frameHashes": [
+    "c6990e9c2a2e623e91b7848d5563c3241b85931c41156b3770fb39b45ebc4577",
+    "4a323e49df806ff14ff50552bcbd7b57cf6d626a33d70932c79f363d621e83e1",
+    "661282a19840732e2146bffd5d9f532c61def538d3ea5503a8ed8dcc7396f461",
+    "e2dea5afdbd30e3af6a592c7c5c8044ef12429dbf250b0b7a587f43f62fc20ae",
+    "21e8bc4b00bb26daaa02fe8a8e59f2cc0cb7ddf97ced36ba0eb86827570adafb",
+    "6a6d0af922b195585712b72eba0a498bb9d8fd78b9bb36c40f22890a91f10400"
+  ],
+  "reviewed": true,
+  "sha256": "bfd520ecdebab159605ff34c0518111afcb01cb3fa8ce3babb4eb544fbdd6298"
+}

@@ -1,0 +1,90 @@
+{
+  "id": "faun-female",
+  "image": "faun-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    504,
+    504,
+    504,
+    497,
+    497,
+    497
+  ],
+  "bodyHeight": 488,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      62,
+      9,
+      445,
+      498
+    ],
+    [
+      67,
+      9,
+      446,
+      504
+    ],
+    [
+      111,
+      16,
+      476,
+      489
+    ],
+    [
+      62,
+      8,
+      429,
+      497
+    ],
+    [
+      52,
+      10,
+      492,
+      497
+    ],
+    [
+      109,
+      11,
+      472,
+      482
+    ]
+  ],
+  "frameHashes": [
+    "29da26a6fa02193510678144afed3354eaa73508696240496af36dc3039fa2f6",
+    "a676c1c7a1ddf0d59d99c590cee9befc3a03909790b0975b4ee191a7515e9b32",
+    "d3ef177583c0feafc77cd3ba11558541d81b87ee8d702313a2e2c2ab902d5e77",
+    "5fe815920fbe991354df2912cc9cdcbdc51b281576ea83479a19a7ef80dc00c5",
+    "cd7d82a43b151d3733deb2f9114c62cdbcccfdd19169a73da0c612c8c468c872",
+    "66764df46d305842fd272ac86d58371f51d90695c0f658b932795221a62c66b9"
+  ],
+  "reviewed": true,
+  "sha256": "54a606c631ecd08f4e4d9e9b2e7de4fbca48e990994ddf0a74721e7714dbd204"
+}

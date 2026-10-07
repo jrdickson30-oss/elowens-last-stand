@@ -1,0 +1,90 @@
+{
+  "id": "eilfar-male",
+  "image": "eilfar-male-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    503,
+    503,
+    503,
+    491,
+    491,
+    491
+  ],
+  "bodyHeight": 466,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      49,
+      35,
+      481,
+      503
+    ],
+    [
+      26,
+      35,
+      450,
+      498
+    ],
+    [
+      10,
+      25,
+      420,
+      489
+    ],
+    [
+      38,
+      18,
+      474,
+      491
+    ],
+    [
+      12,
+      17,
+      444,
+      486
+    ],
+    [
+      24,
+      14,
+      458,
+      465
+    ]
+  ],
+  "frameHashes": [
+    "2b048d7377b9bd33bb15b2850441fb306024384b2a7392300be33d06c67258df",
+    "35d6d897a8e0d6c616c69d16595da67d05dc367cf4c499e0e52a254ebfa6a6f0",
+    "dcfe86b5d072c654cdb4ba5e8dc18ec605fbce565bdbf3293e441605c30f2354",
+    "71088efb93c050bbf868fbd74c4957f96f4cf79c578b0b943b5a7798cbcb5893",
+    "817b6773e62585745ea48b39fe49cf3811e643e4c279f494e0287b2bb76cf127",
+    "5a8d877efc4d87c12659def8d032f405df16749ae7d4659f04ad6285c9ac7b07"
+  ],
+  "reviewed": true,
+  "sha256": "80c56e5efc3570fe224c5e35ca62725b6de406b81ff2cdea699a566a0c84d73c"
+}

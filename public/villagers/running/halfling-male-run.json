@@ -1,0 +1,90 @@
+{
+  "id": "halfling-male",
+  "image": "halfling-male-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    495,
+    495,
+    495,
+    496,
+    496,
+    496
+  ],
+  "bodyHeight": 475,
+  "displayHeight": 68,
+  "frameBounds": [
+    [
+      91,
+      13,
+      470,
+      488
+    ],
+    [
+      47,
+      13,
+      444,
+      495
+    ],
+    [
+      47,
+      7,
+      463,
+      483
+    ],
+    [
+      68,
+      3,
+      500,
+      476
+    ],
+    [
+      69,
+      5,
+      467,
+      496
+    ],
+    [
+      64,
+      6,
+      489,
+      457
+    ]
+  ],
+  "frameHashes": [
+    "df4319bc2989fc621e2d598a93e209aed56837a6a4d5582217509fc0b55cc1b9",
+    "d4eb605055d6feb5024c957a6ff18b7ace2a214b8b2164b5ed02adc306694163",
+    "99e2b2a81d50afe96abd0a27fba9d0f51ea678cc093b2703b98fa074f94d7820",
+    "89abc15d575f18d9400e924fb47c0b7a514876860f9f67fa547685be8054ab58",
+    "d8a0a677464d12f22bd866f651bd7c60cf730523a5413573a83419e41a70fdb4",
+    "8b9c83478a0f5036488e82824c9bcc3df023de530c529231d2555424c4da44eb"
+  ],
+  "reviewed": true,
+  "sha256": "2a08b45dd257ede6c43bb8e076d9cff15d7e8cc2df2cdddb952a627d1b4a80c8"
+}

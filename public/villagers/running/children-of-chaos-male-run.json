@@ -1,0 +1,90 @@
+{
+  "id": "children-of-chaos-male",
+  "image": "children-of-chaos-male-run-v2.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    475,
+    475,
+    475,
+    463,
+    463,
+    463
+  ],
+  "bodyHeight": 415,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      98,
+      58,
+      418,
+      475
+    ],
+    [
+      101,
+      58,
+      419,
+      475
+    ],
+    [
+      83,
+      59,
+      452,
+      437
+    ],
+    [
+      120,
+      48,
+      460,
+      463
+    ],
+    [
+      89,
+      45,
+      390,
+      461
+    ],
+    [
+      49,
+      38,
+      438,
+      433
+    ]
+  ],
+  "frameHashes": [
+    "d8037ee418886d569fd875b94dcbb7a5e3f6d1d7a69cec9ad48179526ecc7296",
+    "e1dd852d2e4adbd9bf297a00647f9b3ce86b186209629db36996c88812c50882",
+    "73544a3b9c62b3cde46568e9977db22d427e8bc1b59183c58edbae57ca1cd798",
+    "d9b05ef1a1aaceebc8b72718ea3c9b34dae27533a25098607c7368fe610e760a",
+    "c51edbf6b3cd177d0227def6f789d949bce681b9ff2555236c4ffd772e523866",
+    "e545ed42067ced4b8946ab3f0f519d6c735131bbd61f4ceb1bee073fc7a88044"
+  ],
+  "reviewed": true,
+  "sha256": "d10aaf96a3b8d0dbf28424171b990e1b29d103f0566303325ffbdd91880458c7"
+}

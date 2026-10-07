@@ -1,0 +1,90 @@
+{
+  "id": "baudron-male",
+  "image": "baudron-male-run-v2.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    473,
+    473,
+    473,
+    457,
+    457,
+    457
+  ],
+  "bodyHeight": 411,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      69,
+      54,
+      485,
+      473
+    ],
+    [
+      68,
+      53,
+      482,
+      468
+    ],
+    [
+      76,
+      45,
+      471,
+      451
+    ],
+    [
+      51,
+      45,
+      471,
+      452
+    ],
+    [
+      52,
+      45,
+      484,
+      457
+    ],
+    [
+      54,
+      40,
+      471,
+      451
+    ]
+  ],
+  "frameHashes": [
+    "37012f187f389f59e5a59ecd0dedec0850f02dff2fe331b339547e526b87c935",
+    "a35ff98eaf7ead483744601c6c624e441e4624696654680d32043e38f2f33b63",
+    "1b70d23cea4b30cc1b89ad69ac78d436725d18038d7f26e927c65c554cb7d2f8",
+    "a3c74f10914578604b5bd5bfc8316d52d1118f67280c2aec4993c55e1a0e21a3",
+    "ef4cc80b8cbdac3dfa16c7458219740c76a054457374ae995bc4eb2744a1cdde",
+    "c1fcd8d17a48eeb77b38bd5b0e1ba915c8edb010de1a75732eb971ed9e083eb5"
+  ],
+  "reviewed": true,
+  "sha256": "ce6a0715469a982032bc002803a22aee3c5e56ee67bd14e1edf9ae6e80c6e833"
+}

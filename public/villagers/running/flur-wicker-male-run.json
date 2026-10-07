@@ -1,0 +1,90 @@
+{
+  "id": "flur-wicker-male",
+  "image": "flur-wicker-male-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    500,
+    500,
+    500,
+    490,
+    490,
+    490
+  ],
+  "bodyHeight": 484,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      61,
+      11,
+      481,
+      500
+    ],
+    [
+      51,
+      10,
+      471,
+      486
+    ],
+    [
+      54,
+      10,
+      480,
+      500
+    ],
+    [
+      28,
+      13,
+      480,
+      485
+    ],
+    [
+      67,
+      8,
+      492,
+      488
+    ],
+    [
+      51,
+      2,
+      486,
+      490
+    ]
+  ],
+  "frameHashes": [
+    "7777b68cd205ec1886bbc5b5cff63773f8a9cda17ef0ea49c1ddc3cb4ccef3e2",
+    "935d3fa47d5e2f0d59c4e228e7a90585fdfbd2945008bcfabd2d8487529222e6",
+    "7bcf3bf85d40e2e8877d420cd0109183ed0f1c9d73dc7e3071c2f36a4aff6d8e",
+    "b80ab7f56913f4f8fbbd1406ad78c836619f93f5bd11038b387f1a24058cb30f",
+    "2bcc9849a82fe00f47b1bbc888f6cf1c004f96a3fe80918cadec05d30b279977",
+    "1dd0ad7ac7d72ea8f329b2b9b0e81996ff173781866e3828fab3e471eddc166a"
+  ],
+  "reviewed": true,
+  "sha256": "a863d585ef35cc014ed3a362471072c33f50caf33780930bda004ea4ce4679ab"
+}

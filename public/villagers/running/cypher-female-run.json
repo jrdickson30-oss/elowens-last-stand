@@ -1,0 +1,90 @@
+{
+  "id": "cypher-female",
+  "image": "cypher-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    503,
+    503,
+    503,
+    496,
+    496,
+    496
+  ],
+  "bodyHeight": 489,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      54,
+      11,
+      447,
+      503
+    ],
+    [
+      45,
+      11,
+      470,
+      501
+    ],
+    [
+      61,
+      12,
+      441,
+      502
+    ],
+    [
+      42,
+      13,
+      470,
+      493
+    ],
+    [
+      55,
+      7,
+      430,
+      496
+    ],
+    [
+      59,
+      7,
+      464,
+      495
+    ]
+  ],
+  "frameHashes": [
+    "4224c609799187a68c82a8d67bbe3dd6a78c6937221cc46bc5a86ec5e213a6a9",
+    "9745f652ee595d68c13597682a4e52155967f0c64120107551c430013bec3eea",
+    "06d17142eb1f49e89d7953ee9ac97efb6dfe6e04d1f9427bbe4af8866dd37d15",
+    "b5add1ac5e8c2d853bb515c715f0ed6de9c860e008234e6f41a694836912854e",
+    "76437654aab9a7fea44a0fcba9aed443d4b591ec0a7c4e6e4b516c8200fa442c",
+    "7bd17c0952b30f1a1e6f695fe691346e29d8aa358fdf9e06fb225cdee8fe7d5d"
+  ],
+  "reviewed": true,
+  "sha256": "d7b8df44134c071aa41acb1883e28ed693d3e47e01b8a84461e9ebbf4c2f5862"
+}

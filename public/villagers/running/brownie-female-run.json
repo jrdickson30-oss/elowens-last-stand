@@ -1,0 +1,90 @@
+{
+  "id": "brownie-female",
+  "image": "brownie-female-run-v2.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    497,
+    497,
+    497,
+    478,
+    478,
+    478
+  ],
+  "bodyHeight": 440,
+  "displayHeight": 68,
+  "frameBounds": [
+    [
+      107,
+      53,
+      453,
+      497
+    ],
+    [
+      113,
+      50,
+      446,
+      489
+    ],
+    [
+      94,
+      49,
+      436,
+      494
+    ],
+    [
+      89,
+      39,
+      434,
+      478
+    ],
+    [
+      92,
+      37,
+      440,
+      474
+    ],
+    [
+      103,
+      37,
+      438,
+      478
+    ]
+  ],
+  "frameHashes": [
+    "3b77cf4b43a17ea227cbff783e04765b1ee583ed9855d6a17c8d53e767096093",
+    "604085ef7dbeab5c6075c98e090ef38fd487c6c1c1ae7c896cd3de8b2752cc39",
+    "679921aa32cc77b6ab0259ecb2d47cadf8ead8bfe1c137caf3b820d6c2d8d73d",
+    "842fbf281049b535fee085197dcfec2aa275687f2feb11f02e2bcc6b916757a5",
+    "3681eed399f8224bdce075a7540b9eb3d8585862366f66a1637e924d995481e1",
+    "cd377a9b3788c2c5ceea6c517a8768d658958415897ad32ce0ccb5cd1eca1197"
+  ],
+  "reviewed": true,
+  "sha256": "4eed8599b57952ff0b41285157e9408b38ad29d2b35291e8920fbba07070945e"
+}

@@ -1,0 +1,90 @@
+{
+  "id": "rottan-squirrel-female",
+  "image": "rottan-squirrel-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    488,
+    488,
+    488,
+    480,
+    480,
+    480
+  ],
+  "bodyHeight": 469,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      40,
+      18,
+      483,
+      486
+    ],
+    [
+      45,
+      18,
+      493,
+      488
+    ],
+    [
+      36,
+      18,
+      481,
+      481
+    ],
+    [
+      43,
+      2,
+      510,
+      480
+    ],
+    [
+      46,
+      3,
+      498,
+      473
+    ],
+    [
+      36,
+      3,
+      491,
+      468
+    ]
+  ],
+  "frameHashes": [
+    "dc015e5e6b5b754399be1f9218abf5df518fdf9ae238adf92e54ecd27f46c8dc",
+    "0f787d56ff5e152f30cb9670413ea66b73708286b9fa73ce60a42a4ba1d10455",
+    "427bab1723d5585747705ad74d1fe8c5569690af1dc914204477e834b74e135c",
+    "c362ca3a6e4e6f68f769511403b947eae5966b54ceecb041ad0f014dcad47829",
+    "78cc51796b6e1e0010187681d2df1b27d1981d2bf8a6f4b93338272ba34b26a0",
+    "3418cb9b401d9ff3f3a868ca4153e41fbebae0ddfb40f72adb4c7c2884ade09f"
+  ],
+  "reviewed": true,
+  "sha256": "0ac094193c125967c080af686088f3dede402f5cd22bab75bf8d92e92ef38e53"
+}

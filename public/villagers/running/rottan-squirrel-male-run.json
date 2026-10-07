@@ -1,0 +1,90 @@
+{
+  "id": "rottan-squirrel-male",
+  "image": "rottan-squirrel-male-run-v2.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    471,
+    471,
+    471,
+    440,
+    440,
+    440
+  ],
+  "bodyHeight": 395,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      102,
+      62,
+      482,
+      460
+    ],
+    [
+      81,
+      80,
+      481,
+      471
+    ],
+    [
+      88,
+      77,
+      465,
+      456
+    ],
+    [
+      82,
+      33,
+      494,
+      440
+    ],
+    [
+      85,
+      39,
+      481,
+      436
+    ],
+    [
+      73,
+      34,
+      465,
+      428
+    ]
+  ],
+  "frameHashes": [
+    "b739b0e3bc708a28b3dc0496c9ed34ac4802118e857219eb3b127d276730ee1b",
+    "6f86b6d35f72db7ded15b3d62e922e134b7fa99d78845bad19dbe9f49fdc8f3c",
+    "f68091acab30058d1525a5d77175ece56d90922e03f6abfd2ea3128788152cb5",
+    "a8db9941430fc6570bfbeab743b2aa1932cd0a7dabef726c893e66c590af39fe",
+    "43589297cfb656ac0932144f2f2350c699568de1b275146dc2b028d38dadd221",
+    "059cd77a59124d9982a4afe9b914cb138f9f7e375f18da2267309f13705afe9e"
+  ],
+  "reviewed": true,
+  "sha256": "f45bafe53d2cc15db528f5e966e90ecd78a423deae25e206df2476efc4367207"
+}

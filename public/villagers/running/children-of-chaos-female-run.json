@@ -1,0 +1,90 @@
+{
+  "id": "children-of-chaos-female",
+  "image": "children-of-chaos-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    506,
+    506,
+    506,
+    497,
+    497,
+    497
+  ],
+  "bodyHeight": 493,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      52,
+      7,
+      441,
+      505
+    ],
+    [
+      56,
+      8,
+      464,
+      506
+    ],
+    [
+      71,
+      6,
+      484,
+      506
+    ],
+    [
+      49,
+      6,
+      481,
+      491
+    ],
+    [
+      66,
+      6,
+      489,
+      479
+    ],
+    [
+      77,
+      9,
+      493,
+      497
+    ]
+  ],
+  "frameHashes": [
+    "f64a7523654bbe58dc1e63fc3d886ea28ff7cbef79939f5a50eb94a41421aa46",
+    "1a9fa04824dc929ef7d61d15f4419d92d76fafb2ce8e807d1166dd6b1960e07e",
+    "9ea4c6a8c19797fa3f60609972dceb4d60f3a9cd6bb7ab0d7a914ba73470cd8a",
+    "41d3f253e9d7ae15547961cadbafead04c122ceb4d94bea275d1ced561d2bed9",
+    "9e10e77abe113711c4a3e8eadf96820d8e31839085a1802c98172c224ad4d929",
+    "6afcc746d00ce411dd942c7240c99bb3472f8a5f692548636aa12bcdf06ad3f0"
+  ],
+  "reviewed": true,
+  "sha256": "ad643b404209ca7abc83e0574a3e503268716b5b98b481fc4ae9c72d929ca9cd"
+}

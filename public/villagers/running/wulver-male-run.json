@@ -1,0 +1,90 @@
+{
+  "id": "wulver-male",
+  "image": "wulver-male-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    501,
+    501,
+    501,
+    486,
+    486,
+    486
+  ],
+  "bodyHeight": 470,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      60,
+      20,
+      504,
+      501
+    ],
+    [
+      29,
+      22,
+      494,
+      498
+    ],
+    [
+      55,
+      18,
+      507,
+      478
+    ],
+    [
+      40,
+      17,
+      509,
+      486
+    ],
+    [
+      19,
+      16,
+      509,
+      486
+    ],
+    [
+      46,
+      8,
+      497,
+      478
+    ]
+  ],
+  "frameHashes": [
+    "954f2856748fe8f0da6d6640be856e67729282732d8be0a30fc3f1a0936996da",
+    "e80977e3d099de1b52de02e678989bc0ad8de020d79b7d9d55f4335c4ff00f4e",
+    "d43913d8bbd2a86dc63cefb317a692c94e0d9c760a09d64a01571c302ff5c36c",
+    "0eb6cf9283557dd004d0b372b2f67e786ab57572e03084003f2bcac5b2220891",
+    "d6ca5f942b97d912a506ad81bc97368a87bebabef1f864e5f1ff15204c00cb9a",
+    "9403daa75d7fa7cf6ed649a8cc483e17045713d77a5dca5d445d3deb11a68e9c"
+  ],
+  "reviewed": true,
+  "sha256": "135b9a11d0af2a50dda3f039a19169e507548a227e2925b0cc7527ca4c71de28"
+}

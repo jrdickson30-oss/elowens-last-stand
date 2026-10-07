@@ -1,0 +1,90 @@
+{
+  "id": "faun-male",
+  "image": "faun-male-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    497,
+    497,
+    497,
+    481,
+    481,
+    481
+  ],
+  "bodyHeight": 471,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      65,
+      11,
+      469,
+      497
+    ],
+    [
+      56,
+      11,
+      472,
+      494
+    ],
+    [
+      68,
+      10,
+      470,
+      478
+    ],
+    [
+      50,
+      12,
+      486,
+      479
+    ],
+    [
+      86,
+      7,
+      488,
+      481
+    ],
+    [
+      74,
+      11,
+      474,
+      464
+    ]
+  ],
+  "frameHashes": [
+    "0ea22125f619a0adff575396893602bf9211f3d059e424717cb1a4c5b1942ae2",
+    "0eafea88b56feba0b4e7cce0f6a4ec7118c3e5f6b993790303da87a531468c4d",
+    "a691a8f47cdc7f95e7a5c70c3453044a69334503c57144b6b75af65657ad62ab",
+    "5290980d7f025da30f6d4f689c44444970ae9aba9ca71b8c7946bab570205971",
+    "f3364d15f2852172bca1490668de097f2dd94d6ef8e9743b2ddc532078cd6d3a",
+    "6952fa96eb73dc5afe07a9d0947779d44e08c384d78d65828159cdb79146f685"
+  ],
+  "reviewed": true,
+  "sha256": "b0c8927eea9322287c350ea5f2ee1fa9f7b829c41fcdcb814633eef074c1bcc4"
+}

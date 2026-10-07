@@ -1,0 +1,90 @@
+{
+  "id": "brownie-male",
+  "image": "brownie-male-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    498,
+    498,
+    498,
+    489,
+    489,
+    489
+  ],
+  "bodyHeight": 477,
+  "displayHeight": 68,
+  "frameBounds": [
+    [
+      86,
+      13,
+      496,
+      498
+    ],
+    [
+      70,
+      13,
+      449,
+      494
+    ],
+    [
+      86,
+      13,
+      474,
+      463
+    ],
+    [
+      71,
+      11,
+      481,
+      489
+    ],
+    [
+      68,
+      13,
+      445,
+      489
+    ],
+    [
+      95,
+      13,
+      482,
+      462
+    ]
+  ],
+  "frameHashes": [
+    "09a8848e46723d3a9a4a4fbb021f5ad7b54a05e5c532f07282ee797a8ce63581",
+    "351981a4abb8c7906a5072a6c0f03816ce2c12966216c5676fd270f420033a15",
+    "717a6adc80928d2e3a2dbfc98b32af732b98c3c0f347a4dfba03b0bcfbbee7c2",
+    "9ca8c24e2992678acd7742a825595b77fa85922360152738f064040167cc202a",
+    "dc821a089fa6b6b881c8490a0c8e7ae2a156b768a410246da41d0195dcdf5142",
+    "8db09015bd635f086048dde35f9abaae21eea7d1c04d1f595c45b8686d3a2176"
+  ],
+  "reviewed": true,
+  "sha256": "1ea09c69ad893972075bd7db5c4b8cb5d3e1ba6858c07e7c91ec4904b486f40d"
+}

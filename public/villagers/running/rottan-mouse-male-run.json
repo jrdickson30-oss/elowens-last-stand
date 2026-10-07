@@ -1,0 +1,90 @@
+{
+  "id": "rottan-mouse-male",
+  "image": "rottan-mouse-male-run-v2.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    476,
+    476,
+    476,
+    468,
+    468,
+    468
+  ],
+  "bodyHeight": 402,
+  "displayHeight": 68,
+  "frameBounds": [
+    [
+      75,
+      74,
+      468,
+      475
+    ],
+    [
+      64,
+      73,
+      475,
+      476
+    ],
+    [
+      63,
+      61,
+      466,
+      436
+    ],
+    [
+      64,
+      55,
+      468,
+      468
+    ],
+    [
+      61,
+      54,
+      477,
+      468
+    ],
+    [
+      67,
+      50,
+      464,
+      423
+    ]
+  ],
+  "frameHashes": [
+    "a9fabe8332e6e949ba488eb0d3cdbc3574dc6cb04ef0c266e2a992b3cf3bcbaa",
+    "7a66cb4671a2b08a250cea2d055f79e3b3fff2c9b64fa1580fa5e000ce6953b3",
+    "91769f72c3b3f237353017dbe9cedb8a505221b1467fdd3af086a99ec6aead10",
+    "ca0b37666db4a91d9f0b1408b4b68ee3db3e9e9aa23e35dbb8b45b6868cc5fe4",
+    "e877684e4a844579ea5f2e8dfca0127da64730f9ad3031e9fddd255ddbcab47a",
+    "ecf63e991c0529a1a5da23619bec5e6f226b3636dd8bf61830c80a1f98e2ec17"
+  ],
+  "reviewed": true,
+  "sha256": "d1a7dda3d4eaff2af6b4e27481bb30d4cccfda2d9f0395f9122c1332c800ae45"
+}

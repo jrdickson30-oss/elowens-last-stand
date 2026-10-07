@@ -1,0 +1,90 @@
+{
+  "id": "half-baudron-male",
+  "image": "half-baudron-male-run-v2.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    474,
+    474,
+    474,
+    458,
+    458,
+    458
+  ],
+  "bodyHeight": 388,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      81,
+      78,
+      457,
+      469
+    ],
+    [
+      90,
+      79,
+      461,
+      474
+    ],
+    [
+      56,
+      78,
+      472,
+      429
+    ],
+    [
+      93,
+      68,
+      472,
+      458
+    ],
+    [
+      89,
+      68,
+      459,
+      454
+    ],
+    [
+      61,
+      60,
+      466,
+      402
+    ]
+  ],
+  "frameHashes": [
+    "4498f8504cafeaeb91d0136896f343439d527c5373c2db30a08fc84f78e51f10",
+    "0bc8b144e46f0a5cb3ae7b263b341818b267215588fceed6db70203f692e5c32",
+    "03df678b524e2e2513267052aa17f727b8ce8109bed06f5605a110e3304e5071",
+    "fa9a4a78c884929935872e30264df4ab28a2ff759d45c0b3dd9a3971085c0751",
+    "9d3200ecc56ae7af2410cc81ed2e5f6460becd78ff65f5f7ffebe3aed232784b",
+    "aedaaec614ce4257fef6cdbac76a37746851a92f0ba04bb98c3134a70e9e252c"
+  ],
+  "reviewed": true,
+  "sha256": "a966635d2740d1eb2460e2ea499f0c567aae8a3b7afbe4b47e121ecece213b98"
+}

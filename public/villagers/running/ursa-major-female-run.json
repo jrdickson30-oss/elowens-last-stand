@@ -1,0 +1,90 @@
+{
+  "id": "ursa-major-female",
+  "image": "ursa-major-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    491,
+    491,
+    491,
+    485,
+    485,
+    485
+  ],
+  "bodyHeight": 474,
+  "displayHeight": 120,
+  "frameBounds": [
+    [
+      45,
+      9,
+      475,
+      491
+    ],
+    [
+      49,
+      18,
+      464,
+      488
+    ],
+    [
+      46,
+      13,
+      467,
+      485
+    ],
+    [
+      39,
+      6,
+      502,
+      485
+    ],
+    [
+      36,
+      4,
+      479,
+      481
+    ],
+    [
+      45,
+      4,
+      488,
+      451
+    ]
+  ],
+  "frameHashes": [
+    "e1a7c1b1d7d19db8179bc6c5bccce057550073c9621f13078cf0ba2b4033da1f",
+    "f5f2386852e4c2a42153769181c3674a6df96ea55dc989ae1861db50f62d16ec",
+    "a6f5ea3e46d6493d807a47eca866f4db8d12684150ad42db0627b4523de239eb",
+    "6ef8afdf6cb7a5f104bf7c3dbc7df46d675cf2824436657ce36c4b662dc9deaa",
+    "1894bfc6a94af37ffc979a371a6fb1d3ce51b648f16ee37194f79747c01358e8",
+    "1e46541eecaf2a79a9591e529fb8affebdcd5287cdfa8bc71c6dfa829a63f568"
+  ],
+  "reviewed": true,
+  "sha256": "f52aa58bd7517cfb2e7bb50a9f66dd1b71001e5b2eaf3cc8b66736eef7f4b1d8"
+}

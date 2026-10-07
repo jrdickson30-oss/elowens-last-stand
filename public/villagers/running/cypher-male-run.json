@@ -1,0 +1,90 @@
+{
+  "id": "cypher-male",
+  "image": "cypher-male-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    493,
+    493,
+    493,
+    473,
+    473,
+    473
+  ],
+  "bodyHeight": 454,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      58,
+      35,
+      489,
+      493
+    ],
+    [
+      51,
+      35,
+      452,
+      487
+    ],
+    [
+      84,
+      34,
+      463,
+      476
+    ],
+    [
+      64,
+      17,
+      478,
+      473
+    ],
+    [
+      53,
+      15,
+      464,
+      473
+    ],
+    [
+      81,
+      24,
+      472,
+      442
+    ]
+  ],
+  "frameHashes": [
+    "1f87e4744b213a4b4064d7ad7a3936b2092c8857800be21131d536e595df141e",
+    "40f94ddcd1319e479f7b5203ddf9f6d089fe4bbfdaf8eb3060483136cb609b45",
+    "2c8225fb537e259bb2e63f0baf313b556dcdc67668bf7f819b50c22c8a897945",
+    "7be1d983788723eaa036b90a107649ea764b68180357bd208c070fa3c8d7e6af",
+    "4d0fae01a0af162a21913a11635bae905fb3b61be2c37e319d80740c3cc48f6b",
+    "1ce3d125259eac62a814b063dbd7cfed7033b34b018c85c1cf7c45f8468d25c9"
+  ],
+  "reviewed": true,
+  "sha256": "4223069ce56cd235ba7753238f77b9a27cc3e9d2fdae22d14cb79c6754362f6a"
+}

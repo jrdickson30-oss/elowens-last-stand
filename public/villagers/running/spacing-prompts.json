@@ -1,0 +1,20 @@
+{
+  "mode": "built-in image_gen",
+  "prompts": [
+    {
+      "id": "rottan-rat-female",
+      "prompt": "Edit target: supplied six-frame sprite sheet. Keep exactly these six running poses, character identity, clothing, colours, LEFT-facing orientation and 3 by 2 grid. Change only layout SCALE: shrink each complete character uniformly to 65% of its present size within its own 512x512 cell. Anchor each at x256 ground y470. Whole tail must stay inside cell, surrounded by at least60 pixels transparent padding. Do not enlarge the poses to fill space. Canvas1536x1024. Preserve crisp pixel artwork. Fully transparent alpha background no gradient, glow, shadow, text or extra objects. This is a sprite sheet spacing repair.",
+      "image": "rottan-rat-female-run-v3.png"
+    },
+    {
+      "id": "rottan-mouse-female",
+      "prompt": "Edit target: supplied six-frame sprite sheet. Keep exactly these six running poses, character identity, clothing, colours, LEFT-facing orientation and 3 by 2 grid. Change only layout SCALE: shrink each complete character uniformly to 65% of its present size within its own 512x512 cell. Anchor each at x256 ground y470. Whole tail must stay inside cell, surrounded by at least60 pixels transparent padding. Do not enlarge the poses to fill space. Canvas1536x1024. Preserve crisp pixel artwork. Fully transparent alpha background no gradient, glow, shadow, text or extra objects. This is a sprite sheet spacing repair.",
+      "image": "rottan-mouse-female-run-v3.png"
+    },
+    {
+      "id": "ursa-minor-female",
+      "prompt": "Edit target: supplied six-frame sprite sheet. Keep exactly these six running poses, character identity, clothing, colours, LEFT-facing orientation and 3 by 2 grid. Change only layout SCALE: shrink each complete character uniformly to 65% of its present size within its own 512x512 cell. Anchor each at x256 ground y470. Whole tail must stay inside cell, surrounded by at least60 pixels transparent padding. Do not enlarge the poses to fill space. Canvas1536x1024. Preserve crisp pixel artwork. Fully transparent alpha background no gradient, glow, shadow, text or extra objects. This is a sprite sheet spacing repair.",
+      "image": "ursa-minor-female-run-v3.png"
+    }
+  ]
+}

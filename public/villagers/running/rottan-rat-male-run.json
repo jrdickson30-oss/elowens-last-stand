@@ -1,0 +1,90 @@
+{
+  "id": "rottan-rat-male",
+  "image": "rottan-rat-male-run-v2.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    470,
+    470,
+    470,
+    462,
+    462,
+    462
+  ],
+  "bodyHeight": 412,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      85,
+      55,
+      491,
+      466
+    ],
+    [
+      49,
+      55,
+      501,
+      469
+    ],
+    [
+      64,
+      55,
+      482,
+      470
+    ],
+    [
+      82,
+      56,
+      507,
+      451
+    ],
+    [
+      61,
+      50,
+      487,
+      452
+    ],
+    [
+      71,
+      36,
+      475,
+      462
+    ]
+  ],
+  "frameHashes": [
+    "de46c8391024ee4b6b17196847e637fb30cd9136cd308b380017a29b6841eae4",
+    "51b032383f0b6f16ac53bdf76600d8565f749fdb93a4d2ecf5edd4ab7be1ab3f",
+    "a768e76eac22d010fa595fd1563ad51a826bc65c225ffa7fc86c0278ec659e5f",
+    "551d5e2fe6967f8cbbd2295fac091d73ae797c077a19ebc5a9d2c6abbce8620c",
+    "3dbaf5e24fd80c10d5a236bfa732d10c65d9d5cc628fcfe34a184bed5c07e76b",
+    "9969922573d75cba16e1a42d10bfc65a53a7db2895acf54fb6b037ffd10c6457"
+  ],
+  "reviewed": true,
+  "sha256": "d3d918c78fc8a4e0498b978980fdd43a38a7895b8b227c7f97dd494315639f75"
+}

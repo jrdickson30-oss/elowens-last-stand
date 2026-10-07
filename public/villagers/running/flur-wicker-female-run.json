@@ -1,0 +1,90 @@
+{
+  "id": "flur-wicker-female",
+  "image": "flur-wicker-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    503,
+    503,
+    503,
+    492,
+    492,
+    492
+  ],
+  "bodyHeight": 479,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      86,
+      19,
+      475,
+      503
+    ],
+    [
+      65,
+      19,
+      464,
+      500
+    ],
+    [
+      50,
+      20,
+      465,
+      495
+    ],
+    [
+      86,
+      10,
+      505,
+      487
+    ],
+    [
+      99,
+      10,
+      473,
+      492
+    ],
+    [
+      43,
+      10,
+      478,
+      455
+    ]
+  ],
+  "frameHashes": [
+    "8ee8aa5172c48fc547f984defceee51186d3961dd50775f0828193fca0112e7a",
+    "ed3a1eed19f8d3d6255a09acbfc0812b4c4781f11a3062bc74dd958c3bd2ee96",
+    "999459caefea3c3f37880ecd91b3b1803c040f3de316652c7707472fd857aef2",
+    "6eedbaf864dafefccb2a47c26c8928f4b042b12e55a4737ebfc17fb02f6a7742",
+    "247fc2cbc0cd064a86247aa287e2bc4c94e0599078d843fdeeb9d13586ef3ff9",
+    "72914c09cfb727532d0c62f48f972917fbeeb6cae360824828b5f853c7cc229b"
+  ],
+  "reviewed": true,
+  "sha256": "9a9ec4cebddd168c8a0e7ab3bb530a9beb650b7ef8a82733407743b3f3e89967"
+}

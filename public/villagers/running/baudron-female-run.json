@@ -1,0 +1,90 @@
+{
+  "id": "baudron-female",
+  "image": "baudron-female-run-v2.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    469,
+    469,
+    469,
+    466,
+    466,
+    466
+  ],
+  "bodyHeight": 385,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      90,
+      82,
+      490,
+      469
+    ],
+    [
+      82,
+      81,
+      485,
+      469
+    ],
+    [
+      95,
+      81,
+      483,
+      424
+    ],
+    [
+      80,
+      79,
+      496,
+      465
+    ],
+    [
+      96,
+      81,
+      489,
+      466
+    ],
+    [
+      89,
+      74,
+      477,
+      415
+    ]
+  ],
+  "frameHashes": [
+    "c4fb45660d0396bc350d1322fba218b803dc6cf93f18ce3be4e426cdbffc9944",
+    "1f8b8ec1e86147aa57a1a97c79bc3ec387680ed2354b75c675f6ae2e23dc5185",
+    "58f3e088c950ca9a54c2cc479a43f1ed9a0c81aa318ed6268813d30b32aa69f8",
+    "178d5fd0d7222e60b0a394206f6753f37008f64d393d8b6823a267b39423b0fe",
+    "dc830a82fe041ce809c91be79fa91476d7c841f3d753252c4ea42b4cc1673365",
+    "de76956ac6ffc0ea59296d48138fea295360cda8d15e21635292fbd57d21d63a"
+  ],
+  "reviewed": true,
+  "sha256": "21dad3276c72d8e8ec4e39546c1aae25ad200629f41799817f775424150e0453"
+}

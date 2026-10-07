@@ -1,0 +1,90 @@
+{
+  "id": "droich-male",
+  "image": "droich-male-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    494,
+    494,
+    494,
+    492,
+    492,
+    492
+  ],
+  "bodyHeight": 475,
+  "displayHeight": 68,
+  "frameBounds": [
+    [
+      50,
+      12,
+      445,
+      494
+    ],
+    [
+      36,
+      12,
+      455,
+      489
+    ],
+    [
+      13,
+      12,
+      481,
+      473
+    ],
+    [
+      31,
+      10,
+      477,
+      492
+    ],
+    [
+      22,
+      10,
+      462,
+      480
+    ],
+    [
+      12,
+      10,
+      481,
+      484
+    ]
+  ],
+  "frameHashes": [
+    "6228458571c44f562ad6d22d5bc6280c43d9b0abb6de46e4922add09afa23827",
+    "b27ffca1a4342c4c780ada6a19af1ed40ebf5949c96624f0fa4f2afa63529f0b",
+    "a9f01310866d7d6f2ca566ffb90b74bf40171e4f6611e5b1a3bc421ba1ac2546",
+    "f9baeeade06e4571b6d21dd4f2f4b2bc0077d7e782392af5d15b2ee98d20b5a2",
+    "e871193f7d662f06b652c7986f82bdcce6d18ab030eacad219f3a5f4ee8878a6",
+    "d98c2422e11ab1d6ca43718c75d68c1f3ad0b9ba8e7a2bea7f9d6df8bf100367"
+  ],
+  "reviewed": true,
+  "sha256": "7e09232ff8369a3a4eb094aee009a51699570eaf1f46fa8d1adf1ea0f57ff993"
+}

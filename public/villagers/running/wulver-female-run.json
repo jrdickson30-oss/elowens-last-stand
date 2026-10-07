@@ -1,0 +1,90 @@
+{
+  "id": "wulver-female",
+  "image": "wulver-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    503,
+    503,
+    503,
+    479,
+    479,
+    479
+  ],
+  "bodyHeight": 471,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      49,
+      20,
+      500,
+      503
+    ],
+    [
+      49,
+      20,
+      502,
+      503
+    ],
+    [
+      17,
+      20,
+      502,
+      496
+    ],
+    [
+      40,
+      15,
+      506,
+      479
+    ],
+    [
+      34,
+      11,
+      500,
+      477
+    ],
+    [
+      21,
+      12,
+      500,
+      466
+    ]
+  ],
+  "frameHashes": [
+    "2b4cdd59799fa9453112d9e9e1a2cc4d6a8659fa4c41ca9d765c91a5f1c0a794",
+    "74ec0af8a2997a7e52218085ac73c1e3673c1bc0de197f32d5bac629db3d8b42",
+    "d20fec683999a2218a53fbe729bbc531e085509c6c358fdd4e11100a843eb5d9",
+    "4c9b67cfea1c0b33e6a95c50ebeef88ef5a4c79d24a783a8b209ecce8d109386",
+    "3c22ca199e354d544b4cecf34bfd4e6d3311a1ac00571424e4ea54a8e15ca5de",
+    "b6934271f3ae2d6c802db0110b33571ef65f1d665eeecbeb73fe0107170e6cf7"
+  ],
+  "reviewed": true,
+  "sha256": "d9f576e5d8deea5a31ac006e404cc756276412872bafdd48ef7c7fd8d9f46a68"
+}

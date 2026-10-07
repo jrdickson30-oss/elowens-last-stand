@@ -1,0 +1,90 @@
+{
+  "id": "halfling-female",
+  "image": "halfling-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    504,
+    504,
+    504,
+    488,
+    488,
+    488
+  ],
+  "bodyHeight": 473,
+  "displayHeight": 68,
+  "frameBounds": [
+    [
+      68,
+      30,
+      462,
+      502
+    ],
+    [
+      43,
+      30,
+      440,
+      504
+    ],
+    [
+      50,
+      24,
+      434,
+      501
+    ],
+    [
+      52,
+      8,
+      440,
+      488
+    ],
+    [
+      58,
+      18,
+      494,
+      488
+    ],
+    [
+      98,
+      10,
+      476,
+      468
+    ]
+  ],
+  "frameHashes": [
+    "8948119b9a4816cfff99066cccca03069bb75563ed22c230ac0ee058fa540e21",
+    "5ff4304327d8cc276f9acf60a0ae9c54e7d34dee136ad82cbbaaea2089da3c48",
+    "54b86ce314fc35f3fa5eff4a223616ceb7441d0252ecd7bfdb28558c8de95c0e",
+    "40393e8d6d5240c292b250655f8ae3c5fbed0b72266a7ad9ee8b08c63a207911",
+    "3e46cb2c95e18df67e41f52b623ba48a682d4e69dabacb46322117f1d8a4a904",
+    "8b93e8972c4c2a981143993584920c871fe1644e6c374a3a811a5977e6a63b70"
+  ],
+  "reviewed": true,
+  "sha256": "8885f5e49d13b81e5ff10d8ac09442e338528669f6a5cd132df782eb420d0b68"
+}

@@ -1,0 +1,90 @@
+{
+  "id": "eilfar-female",
+  "image": "eilfar-female-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    505,
+    505,
+    505,
+    494,
+    494,
+    494
+  ],
+  "bodyHeight": 482,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      64,
+      24,
+      478,
+      503
+    ],
+    [
+      54,
+      21,
+      455,
+      505
+    ],
+    [
+      44,
+      21,
+      456,
+      505
+    ],
+    [
+      49,
+      13,
+      486,
+      494
+    ],
+    [
+      48,
+      12,
+      476,
+      494
+    ],
+    [
+      52,
+      12,
+      481,
+      494
+    ]
+  ],
+  "frameHashes": [
+    "f39ade28e3ba823061f9bbdf445ea0c32a75622a1f55b10cce29ad93ea233f3f",
+    "938578860d9ea6bc41fc09d4ed5dfd5baa2432b26dc3f473138390507587ab33",
+    "b4a95e9d3d9c72461db8f625e79ee273a9ffec9104b9f031fbb81a39e7cc5834",
+    "4fa53a78d4ef52b24611f80018777f900928c15d978d062ec81f63891ae7513c",
+    "bff2592d3aa7ec1c863cd4a660670faa7a62292d1953b7538216f70ed8c2a7af",
+    "1b9d58281b82c6bc3e4850dbe913dd6628ffe5d3e08942b603464d786ca9c784"
+  ],
+  "reviewed": true,
+  "sha256": "862bb751f3ba9be6935a7249c4288f4292f0ab45126dc7376cbb86166622c6db"
+}

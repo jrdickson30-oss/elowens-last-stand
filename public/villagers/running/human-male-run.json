@@ -1,0 +1,90 @@
+{
+  "id": "human-male",
+  "image": "human-male-run.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    100,
+    100,
+    100,
+    100,
+    100,
+    100
+  ],
+  "loop": true,
+  "direction": "left",
+  "travelDirection": "left",
+  "frameFlipX": [
+    false,
+    false,
+    false,
+    false,
+    false,
+    false
+  ],
+  "anchor": {
+    "x": 256.0,
+    "groundY": 470.0
+  },
+  "frameGroundY": [
+    499,
+    499,
+    499,
+    485,
+    485,
+    485
+  ],
+  "bodyHeight": 469,
+  "displayHeight": 96,
+  "frameBounds": [
+    [
+      64,
+      20,
+      478,
+      496
+    ],
+    [
+      54,
+      19,
+      415,
+      499
+    ],
+    [
+      54,
+      19,
+      475,
+      455
+    ],
+    [
+      53,
+      12,
+      494,
+      478
+    ],
+    [
+      54,
+      12,
+      408,
+      485
+    ],
+    [
+      75,
+      10,
+      475,
+      474
+    ]
+  ],
+  "frameHashes": [
+    "3d55cf1d4e25ea231677d7a3d2c2fbb79c7a49910baf3b36d0b766ef93488d44",
+    "d59b85606556e73de0668b5c407706b1a2138fe78348cf39684f58b0fa38bcf4",
+    "c3d72f615c70cf55906d0f461aafdde16153d55b728586efcba722404617c349",
+    "437cbd71434f47bc33c02bdfdd9e9ec38b69d42fee4dc8acd6b58a9dddc0ada0",
+    "230ae38266c75616d5642241f1c77dee003e3c946360e350ca1cb39931427da3",
+    "af9634575f5ea53650e81bf8e412ae4247d957d90cf5cb1c0141b5ecfb9cd9b3"
+  ],
+  "reviewed": true,
+  "sha256": "19083b7353a011b1b925792988fb9f426afa80914a529932c2365880b5444ae9"
+}
