@@ -2,12 +2,13 @@ import Phaser from 'phaser';
 
 export const SWORD_RANGE = 115;
 export const SWORD_INTERVAL = .42;
-type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block';
+type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block' | 'walk' | 'guardWalk';
 type Metadata = {
   frameWidth: number; frameHeight: number; frameCount: number; columns: number;
   durationsMs: number[]; groundY?: number; anchor?: {x: number; groundY: number};
   rearFootAnchorX?: number;
   footAnchors?: number[];
+  bodyHeight?: number;
 };
 type Clip = {key: string; meta: Metadata; scale: number; anchor: number; feet: number[]};
 type Bounds = {left: number; top: number; right: number; bottom: number};
@@ -17,6 +18,8 @@ const assets: Record<Action, {file: string; bodyHeight: number}> = {
   reach: {file: 'strike-through', bodyHeight: 191},
   jump: {file: 'jump', bodyHeight: 188},
   block: {file: 'block', bodyHeight: 432},
+  walk: {file: 'walk', bodyHeight: 454},
+  guardWalk: {file: 'guard-walk', bodyHeight: 438},
 };
 
 export function preloadHeroActions(scene: Phaser.Scene) {
@@ -47,7 +50,9 @@ function bounds(data: Uint8ClampedArray, width: number, x: number, y: number, w:
 export class HeroAnimator {
   clips: Partial<Record<Action,Clip>> = {};
   nextAttack: 'slash'|'thrust' = 'slash';
-  attack: {kind: Exclude<Action,'jump'|'block'>; elapsed: number; range: number; face: number; fresh?: boolean}|null = null;
+  attack: {kind: 'slash'|'thrust'|'reach'; elapsed: number; range: number; face: number; fresh?: boolean}|null = null;
+  moving=false;
+  walkElapsed=0;
   blocking=false;
   blockElapsed=0;
   blockImpact: number|null=null;
@@ -73,7 +78,7 @@ export class HeroAnimator {
       const anchor=meta.anchor?.x??(meta.rearFootAnchorX!==undefined?meta.rearFootAnchorX+48:meta.frameWidth/2);
       // Body height excludes an overhead sword and padding. One constant
       // scale per clip preserves the proportions of every pose.
-      this.clips[id as Action]={key,meta,scale:96/asset.bodyHeight,anchor,feet};
+      this.clips[id as Action]={key,meta,scale:96/(meta.bodyHeight??asset.bodyHeight),anchor,feet};
     }
     const reachMeta=scene.cache.json.get('hero-reach-meta') as Metadata|undefined;
     if(this.clips.slash&&reachMeta)this.clips.reach={...this.clips.slash,meta:{...reachMeta,frameWidth:this.clips.slash.meta.frameWidth}};
@@ -89,6 +94,7 @@ export class HeroAnimator {
     this.beam=scene.add.image(0,0,'hero-energy-3').setDepth(1.5).setVisible(false);
   }
   reset() {
+    this.moving=false;this.walkElapsed=0;
     this.blocking=false;this.blockElapsed=0;this.blockImpact=null;
     this.attack=null;this.nextAttack='slash';this.airborne=false;this.jumpElapsed=this.landingTime=0;this.beam.setVisible(false);
   }
@@ -99,8 +105,10 @@ export class HeroAnimator {
   }
   startJump() {this.airborne=true;this.jumpElapsed=0;this.landingTime=0;}
   blockedHit() {if(this.clips.block)this.blockImpact=0;}
-  tick(dt: number, y: number, ground: number, blocking: boolean, playing: boolean) {
+  tick(dt: number, y: number, ground: number, blocking: boolean, playing: boolean, moving=false) {
     if(!playing){this.reset();return}
+    this.moving=moving&&y>=ground;
+    this.walkElapsed=this.moving?this.walkElapsed+dt:0;
     if(blocking) {
       this.blockElapsed=this.blocking?this.blockElapsed+dt:0;
       if(this.blockImpact!==null) {
@@ -136,6 +144,7 @@ export class HeroAnimator {
   }
   pose(vy: number) {
     if(this.blocking&&this.clips.block) {
+      if(this.moving&&this.blockElapsed>=.18&&this.blockImpact===null&&this.clips.guardWalk)return {kind:'guardWalk' as const,frame:this.walkFrame('guardWalk'),face:null};
       const frame=this.blockImpact!==null?(this.blockImpact<.08?3:4):this.blockElapsed<.09?0:this.blockElapsed<.18?1:this.blockElapsed<.36?2:5;
       return {kind:'block' as const,frame,face:null};
     }
@@ -144,7 +153,14 @@ export class HeroAnimator {
       const frame=!this.airborne?5:this.jumpElapsed<.06?0:vy<-250?1:vy<-80?2:vy<=80?3:4;
       return {kind:'jump' as const,frame,face:null};
     }
+    if(this.moving&&this.clips.walk)return {kind:'walk' as const,frame:this.walkFrame('walk'),face:null};
     return null;
+  }
+  walkFrame(kind: 'walk'|'guardWalk') {
+    const durations=this.clips[kind]!.meta.durationsMs;
+    let elapsed=this.walkElapsed*1000%durations.reduce((sum,ms)=>sum+ms,0);
+    for(let frame=0;frame<durations.length;frame++){if(elapsed<durations[frame])return frame;elapsed-=durations[frame]}
+    return 0;
   }
   render(image: Phaser.GameObjects.Image, x: number, y: number, face: number, vy: number, crouch: boolean) {
     const pose=this.pose(vy);if(!pose)return false;

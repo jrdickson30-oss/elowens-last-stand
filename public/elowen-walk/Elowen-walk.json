@@ -1,0 +1,69 @@
+{
+  "image": "Elowen-walk-spritesheet.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    120,
+    120,
+    120,
+    120,
+    120,
+    120
+  ],
+  "direction": "right",
+  "loop": true,
+  "anchor": {
+    "x": 256,
+    "groundY": 496
+  },
+  "footAnchors": [
+    496,
+    496,
+    496,
+    473,
+    473,
+    473
+  ],
+  "bodyHeight": 454,
+  "frameBounds": [
+    [
+      29,
+      39,
+      489,
+      496
+    ],
+    [
+      17,
+      39,
+      465,
+      495
+    ],
+    [
+      29,
+      41,
+      484,
+      496
+    ],
+    [
+      38,
+      21,
+      477,
+      473
+    ],
+    [
+      26,
+      23,
+      493,
+      473
+    ],
+    [
+      15,
+      21,
+      474,
+      473
+    ]
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "image": "Elowen-guard-walk-spritesheet.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [
+    180,
+    180,
+    180,
+    180,
+    180,
+    180
+  ],
+  "direction": "right",
+  "loop": true,
+  "anchor": {
+    "x": 256,
+    "groundY": 510
+  },
+  "footAnchors": [
+    510,
+    510,
+    510,
+    474,
+    474,
+    474
+  ],
+  "bodyHeight": 438,
+  "frameBounds": [
+    [
+      11,
+      55,
+      490,
+      507
+    ],
+    [
+      22,
+      73,
+      489,
+      507
+    ],
+    [
+      30,
+      63,
+      508,
+      510
+    ],
+    [
+      26,
+      33,
+      510,
+      473
+    ],
+    [
+      29,
+      44,
+      500,
+      474
+    ],
+    [
+      25,
+      37,
+      508,
+      474
+    ]
+  ]
+}
