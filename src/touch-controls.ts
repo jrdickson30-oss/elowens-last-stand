@@ -1,8 +1,12 @@
-// Activate touch actions immediately; browsers may suppress a second-finger click.
+// Handle touch taps directly while allowing skill rails to scroll.
 export function bindTouchAction(button:HTMLButtonElement,action:()=>void){
-  button.onpointerdown=e=>{if(e.pointerType==='touch'||e.pointerType==='pen'){e.preventDefault();action()}};
+  const starts=new Map<number,{x:number;y:number}>();
+  button.onpointerdown=e=>{if(e.pointerType==='touch'||e.pointerType==='pen'){e.preventDefault();starts.set(e.pointerId,{x:e.clientX,y:e.clientY});button.setPointerCapture(e.pointerId)}};
+  button.onpointerup=e=>{const start=starts.get(e.pointerId);starts.delete(e.pointerId);if(start&&Math.hypot(e.clientX-start.x,e.clientY-start.y)<10)action()};
+  button.onpointercancel=button.onlostpointercapture=e=>{starts.delete(e.pointerId)};
   button.onclick=e=>{const type=(e as PointerEvent).pointerType;if(type!=='touch'&&type!=='pen')action()};
 }
+
 type Held={key:string;button:HTMLButtonElement};
 export class TouchControls {
   private held=new Map<number,Held>();
@@ -11,7 +15,7 @@ export class TouchControls {
   private enabled=false;
   constructor(private touch:Set<string>,private pending:Set<string>){
     this.root=document.createElement('div');this.root.className='touch';
-    this.root.innerHTML=`<div class="touch-pad" aria-label="Movement"><button data-key="A" aria-label="Move left">◀</button><button data-key="S" aria-label="Crouch">↓<span>Crouch</span></button><button data-key="D" aria-label="Move right">▶</button></div><div class="touch-actions"><button data-key="SPACE" class="touch-jump" aria-label="Jump">↑<span>Jump</span></button><button data-key="L" class="touch-block" aria-label="Block">▣<span>Block</span></button><button data-key="J" class="touch-sword" aria-label="Sword attack">⚔<span>Sword</span></button></div><button class="touch-pause" aria-label="Pause game">Ⅱ</button>`;
+    this.root.innerHTML=`<div class="touch-pad" aria-label="Movement"><button data-key="SPACE" class="touch-jump" aria-label="Jump">↑<span>Jump</span></button><button data-key="A" aria-label="Move left">◀</button><button data-key="S" aria-label="Crouch">↓<span>Crouch</span></button><button data-key="D" aria-label="Move right">▶</button></div><div class="touch-actions"><button data-key="L" class="touch-block" aria-label="Block">▣<span>Block</span></button><button data-key="J" class="touch-sword" aria-label="Sword attack">⚔<span>Sword</span></button></div><button class="touch-pause" aria-label="Pause game">Ⅱ</button>`;
     document.querySelector('.game-shell')!.append(this.root);
     const layout=()=>{document.body.classList.toggle('touch-layout',this.media.matches);if(!this.media.matches)this.clear()};layout();this.media.addEventListener('change',layout);
     for(const button of Array.from(this.root.querySelectorAll<HTMLButtonElement>('[data-key]'))){

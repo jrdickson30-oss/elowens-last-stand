@@ -13,45 +13,46 @@
 .touch button{pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;border:1px solid #dcc28b88;background:#112a2be0;color:#f2dfb2;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:50%;padding:0;font-size:23px;min-width:48px;min-height:48px;box-shadow:0 3px 12px #0006}
 .touch button span{font-size:10px;line-height:15px}
 .touch button.pressed{background:#79623dee;border-color:#ffe4a3;transform:scale(.96)}
-.touch-pad{position:absolute;left:max(14px,env(safe-area-inset-left));bottom:max(16px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,52px);gap:8px;align-items:start}
+.touch-pad{position:absolute;left:max(12px,env(safe-area-inset-left));bottom:max(8px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,52px);gap:6px}
 .touch-pad button{width:52px;height:52px}
-.touch-pad [data-key=S]{margin-top:40px}
-.touch-actions{position:absolute;right:max(14px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));width:182px;height:130px}
-.touch-actions .touch-jump{position:absolute;right:12px;top:0;width:52px;height:52px}
-.touch-actions .touch-block{position:absolute;left:0;bottom:5px;width:58px;height:58px}
-.touch-actions .touch-sword{position:absolute;right:0;bottom:0;width:72px;height:72px;font-size:28px}
+.touch-pad [data-key=SPACE]{grid-column:2;grid-row:1}
+.touch-pad [data-key=A]{grid-column:1;grid-row:2}
+.touch-pad [data-key=S]{grid-column:2;grid-row:2}
+.touch-pad [data-key=D]{grid-column:3;grid-row:2}
+.touch-actions{position:absolute;right:max(12px,env(safe-area-inset-right));bottom:max(30px,calc(env(safe-area-inset-bottom) + 18px));display:flex;align-items:center;gap:12px;width:142px;height:72px}
+.touch-actions .touch-block{width:58px;height:58px}
+.touch-actions .touch-sword{width:72px;height:72px;font-size:28px}
 .touch .touch-pause{position:absolute;right:max(14px,env(safe-area-inset-right));top:max(14px,env(safe-area-inset-top));width:48px;height:48px;border-radius:12px}
 body:not(.touch-layout) .touch{display:none}
-.touch-layout{overflow:hidden;overscroll-behavior:none}
+.touch-layout{--touch-dock-height:calc(124px + env(safe-area-inset-bottom));overflow:hidden;overscroll-behavior:none}
 .touch-layout #app{padding:0;max-width:none}
 .touch-layout header,.touch-layout .intro,.touch-layout footer,.touch-layout .below{display:none}
 .touch-layout main{max-width:none}
 .touch-layout .game-shell{position:fixed;inset:0;width:100%;height:100%;height:100svh;aspect-ratio:auto;border:0;box-shadow:none}
-.touch-layout #game canvas{object-fit:contain}
+.touch-layout #game{position:absolute;inset:0;height:100%!important}
+.touch-layout #game canvas{object-fit:contain;margin:0!important}
+.touch-layout.touch-playing .game-shell::after{content:'';position:absolute;bottom:0;left:0;right:0;height:var(--touch-dock-height);background:linear-gradient(#183331,#102426);border-top:1px solid #d7bc7640;pointer-events:none;z-index:15}
 .touch-layout #overlay{z-index:30}
 .touch-layout .panel{max-height:92svh;max-width:min(650px,92vw);overflow:auto;padding:18px 24px}
 .touch-layout .panel h2{font-size:28px}
 .touch-layout .touch{display:block}
-.touch-layout .spellbar,.touch-layout .championbar{position:fixed;z-index:21;right:max(14px,env(safe-area-inset-right));margin:0;gap:6px;display:none}
-.touch-layout.touch-playing .spellbar,.touch-layout.touch-playing .championbar{display:grid}
-.touch-layout .spellbar{top:max(76px,calc(env(safe-area-inset-top) + 68px));width:min(420px,56vw);grid-template-columns:repeat(6,minmax(0,1fr))}
-.touch-layout .championbar{top:max(140px,calc(env(safe-area-inset-top) + 132px));width:min(280px,38vw);grid-template-columns:repeat(4,minmax(0,1fr))}
-.touch-layout .spellbar button,.touch-layout .championbar button{height:56px;min-height:48px;padding:5px 3px;display:flex;flex-direction:column;justify-content:center;gap:3px;text-align:center;border-radius:10px;background:#152c2de8;touch-action:manipulation;user-select:none}
+.touch-layout .spellbar,.touch-layout .championbar{position:fixed;z-index:21;left:calc(max(12px,env(safe-area-inset-left)) + 180px);right:calc(max(12px,env(safe-area-inset-right)) + 154px);top:auto;width:auto;margin:0;gap:6px;display:none;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;overscroll-behavior-x:contain;touch-action:pan-x}
+.touch-layout .spellbar::-webkit-scrollbar,.touch-layout .championbar::-webkit-scrollbar{display:none}
+.touch-layout.touch-playing .spellbar,.touch-layout.touch-playing .championbar{display:flex}
+.touch-layout .spellbar{bottom:calc(64px + env(safe-area-inset-bottom))}
+.touch-layout .championbar{bottom:calc(8px + env(safe-area-inset-bottom))}
+.touch-layout .spellbar button,.touch-layout .championbar button{flex:0 0 76px;min-width:76px;height:50px;min-height:48px;padding:5px 3px;display:flex;flex-direction:column;justify-content:center;gap:3px;text-align:center;border-radius:10px;background:#152c2de8;touch-action:manipulation;user-select:none}
 .touch-layout .spellbar kbd,.touch-layout .championbar kbd{display:none}
 .touch-layout .spellbar span,.touch-layout .championbar span{font-size:10px;line-height:11px;letter-spacing:0}
 .touch-layout .spellbar small,.touch-layout .championbar small{font-size:8px;letter-spacing:0}
 .touch-layout .spellbar button.locked,.touch-layout .championbar button.locked{display:none}
 .touch-layout .passive-status{display:none}
 @media(orientation:portrait){
- .touch-layout .spellbar{width:calc(100vw - 28px);top:max(76px,calc(env(safe-area-inset-top) + 68px))}
- .touch-layout .championbar{width:calc(100vw - 28px);top:max(140px,calc(env(safe-area-inset-top) + 132px))}
- .touch-layout .touch-pad{left:max(10px,env(safe-area-inset-left));grid-template-columns:repeat(3,48px);gap:5px}
+ .touch-layout{--touch-dock-height:calc(244px + env(safe-area-inset-bottom))}
+ .touch-layout .spellbar,.touch-layout .championbar{left:max(12px,env(safe-area-inset-left));right:max(12px,env(safe-area-inset-right));width:auto}
+ .touch-layout .spellbar{bottom:calc(188px + env(safe-area-inset-bottom))}
+ .touch-layout .championbar{bottom:calc(132px + env(safe-area-inset-bottom))}
+ .touch-layout .touch-pad{left:max(8px,env(safe-area-inset-left));grid-template-columns:repeat(3,48px);grid-template-rows:repeat(2,48px);gap:4px}
  .touch-layout .touch-pad button{width:48px;height:48px}
- .touch-layout .touch-actions{right:max(10px,env(safe-area-inset-right));width:156px}
-}
-@media(max-width:360px) and (orientation:portrait){
- .touch-layout .spellbar{grid-template-columns:repeat(3,minmax(0,1fr))}
- .touch-layout .championbar{top:max(204px,calc(env(safe-area-inset-top) + 196px))}
- .touch-layout .touch-pad{grid-template-columns:repeat(3,48px);gap:2px;left:6px}
- .touch-layout .touch-actions{width:148px;right:6px}
+ .touch-layout .touch-actions{right:max(8px,env(safe-area-inset-right))}
 }
