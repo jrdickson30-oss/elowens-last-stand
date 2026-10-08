@@ -1,0 +1,15 @@
+{
+  "image": "Elowen-crouch-sword-attack-spritesheet.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "rows": 2,
+  "durationsMs": [120, 120, 70, 70, 120, 200],
+  "direction": "right",
+  "anchor": {"x": 256, "groundY": 493},
+  "footAnchors": [493, 493, 493, 416, 416, 416],
+  "bodyHeight": 432,
+  "playOnceInGame": true,
+  "phases": ["crouched windup", "raised sword", "downstroke", "impact", "follow through", "crouched recovery"]
+}

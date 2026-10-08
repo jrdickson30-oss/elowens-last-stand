@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 export const SWORD_RANGE = 115;
 export const SWORD_INTERVAL = .42;
-type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block' | 'walk' | 'guardWalk' | 'crouch';
+type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block' | 'walk' | 'guardWalk' | 'crouch' | 'crouchSlash';
 type Metadata = {
   frameWidth: number; frameHeight: number; frameCount: number; columns: number;
   durationsMs: number[]; groundY?: number; anchor?: {x: number; groundY: number};
@@ -21,6 +21,7 @@ const assets: Record<Action, {file: string; bodyHeight: number}> = {
   walk: {file: 'walk', bodyHeight: 454},
   guardWalk: {file: 'guard-walk', bodyHeight: 438},
   crouch: {file: 'crouch', bodyHeight: 410},
+  crouchSlash: {file: 'crouch-sword-attack', bodyHeight: 432},
 };
 
 export function preloadHeroActions(scene: Phaser.Scene) {
@@ -51,7 +52,7 @@ function bounds(data: Uint8ClampedArray, width: number, x: number, y: number, w:
 export class HeroAnimator {
   clips: Partial<Record<Action,Clip>> = {};
   nextAttack: 'slash'|'thrust' = 'slash';
-  attack: {kind: 'slash'|'thrust'|'reach'; elapsed: number; range: number; face: number; fresh?: boolean}|null = null;
+  attack: {kind: 'slash'|'thrust'|'reach'|'crouchSlash'; elapsed: number; range: number; face: number; extended: boolean; fresh?: boolean}|null = null;
   moving=false;
   walkElapsed=0;
   crouchProgress=0;
@@ -101,10 +102,10 @@ export class HeroAnimator {
     this.blocking=false;this.blockElapsed=0;this.blockImpact=null;
     this.attack=null;this.nextAttack='slash';this.airborne=false;this.jumpElapsed=this.landingTime=0;this.beam.setVisible(false);
   }
-  startAttack(range: number, face: number, extended: boolean) {
-    const kind=extended?'reach':this.nextAttack;
-    if(!extended)this.nextAttack=this.nextAttack==='slash'?'thrust':'slash';
-    this.attack=this.clips[kind]?{kind,elapsed:0,range,face,fresh:true}:null;
+  startAttack(range: number, face: number, extended: boolean, crouching=false) {
+    const kind=crouching&&this.clips.crouchSlash?'crouchSlash':extended?'reach':this.nextAttack;
+    if(!extended&&kind!=='crouchSlash')this.nextAttack=this.nextAttack==='slash'?'thrust':'slash';
+    this.attack=this.clips[kind]?{kind,elapsed:0,range,face,extended,fresh:true}:null;
   }
   startJump() {this.airborne=true;this.jumpElapsed=0;this.landingTime=0;}
   blockedHit() {if(this.clips.block)this.blockImpact=0;}
@@ -172,16 +173,18 @@ export class HeroAnimator {
     const clip=this.clips[pose.kind]!,dir=pose.face??face;
     const anchor=clip.anchor/clip.meta.frameWidth;
     image.setTexture(clip.key,`pose-${pose.frame}`).setOrigin(dir<0?1-anchor:anchor,clip.feet[pose.frame]/clip.meta.frameHeight)
-      .setPosition(x,y).setFlipX(dir<0).setScale(clip.scale*(crouch&&pose.kind!=='crouch'?.65:1)).setAngle(0).setVisible(true);
+      .setPosition(x,y).setFlipX(dir<0).setScale(clip.scale*(crouch&&pose.kind!=='crouch'&&pose.kind!=='crouchSlash'?.65:1)).setAngle(0).setVisible(true);
     image.setData('heroAction',pose.kind).setData('heroFrame',pose.frame);
     return true;
   }
   renderBeam(x: number, y: number, crouch: boolean) {
     this.beam.setVisible(false);
-    if(this.attack?.kind!=='reach')return;
+    if(!this.attack||(this.attack.kind!=='reach'&&!(this.attack.kind==='crouchSlash'&&this.attack.extended)))return;
     const frame=this.attackFrame(),box=this.effects.get(frame);
     if(!box)return;
-    const clip=this.clips.reach!,scale=clip.scale*(crouch?.65:1),dir=this.attack.face;
+    const clip=this.clips.reach;
+    if(!clip)return;
+    const scale=clip.scale*((crouch||this.attack.kind==='crouchSlash')?.65:1),dir=this.attack.face;
     const start=Math.max(0,(box.left-clip.anchor)*scale),width=this.attack.range-start;
     // The far edge uses the very same range snapshot as the hit test. Flip
     // around the near edge for left-facing strikes; keep the body scale fixed.
