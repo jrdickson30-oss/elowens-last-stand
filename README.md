@@ -65,3 +65,5 @@ Elowen’s six-frame shield-block sheet in public/elowen-block/ raises the shiel
 Holding S while pressing J uses a dedicated six-frame crouching sword slash matching the standing slash sequence. Its bent-knee poses use a fixed body scale and measured foot anchors, and recover into the held crouch. The sword cadence, damage and 115/230-pixel normal/Strike Through ranges are unchanged. Strike Through retains its separate energy effect while crouched.
 
 Holding S + L uses a dedicated six-frame crouching block: raise, brace, impact recoil, recover and hold. It stays crouched during movement, mirrors with facing, keeps a fixed body scale and measured foot anchors, and transitions back to standing block or crouch when S or L is released. Damage checks and stamina costs are unchanged.
+
+Holding S with A or D plays a six-frame crouched walk after lowering into the crouch. It loops with fixed scale and measured foot anchors, mirrors with facing, and returns to crouch on stopping. Crouched blocks and sword attacks take priority. Standing up restores normal walking. The existing 90 px/s crouched movement speed is unchanged.

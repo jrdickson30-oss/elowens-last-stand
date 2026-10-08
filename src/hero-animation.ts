@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 
 export const SWORD_RANGE = 115;
 export const SWORD_INTERVAL = .42;
-type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block' | 'walk' | 'guardWalk' | 'crouch' | 'crouchSlash' | 'crouchBlock';
+type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block' | 'walk' | 'guardWalk' | 'crouch' | 'crouchSlash' | 'crouchBlock' | 'crouchWalk';
 type Metadata = {
   frameWidth: number; frameHeight: number; frameCount: number; columns: number;
   durationsMs: number[]; groundY?: number; anchor?: {x: number; groundY: number};
@@ -23,6 +23,7 @@ const assets: Record<Action, {file: string; bodyHeight: number}> = {
   crouch: {file: 'crouch', bodyHeight: 410},
   crouchSlash: {file: 'crouch-sword-attack', bodyHeight: 432},
   crouchBlock: {file: 'crouch-block', bodyHeight: 560},
+  crouchWalk: {file: 'crouch-walk', bodyHeight: 580},
 };
 
 export function preloadHeroActions(scene: Phaser.Scene) {
@@ -164,11 +165,12 @@ export class HeroAnimator {
       const frame=!this.airborne?5:this.jumpElapsed<.06?0:vy<-250?1:vy<-80?2:vy<=80?3:4;
       return {kind:'jump' as const,frame,face:null};
     }
+    if(this.crouching&&this.moving&&this.crouchProgress>=.4&&this.clips.crouchWalk)return {kind:'crouchWalk' as const,frame:this.walkFrame('crouchWalk'),face:null};
     if(this.crouchProgress>0&&this.clips.crouch)return {kind:'crouch' as const,frame:Math.min(5,Math.floor(this.crouchProgress/.08)),face:null};
     if(this.moving&&this.clips.walk)return {kind:'walk' as const,frame:this.walkFrame('walk'),face:null};
     return null;
   }
-  walkFrame(kind: 'walk'|'guardWalk') {
+  walkFrame(kind: 'walk'|'guardWalk'|'crouchWalk') {
     const durations=this.clips[kind]!.meta.durationsMs;
     let elapsed=this.walkElapsed*1000%durations.reduce((sum,ms)=>sum+ms,0);
     for(let frame=0;frame<durations.length;frame++){if(elapsed<durations[frame])return frame;elapsed-=durations[frame]}
@@ -179,7 +181,7 @@ export class HeroAnimator {
     const clip=this.clips[pose.kind]!,dir=pose.face??face;
     const anchor=clip.anchor/clip.meta.frameWidth;
     image.setTexture(clip.key,`pose-${pose.frame}`).setOrigin(dir<0?1-anchor:anchor,clip.feet[pose.frame]/clip.meta.frameHeight)
-      .setPosition(x,y).setFlipX(dir<0).setScale(clip.scale*(crouch&&pose.kind!=='crouch'&&pose.kind!=='crouchSlash'&&pose.kind!=='crouchBlock'?.65:1)).setAngle(0).setVisible(true);
+      .setPosition(x,y).setFlipX(dir<0).setScale(clip.scale*(crouch&&pose.kind!=='crouch'&&pose.kind!=='crouchSlash'&&pose.kind!=='crouchBlock'&&pose.kind!=='crouchWalk'?.65:1)).setAngle(0).setVisible(true);
     image.setData('heroAction',pose.kind).setData('heroFrame',pose.frame);
     return true;
   }

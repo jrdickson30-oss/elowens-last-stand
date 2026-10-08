@@ -67,7 +67,7 @@ class Stand extends Phaser.Scene{
  }
  tickHeroAnimation(dt:number){
   if(this.paused)return;
-  this.heroAnimator.tick(dt,this.y,G,this.blocking,this.phase==='play',!this.crouching&&this.down('A')!==this.down('D')&&this.x>355&&this.x<1000,this.crouching);
+  this.heroAnimator.tick(dt,this.y,G,this.blocking,this.phase==='play',this.down('A')!==this.down('D')&&this.x>355&&this.x<1000,this.crouching);
   if(!this.idleDurations.length)return;
   const idle=this.phase==='title'||(this.phase==='play'&&this.y===G&&!this.down('A')&&!this.down('D')&&!this.down('J')&&!this.crouching&&!this.blocking&&this.swing<=0&&this.bashTime<=0&&!this.shieldFlight&&!this.heroAnimator.pose(this.vy));
   if(!idle){this.idleFrame=0;this.idleElapsed=0;return}
