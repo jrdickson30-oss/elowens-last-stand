@@ -1,0 +1,5 @@
+Generated with the built-in image generation tool from Elowen's existing sword animation reference.
+
+Create a six-frame transparent sprite sheet for Ember Strike: ready, orange sword ignition, peak orange glow with a pure white centre, forward sword-tip release flash, fading glow, recovery. Preserve Elowen's blonde hair, silver armour, blue and gold clothing and shield, body proportions and full sword length. No baked travelling projectile. Arrange six 512 by 512 cells in a 3 by 2 grid.
+
+Final correction: preserve FULL blade length; do not shorten or scale down the sword. Move the entire forward casting pose within its cell to give the tip and glow room.
