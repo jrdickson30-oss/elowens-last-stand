@@ -37,6 +37,8 @@ try {
    const targets=[[-40,422],[35,422],[105,422],[-90,422],[260,422],[35,220],[190,422]];
    const enemies=targets.map(([dx,y])=>({x:s.x+face*dx,y,hp:1000,max:1000,next:999,speed:0,kind:0}));
    s.touch.add('S');s.touch.add('J');step();s.touch.delete('J');
+   // Extra plain attacks must not overwrite the queued downward finish.
+   step();s.touch.delete('S');s.touch.add('J');step();s.touch.delete('J');s.touch.add('S');
    while(s.aerialAttack?.kind==='spin')step();
    const started=s.aerialAttack.kind,dir=s.aerialAttack.face;s.face=-face;s.enemies=enemies;
    const before=enemies.map(e=>e.hp),poses=[],heights=[],scales=[];
@@ -61,6 +63,32 @@ try {
   for(let i=0;i<45;i++){s.tick(.02);chained||=!!s.aerialAttack}
   return !chained;
  }));
+ // Repeated fresh presses cannot indefinitely extend the airborne suspension.
+ for(const face of [1,-1])for(const extended of [false,true])for(const dt of [.01,.04]) {
+  const result=await page.evaluate(({face,extended,dt})=>{
+   const s=window.elowen;s.begin();s.paused=true;s.timer=999;s.spawned=0;s.enemies=[];s.survivors=[];s.face=face;s.reachTime=extended?8:0;
+   const step=()=>s.tick(dt);
+   s.touch.add('W');s.touch.add('J');step();s.touch.clear();step();s.touch.add('J');step();s.touch.clear();
+   let spins=0,previous=null,landed=false;
+   for(let i=0;i<Math.ceil(2/dt);i++){
+    if(i%2===0)s.touch.add('J');else s.touch.delete('J');step();
+    if(s.aerialAttack?.kind==='spin'&&s.aerialAttack!==previous){spins++;previous=s.aerialAttack}
+    if(s.y===422&&!s.risingAttack&&!s.aerialAttack){landed=true;break}
+   }
+   s.touch.clear();step();const rearmed=!s.airSpinUsed;
+   // A new jump permits its own suspended spin.
+   s.touch.add('W');step();s.touch.clear();for(let i=0;i<Math.ceil(.16/dt);i++)step();s.touch.add('J');step();s.touch.clear();
+   return {spins,landed,rearmed,next:s.aerialAttack?.kind};
+  },{face,extended,dt});
+  assert.deepEqual(result,{spins:1,landed:true,rearmed:true,next:'spin'},'one spin per jump despite repeated tapping, rearmed on landing');
+ }
+ // Cancelling a spin must not grant another suspension before landing.
+ for(const cancel of ['block','ember'])assert(await page.evaluate(cancel=>{
+  const s=window.elowen;s.begin();s.paused=true;s.timer=999;s.spawned=0;s.enemies=[];s.survivors=[];s.y=330;s.vy=120;s.jumpFacing=1;s.startAerialAttack('spin');
+  if(cancel==='block'){s.touch.add('L');s.tick(.02);s.touch.clear()}else s.cast('ember');
+  s.heroAnimator.casting=null;s.tick(.02);s.touch.add('J');s.tick(.02);s.touch.clear();
+  return s.airSpinUsed&&!s.aerialAttack&&s.vy>0;
+ },cancel),cancel+' does not reset the once-per-jump limit');
  // Cancellation releases suspension; lifecycle resets clear queued attacks.
  for(const action of ['block','ember','wave','restart','death','ending']) {
   assert(await page.evaluate(action=>{
@@ -79,5 +107,5 @@ try {
  const frozen=await page.evaluate(()=>({y:window.elowen.y,elapsed:window.elowen.aerialAttack.elapsed}));await page.waitForTimeout(160);
  assert.deepEqual(await page.evaluate(()=>({y:window.elowen.y,elapsed:window.elowen.aerialAttack.elapsed})),frozen);
  assert.deepEqual(errors,[]);
- console.log('PASS: buffered rising -> suspended spin -> fall/dive, original facing, normal/blue poses, landing-only multi-target damage, range exclusions, fixed sword scale, 25/100fps, no held-key retrigger, pause/cancellation/lifecycle reset.');
+ console.log('PASS: one suspended spin per jump despite repeated presses, landing rearms it, cancellation cannot bypass the cap, buffered dive survives extra taps, normal/blue poses, facing/damage/range, 25/100fps, pause and resets.');
 }finally{await browser.close()}
