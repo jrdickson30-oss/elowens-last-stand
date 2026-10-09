@@ -5,6 +5,7 @@ const page=await browser.newPage({viewport:{width:1440,height:1000}});
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 try {
  await page.goto(process.env.GAME_URL||'http://127.0.0.1:5173');
+ assert(!/chaosbound/i.test(await page.locator('body').innerText()),'site branding is independent');
  await page.locator('#begin').click();
  if(process.env.VILLAGER_SCREENSHOT){await page.waitForTimeout(250);await page.screenshot({path:process.env.VILLAGER_SCREENSHOT});}
  const groups=await page.evaluate(()=>{
@@ -24,6 +25,7 @@ try {
   return {results,clips:s.villagerAnimator.clips};
  });
  assert.equal(frames.clips.length,34);
+ const mice=frames.clips.filter(c=>c.id.startsWith('rottan-mouse-'));assert.equal(mice.length,2);assert(mice.every(c=>c.displayHeight===34),'both Mouse Folk are half their previous 68px height');
  for(let frame=0;frame<6;frame++){
   assert.equal(frames.results[frame].length,34,'every villager renders');
   for(const im of frames.results[frame]){
@@ -40,6 +42,7 @@ try {
  assert(await page.evaluate(()=>window.elowen.survivors[0].x)<before,'villagers travel left');
  await page.evaluate(()=>{const s=window.elowen;s.survivors=[{...s.survivors[0],x:76}];});
  await page.waitForFunction(()=>window.elowen.survivors.length===0&&window.elowen.rescued===1);
+ await page.evaluate(()=>window.elowen.upgrade());assert(!/chaosbound/i.test(await page.locator('body').innerText()),'upgrade menu has no affiliation branding');
  assert.deepEqual(errors,[]);
  console.log('PASS: randomized groups, all 34 six-frame animations, leftward facing/travel, Kin scales, ground anchors and rescue verified.');
 }finally{await browser.close()}

@@ -1,4 +1,4 @@
-// Chaosbound: Champion SP, Character Progression table, Proficiency, Weapons.
+// Champion SP, Character Progression table, Proficiency, Weapons.
 // Keep the prototype's starting health/damage. Extra dice use fixed averages:
 // one-handed longsword d10 = 5.5; Sentinel's shield d4 = 2.5.
 export const MAX_LEVEL = 10;

@@ -1,4 +1,4 @@
-# Chaosbound villager running animations
+# Villager running animations
 
 34 characters: one male and one female for each of the 17 Kin variants in the original villager set. Each clip has six poses in a three-column, two-row PNG sheet, with transparent alpha and a 100 ms frame duration (10 fps, 600 ms per loop). Read frames from left to right, then top to bottom.
 
