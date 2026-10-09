@@ -5,16 +5,20 @@
 body{margin:0;background:#111b19;color:#e6dfcc;font:16px system-ui;display:grid;place-items:center;min-height:100vh}main{text-align:center;max-width:680px;padding:24px}h1{font-size:24px;margin:0}p{color:#a4b5a8;line-height:1.5}canvas{width:100%;max-width:640px;image-rendering:pixelated}button{background:#30463b;border:1px solid #79907c;color:inherit;border-radius:6px;padding:10px 18px;margin:6px;cursor:pointer}
 </style>
 <main><h1>Standard Zombie</h1><p>Slow shuffle · One arm reaching · Rear leg dragging</p>
-<canvas width="640" height="380"></canvas><div><button id="pause">Pause</button><button id="face">Face right</button></div>
+<canvas width="640" height="380"></canvas><div><button id="pause">Pause</button><button id="face">Face right</button><button id="hit">Hit Zombie</button></div>
 <p>The faster two-arm walk will be a separate gait.</p></main>
 <script type="module">
 const meta=await(await fetch('./Zombie-walk.json')).json(),img=new Image();
 img.src='./Zombie-walk-spritesheet.png';await img.decode();
+const hitMeta=await(await fetch('../zombie-hit/Zombie-hit.json')).json(),hitImg=new Image();
+hitImg.src='../zombie-hit/Zombie-hit-spritesheet.png';await hitImg.decode();
 const ctx=document.querySelector('canvas').getContext('2d'),duration=meta.durationsMs.reduce((a,b)=>a+b,0);
-let elapsed=0,last=performance.now(),paused=false,face=-1;
+const hitDuration=hitMeta.durationsMs.reduce((a,b)=>a+b,0);
+let elapsed=0,last=performance.now(),paused=false,face=-1,hitElapsed=null;
+document.querySelector('#hit').onclick=()=>{hitElapsed=0};
 document.querySelector('#pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'Play':'Pause'};
 document.querySelector('#face').onclick=e=>{face*=-1;e.target.textContent=face<0?'Face right':'Face left'};
-function draw(now){const dt=Math.min(now-last,50);last=now;if(!paused)elapsed+=dt;let time=elapsed%duration,frame=0;while(frame<meta.frameCount-1&&time>=meta.durationsMs[frame])time-=meta.durationsMs[frame++];
-ctx.clearRect(0,0,640,380);ctx.fillStyle='#263d32';ctx.fillRect(25,331,590,2);ctx.save();ctx.translate(320,330);ctx.scale(face*230/meta.bodyHeight,230/meta.bodyHeight);ctx.imageSmoothingEnabled=false;
-ctx.drawImage(img,frame%meta.columns*meta.frameWidth,Math.floor(frame/meta.columns)*meta.frameHeight,meta.frameWidth,meta.frameHeight,-meta.frameAnchorX[frame],-meta.frameGroundY[frame],meta.frameWidth,meta.frameHeight);ctx.restore();requestAnimationFrame(draw)}requestAnimationFrame(draw);
+function draw(now){const dt=Math.min(now-last,50);last=now;if(!paused){if(hitElapsed!==null){hitElapsed+=dt;if(hitElapsed>=hitDuration)hitElapsed=null}else elapsed+=dt}const clip=hitElapsed===null?meta:hitMeta,sheet=hitElapsed===null?img:hitImg;let time=hitElapsed??(elapsed%duration),frame=0;while(frame<clip.frameCount-1&&time>=clip.durationsMs[frame])time-=clip.durationsMs[frame++];
+ctx.clearRect(0,0,640,380);ctx.fillStyle='#263d32';ctx.fillRect(25,331,590,2);ctx.save();ctx.translate(320,330);ctx.scale(face*230/clip.bodyHeight,230/clip.bodyHeight);ctx.imageSmoothingEnabled=false;
+ctx.drawImage(sheet,frame%clip.columns*clip.frameWidth,Math.floor(frame/clip.columns)*clip.frameHeight,clip.frameWidth,clip.frameHeight,-clip.frameAnchorX[frame],-clip.frameGroundY[frame],clip.frameWidth,clip.frameHeight);ctx.restore();requestAnimationFrame(draw)}requestAnimationFrame(draw);
 </script></html>
