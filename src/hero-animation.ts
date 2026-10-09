@@ -1,8 +1,10 @@
 import Phaser from 'phaser';
+import { RISING_DURATION, type RisingAttack } from './rising-attack';
+import { AIR_SPIN_DURATION, DIVE_WINDUP, type AerialAttack } from './aerial-attack';
 
 export const SWORD_RANGE = 115;
 export const SWORD_INTERVAL = .42;
-type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block' | 'walk' | 'guardWalk' | 'crouch' | 'crouchSlash' | 'crouchBlock' | 'crouchWalk' | 'ember';
+type Action = 'slash' | 'thrust' | 'reach' | 'jump' | 'block' | 'walk' | 'guardWalk' | 'crouch' | 'crouchSlash' | 'crouchBlock' | 'crouchWalk' | 'ember' | 'rising' | 'risingReach' | 'dive' | 'diveReach';
 type Metadata = {
   frameWidth: number; frameHeight: number; frameCount: number; columns: number;
   durationsMs: number[]; groundY?: number; anchor?: {x: number; groundY: number};
@@ -14,6 +16,10 @@ type Metadata = {
 type Clip = {key: string; meta: Metadata; scale: number; anchor: number; feet: number[]};
 type Bounds = {left: number; top: number; right: number; bottom: number};
 const assets: Record<Action, {file: string; bodyHeight: number}> = {
+  dive: {file: 'downward-slash', bodyHeight: 450},
+  diveReach: {file: 'downward-strike-through', bodyHeight: 450},
+  rising: {file: 'spiral-attack', bodyHeight: 360},
+  risingReach: {file: 'spiral-strike-through', bodyHeight: 285},
   ember: {file: 'ember-strike', bodyHeight: 386},
   slash: {file: 'sword-attack', bodyHeight: 191},
   thrust: {file: 'sword-thrust', bodyHeight: 174},
@@ -58,6 +64,8 @@ export class HeroAnimator {
   nextAttack: 'slash'|'thrust' = 'slash';
   attack: {kind: 'slash'|'thrust'|'reach'|'crouchSlash'; elapsed: number; range: number; face: number; extended: boolean; fresh?: boolean}|null = null;
   casting: {elapsed:number;face:number;fresh:boolean}|null=null;
+  rising: RisingAttack<unknown>|null=null;
+  aerial:AerialAttack<unknown>|null=null;
   moving=false;
   walkElapsed=0;
   crouchProgress=0;
@@ -107,14 +115,16 @@ export class HeroAnimator {
     this.crouchProgress=0;
     this.moving=false;this.walkElapsed=0;
     this.blocking=false;this.blockElapsed=0;this.blockImpact=null;
-    this.casting=null;this.attack=null;this.nextAttack='slash';this.airborne=false;this.jumpElapsed=this.landingTime=0;this.beam.setVisible(false);
+    this.aerial=null;this.rising=null;this.casting=null;this.attack=null;this.nextAttack='slash';this.airborne=false;this.jumpElapsed=this.landingTime=0;this.beam.setVisible(false);
   }
   startAttack(range: number, face: number, extended: boolean, crouching=false) {
     const kind=crouching&&this.clips.crouchSlash?'crouchSlash':extended?'reach':this.nextAttack;
     if(!extended&&kind!=='crouchSlash')this.nextAttack=this.nextAttack==='slash'?'thrust':'slash';
     this.attack=this.clips[kind]?{kind,elapsed:0,range,face,extended,fresh:true}:null;
   }
-  startEmber(face:number) {this.attack=null;this.casting=this.clips.ember?{elapsed:0,face,fresh:true}:null;}
+  startRising(attack:RisingAttack<unknown>) {this.attack=null;this.rising=attack;}
+  startAerial(attack:AerialAttack<unknown>){this.attack=null;this.rising=null;this.aerial=attack;}
+  startEmber(face:number) {this.aerial=null;this.rising=null;this.attack=null;this.casting=this.clips.ember?{elapsed:0,face,fresh:true}:null;}
   emberTip(x:number,y:number,face:number,crouching:boolean) {
     const c=this.clips.ember;
     if(!c?.meta.tip)return {x:x+face*30,y:y-48};
@@ -167,6 +177,24 @@ export class HeroAnimator {
     return durations.length-1;
   }
   pose(vy: number) {
+    if(this.aerial) {
+      const a=this.aerial;
+      if(a.kind==='dive')return {kind:(a.extended?'diveReach':'dive') as 'dive'|'diveReach',
+        frame:a.landingElapsed!==null?(a.landingElapsed<.12?4:5):a.elapsed<DIVE_WINDUP?0:Math.min(3,1+Math.floor((a.elapsed-DIVE_WINDUP)/.04)),face:a.face};
+      const kind=a.extended?'risingReach':'rising',durations=this.clips[kind]!.meta.durationsMs;
+      let elapsed=a.elapsed/AIR_SPIN_DURATION*durations.reduce((sum,ms)=>sum+ms,0),frame=0;
+      while(frame<durations.length-1&&elapsed>=durations[frame]){elapsed-=durations[frame];frame++}
+      return {kind:kind as 'rising'|'risingReach',frame,face:a.face};
+    }
+    if(this.rising) {
+      const kind=this.rising.extended?'risingReach':'rising';
+      if(this.clips[kind]) {
+        const durations=this.clips[kind].meta.durationsMs;
+        let elapsed=this.rising.elapsed/RISING_DURATION*durations.reduce((sum,ms)=>sum+ms,0),frame=0;
+        while(frame<durations.length-1&&elapsed>=durations[frame]){elapsed-=durations[frame];frame++}
+        return {kind:kind as 'rising'|'risingReach',frame,face:this.rising.face};
+      }
+    }
     if(this.casting&&this.clips.ember){
       let elapsed=this.casting.elapsed*1000,frame=0;
       const durations=this.clips.ember.meta.durationsMs;
@@ -201,7 +229,7 @@ export class HeroAnimator {
     const clip=this.clips[pose.kind]!,dir=pose.face??face;
     const anchor=(clip.meta.frameAnchors?.[pose.frame]??clip.anchor)/clip.meta.frameWidth;
     image.setTexture(clip.key,`pose-${pose.frame}`).setOrigin(dir<0?1-anchor:anchor,clip.feet[pose.frame]/clip.meta.frameHeight)
-      .setPosition(x,y).setFlipX(dir<0).setScale(clip.scale*(crouch&&pose.kind!=='crouch'&&pose.kind!=='crouchSlash'&&pose.kind!=='crouchBlock'&&pose.kind!=='crouchWalk'?.65:1)).setAngle(0).setVisible(true);
+      .setPosition(x,y).setFlipX(dir<0).setScale(clip.scale*(crouch&&pose.kind!=='dive'&&pose.kind!=='diveReach'&&pose.kind!=='crouch'&&pose.kind!=='crouchSlash'&&pose.kind!=='crouchBlock'&&pose.kind!=='crouchWalk'?.65:1)).setAngle(0).setVisible(true);
     if(pose.kind==='ember')image.setScale(clip.scale,clip.scale*(crouch?.65:1));
     image.setData('heroAction',pose.kind).setData('heroFrame',pose.frame);
     return true;

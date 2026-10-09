@@ -1,4 +1,6 @@
 import Phaser from 'phaser';
+import { RISING_DURATION, JUMP_COMBO_WINDOW, risingSweepHits, type RisingAttack } from './rising-attack';
+import { AIR_SPIN_DURATION, DIVE_WINDUP, DIVE_RECOVERY, type AerialAttack } from './aerial-attack';
 import { TouchControls, bindTouchAction } from './touch-controls';
 import { WarriorShield } from './warrior-shield';
 import './style.css';
@@ -12,7 +14,7 @@ import { VillagerAnimator, preloadVillagers } from './villager-animation';
 import { SPELLS, type SpellId } from './spells';
 import { CHAMPION_ABILITIES, ABILITY_SLOTS, isActiveAbility, type ChampionId, type ActiveAbilityId } from './abilities';
 const W=1280,H=720,G=422;
-type Enemy={x:number,hp:number,max:number,next:number,speed:number,kind:number;stunned?:number;rooted?:number};
+type Enemy={x:number,y?:number,hp:number,max:number,next:number,speed:number,kind:number;stunned?:number;rooted?:number};
 type Survivor={x:number,t:number,villager:string};
 type Shot={x:number,y:number,dir:number,life:number,spell:SpellId,damage:number};
 type Particle={x:number,y:number,vx:number,vy:number,life:number,color:number};
@@ -26,6 +28,14 @@ class Stand extends Phaser.Scene{
  spritePool:Phaser.GameObjects.Image[]=[];spriteIndex=0;art!:Phaser.GameObjects.Graphics;hud!:Phaser.GameObjects.Graphics;labels!:Phaser.GameObjects.Text;keys!:Record<string,Phaser.Input.Keyboard.Key>;
  touchControls?:TouchControls;
  warriorShield!:WarriorShield;
+ risingAttack:RisingAttack<Enemy>|null=null;
+ aerialAttack:AerialAttack<Enemy>|null=null;
+ jumpFacing:number|null=null;
+ attackHeld=false;
+ queuedAirAttack:'spin'|'dive'|null=null;
+ risingEnergyBack?:Phaser.GameObjects.Graphics;
+ jumpComboTime=0;
+ recentSword:{age:number;damage:number;rootDuration:number;hits:Set<Enemy>}|null=null;
  pendingEmber:{delay:number;face:number;damage:number}|null=null;
  phase='title';wave=1;x=500;y=G;vy=0;face=1;hp=100;stamina=100;energy=100;spellDamage=43;shieldCost=14;rescued=0;lost=0;kills=0;spawned=0;total=0;timer=0;clock=0;swing=0;attackCd=0;inv=0;blocking=false;crouching=false;enemies:Enemy[]=[];survivors:Survivor[]=[];shots:Shot[]=[];particles:Particle[]=[];paused=false;touch=new Set<string>();upgrades:string[]=[];waveKills=0;
  scenery!:Phaser.GameObjects.Container;sceneryLevel=0;ambientTime=0;
@@ -51,7 +61,7 @@ class Stand extends Phaser.Scene{
  const pixels=context.getImageData(0,0,source.width,source.height).data;let left=source.width,top=source.height,right=0,bottom=0;
  for(let y=0;y<source.height;y++)for(let x=0;x<source.width;x++)if(pixels[(y*source.width+x)*4+3]>90){left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x);bottom=Math.max(bottom,y)}
  if(right>=left&&bottom>=top)texture.add('hero',0,left,top,right-left+1,bottom-top+1);
-}this.createIdleFrames();this.heroAnimator=new HeroAnimator(this);this.warriorShield=new WarriorShield(this);this.villagerAnimator=new VillagerAnimator(this);this.art=this.add.graphics().setDepth(2);this.hud=this.add.graphics().setDepth(3);this.labels=this.add.text(35,26,'',{fontFamily:'Arial',fontSize:'12px',color:'#dedaca',lineSpacing:8}).setDepth(10);this.keys=this.input.keyboard!.addKeys('A,D,S,W,J,K,L,E,ONE,TWO,THREE,FOUR,FIVE,U,I,O,ESC') as Record<string,Phaser.Input.Keyboard.Key>;this.input.keyboard!.addCapture(['W','A','D','S','J','K','L','E','ONE','TWO','THREE','FOUR','FIVE','U','I','O']);for(const key of [...SPELLS.map(s=>s.key),'K',...ABILITY_SLOTS,'ESC'])this.keys[key].on('down',()=>this.pendingPress.add(key));this.createHotbar();this.controls();this.touchControls!.update(this.phase,this.paused);this.title();startupComplete();(window as unknown as {elowen:Stand}).elowen=this;}
+}this.createIdleFrames();this.heroAnimator=new HeroAnimator(this);this.warriorShield=new WarriorShield(this);this.villagerAnimator=new VillagerAnimator(this);this.art=this.add.graphics().setDepth(2);this.hud=this.add.graphics().setDepth(3);this.labels=this.add.text(35,26,'',{fontFamily:'Arial',fontSize:'12px',color:'#dedaca',lineSpacing:8}).setDepth(10);this.keys=this.input.keyboard!.addKeys('A,D,S,W,J,K,L,E,ONE,TWO,THREE,FOUR,FIVE,U,I,O,ESC') as Record<string,Phaser.Input.Keyboard.Key>;this.input.keyboard!.addCapture(['W','A','D','S','J','K','L','E','ONE','TWO','THREE','FOUR','FIVE','U','I','O']);for(const key of [...SPELLS.map(s=>s.key),'J','K',...ABILITY_SLOTS,'ESC'])this.keys[key].on('down',()=>this.pendingPress.add(key));this.createHotbar();this.controls();this.touchControls!.update(this.phase,this.paused);this.title();startupComplete();(window as unknown as {elowen:Stand}).elowen=this;}
  createIdleFrames(){
   if(!this.textures.exists('elowen-idle'))return;
   const meta=this.cache.json.get('elowen-idle-meta') as IdleMetadata|undefined;
@@ -84,10 +94,10 @@ class Stand extends Phaser.Scene{
  title(){overlay.innerHTML=`<div class="panel"><div class="gold">THE LAST LIGHT AT GREYFALL</div><h2>They’re counting on you.</h2><p>The dead are coming. Help Greyfall’s refugees escape the town.<br>Your sword is their last defence. Your Chaos is their last hope.</p><button class="primary" id="begin">TAKE YOUR STAND →</button><p>Ten levels · Three waves each · One last stand</p></div>`;document.querySelector('#begin')!.addEventListener('click',()=>this.begin());}
  controls(){this.touchControls??=new TouchControls(this.touch,this.pendingPress)}
  begin(){this.touchControls?.clear();this.touch.clear();this.progression=championProgression(1);this.hp=this.stamina=this.energy=100;this.x=500;this.y=G;this.vy=0;this.wave=1;this.endingTime=0;this.bridgeDestroyed=this.heroSacrificed=false;this.sceneryLevel=0;this.rescued=this.lost=this.kills=0;this.spellDamage=43;this.shieldCost=14;this.upgrades=[];this.shieldAbility=null;this.kActive=null;this.abilitySlots=[null,null,null];this.abilityRanks={};this.abilityCooldowns={};this.focusTime=this.reachTime=this.crippleTime=this.protectorCd=0;this.shieldFlight=null;this.arrows=[];this.shots=[];this.pendingEmber=null;this.particles=[];this.attackCd=this.inv=this.swing=0;this.idleFrame=this.idleElapsed=0;this.heroAnimator.reset();this.paused=false;this.spellCooldowns={};this.wardTime=this.bashTime=0;this.wall=null;this.previousKeys.clear();this.pendingPress.clear();this.message='';this.messageTime=0;this.controls();this.startWave();}
- startWave(){this.heroAnimator.reset();if(this.sceneryLevel!==this.level)this.background();overlay.innerHTML='';this.phase='play';this.enemies=[];this.survivors=this.villagerAnimator.choose(5).map((villager,i)=>({x:680+i*90,t:Math.random()*.6,villager}));this.spawned=0;this.waveKills=0;this.wall=null;this.wardTime=this.focusTime=this.reachTime=this.crippleTime=0;this.shieldFlight=null;this.arrows=[];this.shots=[];this.pendingEmber=null;this.abilityCooldowns={};this.spellCooldowns={};this.total=enemyCount(this.level,this.wave);this.timer=1.4;this.clock=0;this.energy=100;this.stamina=100;}
+ startWave(){this.resetRisingAttack();this.jumpFacing=null;this.attackHeld=false;this.heroAnimator.reset();if(this.sceneryLevel!==this.level)this.background();overlay.innerHTML='';this.phase='play';this.enemies=[];this.survivors=this.villagerAnimator.choose(5).map((villager,i)=>({x:680+i*90,t:Math.random()*.6,villager}));this.spawned=0;this.waveKills=0;this.wall=null;this.wardTime=this.focusTime=this.reachTime=this.crippleTime=0;this.shieldFlight=null;this.arrows=[];this.shots=[];this.pendingEmber=null;this.abilityCooldowns={};this.spellCooldowns={};this.total=enemyCount(this.level,this.wave);this.timer=1.4;this.clock=0;this.energy=100;this.stamina=100;}
  down(k:string){return this.keys[k].isDown||this.touch.has(k)}
  burst(x:number,y:number,color:number,n=12){for(let i=0;i<n;i++)this.particles.push({x,y,vx:Phaser.Math.Between(-140,140),vy:Phaser.Math.Between(-180,40),life:Phaser.Math.FloatBetween(.2,.65),color})}
- hurt(e:Enemy,d:number,dir=this.face){if(e.hp<=0)return;e.hp-=d;this.burst(e.x,G-40,0xb8c78b,8);e.x+=dir*15;if(e.hp<=0){this.kills++;this.waveKills++;this.burst(e.x,G-30,0xc69d57,16);tone(100)}}
+ hurt(e:Enemy,d:number,dir=this.face){if(e.hp<=0)return;e.hp-=d;this.burst(e.x,(e.y??G)-40,0xb8c78b,8);e.x+=dir*15;if(e.hp<=0){this.kills++;this.waveKills++;this.burst(e.x,(e.y??G)-30,0xc69d57,16);tone(100)}}
  hasActiveSlot(){return this.abilitySlots.includes(null)||(!this.shieldAbility&&!this.kActive)}
  nextActiveKey(){const empty=this.abilitySlots.indexOf(null);return empty>=0?ABILITY_SLOTS[empty]:'K'}
  rank(id:ChampionId){return this.abilityRanks[id]??1}
@@ -149,7 +159,7 @@ class Stand extends Phaser.Scene{
   const targets=this.enemies.filter(e=>e.hp>0&&(e.x-this.x)*this.face>=-12).sort((a,b)=>Math.abs(a.x-this.x)-Math.abs(b.x-this.x));
   if(id==='volley'&&!targets.length){this.notify('No enemies ahead for Hunter’s Volley.');return}
   this.energy-=spell.cost;this.spellCooldowns[id]=spell.cooldown;if(id!=='ember')this.burst(this.x+this.face*30,this.y-48,spell.color);tone(id==='ward'?350:520,.15);
-  if(id==='ember'){this.swing=0;this.heroAnimator.startEmber(this.face);this.pendingEmber={delay:.12,face:this.face,damage:this.spellDamage};}
+  if(id==='ember'){this.resetRisingAttack();this.swing=0;this.heroAnimator.startEmber(this.face);this.pendingEmber={delay:.12,face:this.face,damage:this.spellDamage};}
   if(id==='ice')this.shots.push({x:this.x+this.face*30,y:this.y-48,dir:this.face,life:.8,spell:id,damage:48});
   if(id==='ward')this.wardTime=6;
   if(id==='volley')for(let i=0;i<4;i++){const e=targets[i%Math.min(4,targets.length)];this.burst(e.x,G-45,spell.color,10);this.hurt(e,19)}
@@ -209,6 +219,7 @@ class Stand extends Phaser.Scene{
   this.championbar.querySelector('.passive-status small')!.textContent=this.upgrades.includes('protector')?`PASSIVE · RANK ${this.rank('protector')}`:'PASSIVE · LOCKED';
  }
  completeWave(){
+  this.resetRisingAttack();
   if(this.wave<WAVES_PER_LEVEL){
    this.phase='wavebreak';
    overlay.innerHTML=`<div class="panel"><div class="gold">${chapterForLevel(this.level).location.toUpperCase()} · WAVE ${this.wave} CLEARED</div><h2>The refugees move on.</h2><p>Elowen · Level ${this.level} ${this.progression.tier}<br>${chapterForLevel(this.level).story}</p><button class="primary" id="continue-wave">START WAVE ${this.wave+1} →</button></div>`;
@@ -217,7 +228,7 @@ class Stand extends Phaser.Scene{
   else this.beginEnding();
  }
  beginEnding(){
-  this.phase='ending';this.endingTime=0;overlay.innerHTML='';this.x=450;this.y=G;this.face=1;this.inv=0;this.blocking=this.crouching=false;
+  this.resetRisingAttack();this.phase='ending';this.endingTime=0;overlay.innerHTML='';this.x=450;this.y=G;this.face=1;this.inv=0;this.blocking=this.crouching=false;
   this.wall=null;this.shots=[];this.pendingEmber=null;this.shieldFlight=null;this.arrows=[];this.focusTime=this.reachTime=this.crippleTime=this.wardTime=0;this.touch.clear();
  }
  tickEnding(dt:number){
@@ -236,8 +247,95 @@ class Stand extends Phaser.Scene{
   for(let i=0;i<18;i++){const fall=Math.min(160,(this.endingTime-1.3)*125+i*3);g.fillStyle(i%2?0x6f7163:0x494e47);g.fillRect(345+i*15,G+fall+(i%3)*14,12,10)}
   if(this.phase==='ending'&&this.endingTime<2.7){g.fillStyle(0xf1a050,Math.max(0,1-(this.endingTime-1.3)/1.4));g.fillCircle(450,G+10,50+(this.endingTime-1.3)*90)}
  }
- end(win:boolean){this.pendingEmber=null;this.heroAnimator.reset();this.phase=win?'win':'dead';overlay.innerHTML=`<div class="panel"><div class="gold">${win?'THE CROSSING IS DESTROYED · THE REFUGEES ARE SAFE':'GREYFALL REMEMBERS'}</div><h2>${win?'Her last stand. Their tomorrow.':'The last light fades.'}</h2><p>${this.rescued} survivors escaped · ${this.kills} undead defeated${this.lost?` · ${this.lost} survivors lost`:''}<br>${win?'Elowen sacrifices herself to destroy the crossing.<br>The bridge falls, cutting off the dead. Beyond the river, the refugees carry her name into tomorrow.':'Rise again. They still need you.'}</p><button class="primary" id="retry">${win?'STAND AGAIN':'TRY AGAIN'} →</button></div>`;document.querySelector('#retry')!.addEventListener('click',()=>this.begin())}
+ end(win:boolean){this.resetRisingAttack();this.pendingEmber=null;this.heroAnimator.reset();this.phase=win?'win':'dead';overlay.innerHTML=`<div class="panel"><div class="gold">${win?'THE CROSSING IS DESTROYED · THE REFUGEES ARE SAFE':'GREYFALL REMEMBERS'}</div><h2>${win?'Her last stand. Their tomorrow.':'The last light fades.'}</h2><p>${this.rescued} survivors escaped · ${this.kills} undead defeated${this.lost?` · ${this.lost} survivors lost`:''}<br>${win?'Elowen sacrifices herself to destroy the crossing.<br>The bridge falls, cutting off the dead. Beyond the river, the refugees carry her name into tomorrow.':'Rise again. They still need you.'}</p><button class="primary" id="retry">${win?'STAND AGAIN':'TRY AGAIN'} →</button></div>`;document.querySelector('#retry')!.addEventListener('click',()=>this.begin())}
  update(_time:number,delta:number){const dt=Math.min(delta/1000,.04);if(this.pressed('ESC')&&this.phase==='play'){this.paused=!this.paused;overlay.innerHTML=this.paused?'<div class="panel"><div class="gold">A MOMENT OF STILLNESS</div><h2>Paused</h2><p>Press Escape to return to the crossing.</p><button class="primary" id="resume">RESUME</button></div>':'';document.querySelector('#resume')?.addEventListener('click',()=>{this.paused=false;overlay.innerHTML=''})}this.touchControls?.update(this.phase,this.paused);if(this.phase==='play'&&!this.paused)this.tick(dt);if(this.phase==='ending')this.tickEnding(dt);this.tickHeroAnimation(dt);if(!this.paused){this.ambientTime+=dt;updateEnvironment(this.scenery,dt,this.bridgeDestroyed)}this.draw();this.updateHotbar();this.previousKeys=new Set(Object.keys(this.keys).filter(k=>this.down(k)));this.pendingPress.clear();}
+ resetRisingAttack(){this.cancelAerialAttack();this.risingAttack=null;this.heroAnimator.rising=null;this.jumpComboTime=0;this.recentSword=null;}
+ cancelAerialAttack(){
+  const a=this.aerialAttack;
+  if(a&&this.y<G&&(a.kind==='spin'||a.elapsed<DIVE_WINDUP))this.vy=a.resumeVy;
+  this.aerialAttack=null;this.heroAnimator.aerial=null;this.queuedAirAttack=null;
+ }
+ startAerialAttack(kind:'spin'|'dive'){
+  const a:AerialAttack<Enemy>={kind,elapsed:0,face:this.jumpFacing??this.face,range:SWORD_RANGE*(this.reachTime>0?2:1),extended:this.reachTime>0,
+   damage:this.swordDamage(),rootDuration:this.crippleTime>0?2+this.rank('cripple'):0,hits:new Set(),resumeVy:Math.max(120,this.vy),landingElapsed:null};
+  this.aerialAttack=a;this.heroAnimator.startAerial(a);this.queuedAirAttack=null;this.recentSword=null;this.jumpComboTime=0;this.swing=0;this.vy=0;
+  this.attackCd=kind==='spin'?AIR_SPIN_DURATION:DIVE_WINDUP+DIVE_RECOVERY;tone(kind==='spin'?230:150);
+ }
+ handleAirAttackInput(fresh:boolean){
+  if(this.y>=G){this.queuedAirAttack=null;return}
+  if(this.blocking||this.heroAnimator.casting)return;
+  if(fresh){
+   const kind=this.down('S')?'dive':'spin';
+   if(this.risingAttack||this.aerialAttack?.kind==='spin')this.queuedAirAttack=kind;
+   else if(!this.aerialAttack)this.startAerialAttack(kind);
+  }
+  if(!this.risingAttack&&!this.aerialAttack&&this.queuedAirAttack)this.startAerialAttack(this.queuedAirAttack);
+ }
+ tickAerialAttack(dt:number){
+  const a=this.aerialAttack;if(!a)return;
+  if(this.blocking||this.heroAnimator.casting){this.cancelAerialAttack();return}
+  const previous=a.elapsed;a.elapsed+=dt;
+  if(a.kind==='spin'){
+   for(const e of this.enemies)if(e.hp>0&&!a.hits.has(e)&&risingSweepHits((e.x-this.x)*a.face,(e.y??G)-this.y,a.range,
+    previous/AIR_SPIN_DURATION*RISING_DURATION,Math.min(a.elapsed,AIR_SPIN_DURATION)/AIR_SPIN_DURATION*RISING_DURATION))this.hitRisingEnemy(e,a);
+   if(a.elapsed>=AIR_SPIN_DURATION){this.vy=a.resumeVy;this.aerialAttack=null;this.heroAnimator.aerial=null;}
+  }else if(a.elapsed>=DIVE_WINDUP&&this.y>=G){
+   if(a.landingElapsed===null){
+    a.landingElapsed=0;tone(100,.12);this.burst(this.x+a.face*30,G-6,a.extended?0x49d9ff:0xe6ddbd,16);
+    for(const e of this.enemies)if(e.hp>0&&Math.abs((e.y??G)-G)<40&&(e.x-this.x)*a.face>=-45&&(e.x-this.x)*a.face<=a.range)this.hitRisingEnemy(e,a);
+   }else a.landingElapsed+=dt;
+   if(a.landingElapsed>=DIVE_RECOVERY){this.aerialAttack=null;this.heroAnimator.aerial=null;this.attackCd=0;}
+  }
+ }
+ tickJumpPhysics(dt:number){
+  const a=this.aerialAttack;
+  if(a&&(a.kind==='spin'||a.elapsed<DIVE_WINDUP)){this.vy=0;return}
+  if(a?.kind==='dive'&&a.landingElapsed===null)this.vy=Math.max(450,this.vy);
+  this.vy+=1100*dt;this.y+=this.vy*dt;
+  if(this.y>=G){this.y=G;this.vy=0;if(!a)this.jumpFacing=null;}
+ }
+ swordDamage(){return this.damage*(this.focusTime>0?1.75+.25*(this.rank('focus')-1):1)*(this.crippleTime>0?1.5+.25*(this.rank('cripple')-1):1)}
+ startRisingAttack(recent:typeof this.recentSword=null){
+  const attack:RisingAttack<Enemy>={elapsed:0,face:this.face,range:SWORD_RANGE*(this.reachTime>0?2:1),extended:this.reachTime>0,
+   damage:recent?.damage??this.swordDamage(),rootDuration:recent?.rootDuration??(this.crippleTime>0?2+this.rank('cripple'):0),hits:new Set(recent?.hits)};
+  this.risingAttack=attack;this.heroAnimator.startRising(attack);this.jumpComboTime=0;this.recentSword=null;this.attackCd=RISING_DURATION;this.swing=0;tone(210);
+  // Resolve immediate melee contact before the sword curls into the air.
+  for(const e of this.enemies)if(e.hp>0&&(e.x-this.x)*attack.face>-20&&(e.x-this.x)*attack.face<attack.range&&Math.abs((e.y??G)-this.y)<70)this.hitRisingEnemy(e,attack);
+ }
+ hitRisingEnemy(e:Enemy,attack:RisingAttack<Enemy>){
+  if(attack.hits.has(e))return;
+  attack.hits.add(e);this.hurt(e,attack.damage,attack.face);
+  if(attack.rootDuration>0){e.rooted=attack.rootDuration;this.crippleTime=0;this.burst(e.x,(e.y??G)-25,0x829dca)}
+ }
+ tickRisingAttack(dt:number){
+  const attack=this.risingAttack;if(!attack)return;
+  if(this.blocking||this.heroAnimator.casting){this.resetRisingAttack();return}
+  const previous=attack.elapsed;attack.elapsed=Math.min(RISING_DURATION,previous+dt);
+  for(const e of this.enemies)if(e.hp>0&&!attack.hits.has(e)&&risingSweepHits((e.x-this.x)*attack.face,(e.y??G)-44-(this.y-44),attack.range,previous,attack.elapsed))this.hitRisingEnemy(e,attack);
+  if(attack.elapsed>=RISING_DURATION){this.risingAttack=null;this.heroAnimator.rising=null;}
+ }
+ drawRisingEnergy(g:Phaser.GameObjects.Graphics){
+  const back=this.risingEnergyBack??=this.add.graphics().setDepth(.8);back.clear();
+  const dive=this.aerialAttack;
+  if(dive?.kind==='dive'&&dive.extended&&dive.landingElapsed!==null&&dive.landingElapsed<.16){
+   g.lineStyle(2,0x49d9ff,.8*(1-dive.landingElapsed/.16));g.lineBetween(this.x-dive.face*35,G-8,this.x+dive.face*dive.range,G-8);
+  }
+  const attack=this.risingAttack??(this.aerialAttack?.kind==='spin'?this.aerialAttack:null);if(!attack?.extended)return;
+  // Project the full-reach energy into a rising helix around the upright
+  // body. Split near/far segments so the far side passes behind her cape.
+  const duration=this.aerialAttack?.kind==='spin'?AIR_SPIN_DURATION:RISING_DURATION;
+  const progress=attack.elapsed/duration,head=2.5-progress*Math.PI*2,tail=head+Math.PI*1.1;
+  const centreY=this.y-12-progress*88,fade=Math.min(1,(duration-attack.elapsed)/.1);
+  for(const [width,colour,alpha,inset] of [[7,0x168bef,.3,0],[3,0x49d9ff,.8,0],[1,0xf4ffff,1,-2]]){
+   let previous:{x:number;y:number}|null=null;
+   for(let i=0;i<=48;i++){
+    const p=i/48,angle=tail+(head-tail)*p,r=45+(attack.range+inset-45)*p;
+    const point={x:this.x+attack.face*Math.cos(angle)*r,y:Math.min(G-5,centreY+Math.sin(angle)*r*.18)};
+    if(previous){const layer=Math.sin(angle)<0?back:g;layer.lineStyle(width,colour,alpha*fade);layer.lineBetween(previous.x,previous.y,point.x,point.y)}
+    previous=point;
+   }
+  }
+ }
  tickEmber(dt:number){
   const cast=this.pendingEmber;if(!cast)return;
   cast.delay-=dt;if(cast.delay>1e-6)return;
@@ -245,13 +343,18 @@ class Stand extends Phaser.Scene{
   this.shots.push({...tip,dir:cast.face,life:2,spell:'ember',damage:cast.damage});
   this.burst(tip.x,tip.y,0xffa13d,8);this.pendingEmber=null;
  }
- tick(dt:number){this.tickChampion(dt);for(const id of Object.keys(this.spellCooldowns) as SpellId[])this.spellCooldowns[id]=Math.max(0,(this.spellCooldowns[id]??0)-dt);this.wardTime=Math.max(0,this.wardTime-dt);this.bashTime=Math.max(0,this.bashTime-dt);this.messageTime=Math.max(0,this.messageTime-dt);this.clock+=dt;this.timer-=dt;this.attackCd-=dt;this.inv-=dt;this.swing=Math.max(0,this.swing-dt);this.blocking=this.down('L')&&this.stamina>5&&!this.shieldFlight;this.crouching=this.down('S')&&this.y>=G;const move=(this.down('D')?1:0)-(this.down('A')?1:0);if(move){this.face=move;this.x=Phaser.Math.Clamp(this.x+move*dt*(this.blocking||this.crouching?90:215),355,1000)}if(this.down('W')&&this.y>=G&&!this.crouching){this.vy=-450;this.y-=1;this.heroAnimator.startJump();tone(260)}this.vy+=1100*dt;this.y+=this.vy*dt;if(this.y>=G){this.y=G;this.vy=0}this.stamina=Math.min(100,this.stamina+dt*(this.blocking?4:24));this.energy=Math.min(100,this.energy+dt*7);
+ tick(dt:number){const heldAttack=this.down('J'),freshAttack=this.pendingPress.has('J')||(heldAttack&&!this.attackHeld);this.pendingPress.delete('J');this.attackHeld=heldAttack;this.jumpComboTime=Math.max(0,this.jumpComboTime-dt);if(this.recentSword)this.recentSword.age+=dt;this.tickChampion(dt);for(const id of Object.keys(this.spellCooldowns) as SpellId[])this.spellCooldowns[id]=Math.max(0,(this.spellCooldowns[id]??0)-dt);this.wardTime=Math.max(0,this.wardTime-dt);this.bashTime=Math.max(0,this.bashTime-dt);this.messageTime=Math.max(0,this.messageTime-dt);this.clock+=dt;this.timer-=dt;this.attackCd-=dt;this.inv-=dt;this.swing=Math.max(0,this.swing-dt);this.blocking=this.down('L')&&this.stamina>5&&!this.shieldFlight;this.crouching=this.down('S')&&this.y>=G;const move=(this.down('D')?1:0)-(this.down('A')?1:0);if(move){this.face=move;this.x=Phaser.Math.Clamp(this.x+move*dt*(this.blocking||this.crouching?90:215),355,1000)}if(this.down('W')&&this.y>=G&&!this.crouching&&!this.aerialAttack){this.jumpFacing=this.face;this.vy=-450;this.y-=1;this.heroAnimator.startJump();this.jumpComboTime=JUMP_COMBO_WINDOW;tone(260)}this.tickJumpPhysics(dt);this.stamina=Math.min(100,this.stamina+dt*(this.blocking?4:24));this.energy=Math.min(100,this.energy+dt*7);
+ this.tickRisingAttack(dt);this.tickAerialAttack(dt);
  this.tickEmber(dt);
  for(const key of ['K',...ABILITY_SLOTS])if(this.pressed(key))this.activateAbilityKey(key);
- if(this.down('J')&&this.attackCd<=0&&!this.blocking&&!this.heroAnimator.casting){
+ const recent=this.recentSword&&this.recentSword.age<=JUMP_COMBO_WINDOW?this.recentSword:null;
+ const launchRising=this.down('J')&&this.jumpComboTime>0&&!this.down('S')&&!this.blocking&&!this.heroAnimator.casting&&!this.risingAttack&&!this.aerialAttack&&(this.attackCd<=0||!!recent);
+ if(launchRising)this.startRisingAttack(recent);else this.handleAirAttackInput(freshAttack);
+ if(this.down('J')&&this.y>=G&&this.attackCd<=0&&!this.blocking&&!this.heroAnimator.casting&&!this.risingAttack&&!this.aerialAttack){
   this.attackCd=SWORD_INTERVAL;this.swing=.22;tone(180);let landed=false;const range=SWORD_RANGE*(this.reachTime>0?2:1);this.heroAnimator.startAttack(range,this.face,this.reachTime>0,this.crouching);
+  const sword={age:0,damage:this.swordDamage(),rootDuration:this.crippleTime>0?2+this.rank('cripple'):0,hits:new Set<Enemy>()};this.recentSword=sword;
   for(const e of this.enemies)if(e.hp>0&&(e.x-this.x)*this.face>-20&&(e.x-this.x)*this.face<range&&Math.abs(this.y-G)<100){
-   const damage=this.damage*(this.focusTime>0?1.75+.25*(this.rank('focus')-1):1)*(this.crippleTime>0?1.5+.25*(this.rank('cripple')-1):1);this.hurt(e,damage);landed=true;if(this.crippleTime>0){e.rooted=3+this.rank('cripple')-1;this.burst(e.x,G-25,0x829dca)}
+   this.hurt(e,sword.damage);sword.hits.add(e);landed=true;if(this.crippleTime>0){e.rooted=3+this.rank('cripple')-1;this.burst(e.x,G-25,0x829dca)}
   }
   if(landed)this.crippleTime=0;
  }
@@ -270,13 +373,13 @@ class Stand extends Phaser.Scene{
  this.shots=this.shots.filter(s=>s.life>0);this.enemies=this.enemies.filter(e=>e.hp>0);for(const p of this.particles){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=220*dt}this.particles=this.particles.filter(p=>p.life>0);if(this.hp<=0)this.end(false);else if(this.spawned>=this.total&&!this.enemies.length&&!this.survivors.length){this.completeWave()}}
  drawVillager(s:Survivor){let im=this.spritePool[this.spriteIndex++];if(!im){im=this.add.image(0,0,'characters').setDepth(1);this.spritePool.push(im)}this.villagerAnimator.render(im,s.villager,s.x,G,s.t);this.art.fillStyle(0x061516,.35);this.art.fillEllipse(s.x,G+2,s.villager?.startsWith('rottan-mouse-')?20:40,s.villager?.startsWith('rottan-mouse-')?4:8)}
  sprite(x:number,y:number,zombie=false,kind=0,t=0,face=1,crouch=false,survivor=false){const g=this.art;if(!survivor&&this.textures.exists('characters')){let im=this.spritePool[this.spriteIndex++];if(!im){im=this.add.image(0,0,'characters').setDepth(1);this.spritePool.push(im)}if(!zombie&&this.heroAnimator.render(im,x,y,face,this.vy,crouch)){const lift=Phaser.Math.Clamp((G-y)/120,0,1);g.fillStyle(0x061516,.35-lift*.18);g.fillEllipse(x,G+2,54-lift*20,10-lift*3);return}im.setData('heroAction',zombie?'enemy':'idle');const animatedHero=!zombie&&this.idleDurations.length>0;const customHero=animatedHero||(!zombie&&this.textures.exists('elowen')&&this.textures.get('elowen').has('hero'));const frame=animatedHero?'idle'+this.idleFrame:customHero?'hero':'figure'+(zombie?kind+1:0);im.setTexture(animatedHero?'elowen-idle':customHero?'elowen':'characters',frame).setOrigin(.5,1).setPosition(x,y).setFlipX(face<0).setVisible(true);const h=(customHero?96:kind===2?124:104)*(crouch?.65:1);const ratio=im.frame.width/im.frame.height;im.setDisplaySize(h*ratio,h);im.setAngle(Math.sin(t*10)*(zombie?2:1));g.fillStyle(0x061516,.35);g.fillEllipse(x,y+2,54,10);return}const scale=kind===2?1.35:1;const unit=2.6*scale;const top=y-(crouch?49:78)*scale;const rect=(a:number,b:number,w:number,h:number,c:number)=>{g.fillStyle(c);g.fillRect(Math.round(x+a*unit*face-(face<0?w*unit:0)),Math.round(top+b*unit*(crouch?.63:1)),w*unit,h*unit*(crouch?.63:1))};g.fillStyle(0x061516,.35);g.fillEllipse(x,y+2,52*scale,10);const skin=zombie?0x829978:0xd6ac83;const dark=zombie?0x38473d:0x253445;const cloth=survivor?0x9b8566:zombie?kind===1?0x716451:0x59625a:0x4b7777;const stride=Math.sin(t*10)*2;rect(-5,22,4,7,dark);rect(2,22,4,7,dark);rect(-6+stride,28,6,2,0x342e2a);rect(2-stride,28,6,2,0x342e2a);if(!zombie&&!survivor){rect(-8,10,6,15,0x913f3b);rect(-9,16,3,10,0x6d3033)}rect(-5,10,11,12,cloth);rect(-4,12,9,2,0x82908b);rect(-5,20,11,2,0x9b8458);rect(-3,8,6,3,skin);rect(-4,2,9,7,skin);rect(-5,1,10,3,zombie?0x3d4437:0x57402f);rect(-5,3,3,9,zombie?0x48543f:0x6b4932);rect(2,5,2,1,zombie?0xe4c477:0x142b2d);rect(5,6,1,2,skin);rect(-8,11,3,9,cloth);rect(-8,19,3,3,skin);rect(6,11,3,zombie?5:8,cloth);rect(7,zombie?15:18,zombie?7:3,3,skin);if(zombie){rect(-1,14,3,4,0x424838);rect(3,19,2,3,0x8c5c4e)}else if(!survivor){rect(7,20,2,7,0x9b8553);rect(5,20,6,1,0xd8bd79);rect(8,10,2,10,0xd0dbcf);rect(8,9,1,1,0xf9f1c8);rect(-12,14,6,10,0xb49a64);rect(-11,15,4,8,0x4c6360);rect(-9,16,1,6,0xc2b37d)}}
- draw(){this.spriteIndex=0;this.spritePool.forEach(im=>im.setVisible(false));const g=this.art;g.clear();this.drawEnding(g);for(let i=0;i<20;i++){const x=(i*79+Math.sin(this.ambientTime/2.5+i)*20)%W;g.fillStyle(0xc6b878,.35);g.fillRect(x,180+(i*37)%290,2,2)}for(const s of this.survivors)this.drawVillager(s);for(const e of this.enemies){this.sprite(e.x,G,true,e.kind,this.clock,-1);g.fillStyle(0x15211e);g.fillRect(e.x-21,G-(e.kind===2?115:88),42,3);g.fillStyle(0x9c7754);g.fillRect(e.x-21,G-(e.kind===2?115:88),42*e.hp/e.max,3)}if(!this.heroSacrificed&&(this.inv<=0||Math.floor(this.inv*20)%2===0))this.sprite(this.x,this.y,false,0,this.phase==='play'&&(this.down('A')||this.down('D'))?this.clock:0,this.face,this.crouching);this.heroAnimator.renderBeam(this.x,this.y,this.crouching);if(this.wall){g.fillStyle(0x173c2c,.9);g.fillRect(this.wall.x-15,G-110,30,110);for(let i=0;i<5;i++){g.lineStyle(4,0x80a566);g.beginPath();g.moveTo(this.wall.x-16+i*7,G);g.lineTo(this.wall.x+Math.sin(i)*16,G-65);g.lineTo(this.wall.x-14+i*7,G-110);g.strokePath()}g.fillStyle(0x9cb86a);g.fillRect(this.wall.x-25,G-122,50*this.wall.hp/this.wall.max,4)}
+ draw(){this.spriteIndex=0;this.spritePool.forEach(im=>im.setVisible(false));const g=this.art;g.clear();this.drawEnding(g);for(let i=0;i<20;i++){const x=(i*79+Math.sin(this.ambientTime/2.5+i)*20)%W;g.fillStyle(0xc6b878,.35);g.fillRect(x,180+(i*37)%290,2,2)}for(const s of this.survivors)this.drawVillager(s);for(const e of this.enemies){this.sprite(e.x,e.y??G,true,e.kind,this.clock,-1);g.fillStyle(0x15211e);g.fillRect(e.x-21,(e.y??G)-(e.kind===2?115:88),42,3);g.fillStyle(0x9c7754);g.fillRect(e.x-21,(e.y??G)-(e.kind===2?115:88),42*e.hp/e.max,3)}if(!this.heroSacrificed&&(this.inv<=0||Math.floor(this.inv*20)%2===0))this.sprite(this.x,this.y,false,0,this.phase==='play'&&(this.down('A')||this.down('D'))?this.clock:0,this.face,this.crouching);this.heroAnimator.renderBeam(this.x,this.y,this.crouching);this.drawRisingEnergy(g);if(this.wall){g.fillStyle(0x173c2c,.9);g.fillRect(this.wall.x-15,G-110,30,110);for(let i=0;i<5;i++){g.lineStyle(4,0x80a566);g.beginPath();g.moveTo(this.wall.x-16+i*7,G);g.lineTo(this.wall.x+Math.sin(i)*16,G-65);g.lineTo(this.wall.x-14+i*7,G-110);g.strokePath()}g.fillStyle(0x9cb86a);g.fillRect(this.wall.x-25,G-122,50*this.wall.hp/this.wall.max,4)}
  if(this.focusTime>0){g.lineStyle(4,0xefba55,.85);g.strokeEllipse(this.x,this.y-50,100,125)}
  if(this.shieldFlight){const shield=this.shieldFlight;g.fillStyle(0x23375e);g.lineStyle(2,0xd8bb7e);g.beginPath();g.moveTo(shield.x,shield.y-18);g.lineTo(shield.x+14,shield.y-10);g.lineTo(shield.x+10,shield.y+8);g.lineTo(shield.x,shield.y+22);g.lineTo(shield.x-10,shield.y+8);g.lineTo(shield.x-14,shield.y-10);g.closePath();g.fillPath();g.strokePath();g.lineStyle(1,0xd8bb7e);g.lineBetween(shield.x,shield.y-10,shield.x,shield.y+14);g.lineBetween(shield.x-7,shield.y-4,shield.x,shield.y+3);g.lineBetween(shield.x+7,shield.y-4,shield.x,shield.y+3);g.fillStyle(0x77c7ed);g.fillRect(shield.x-2,shield.y+1,4,5)}
  for(const arrow of this.arrows){if(arrow.delay>0)continue;const t=arrow.progress;const x=130+(arrow.targetX-130)*t,y=G-230+210*t-Math.sin(t*Math.PI)*100;g.lineStyle(2,0xc3ae81);g.lineBetween(x-9,y-5,x+7,y+4);g.fillStyle(0xd8d4bd);g.fillTriangle(x+7,y+4,x+1,y-3,x+1,y+7)}
  this.warriorShield.render(this.x,this.y,this.wardTime,this.phase==='play');
  if(this.bashTime>0){g.lineStyle(6,0xd7c297,this.bashTime/.3);g.strokeCircle(this.x+this.face*55,this.y-40,30)}
- if(this.swing>0&&!this.heroAnimator.attack){g.lineStyle(7,0xe6ddbd,this.swing/.22);g.beginPath();g.arc(this.x,this.y-43,85*(this.reachTime>0?2:1),this.face>0?-1:2.1,this.face>0?1:4.2);g.strokePath();g.lineStyle(2,0xffffff,.7);g.beginPath();g.arc(this.x,this.y-43,92*(this.reachTime>0?2:1),this.face>0?-.8:2.3,this.face>0?.8:4);g.strokePath()}for(const s of this.shots){g.fillStyle(s.spell==='ice'?0x8cd7e5:0xe56c35,.2);g.fillCircle(s.x,s.y,20);if(s.spell==='ember'){g.fillStyle(0xff8b25);g.fillTriangle(s.x-s.dir*24,s.y,s.x+s.dir*10,s.y-7,s.x+s.dir*10,s.y+7);g.fillStyle(0xffffff);g.fillTriangle(s.x-s.dir*12,s.y,s.x+s.dir*8,s.y-3,s.x+s.dir*8,s.y+3)}else{g.fillStyle(0x8cd7e5);g.fillRect(s.x-10,s.y-7,18,14);g.fillStyle(0xffecc0);g.fillRect(s.x-3,s.y-4,8,8)}}for(const p of this.particles){g.fillStyle(p.color,Math.min(1,p.life*3));g.fillRect(p.x,p.y,3,3)}const h=this.hud;h.clear();h.fillStyle(0x0c1e22,.88);h.fillRoundedRect(20,18,350,89,4);const bar=(y:number,v:number,c:number,max=100)=>{h.fillStyle(0x30433f);h.fillRect(125,y,210,5);h.fillStyle(c);h.fillRect(125,y,210*Phaser.Math.Clamp(v/max,0,1),5)};bar(37,this.hp,0xb76051,this.maxHp);bar(59,this.stamina,0xb8a26c);bar(81,this.energy,0x649caa);this.labels.setText(`HEALTH\nSTAMINA\nCHAOS ENERGY`);h.fillStyle(0x0c1e22,.85);h.fillRoundedRect(940,18,320,89,4);const status=this.phase==='title'?'GREYFALL TOWN':`${chapterForLevel(this.level).location.toUpperCase()} · WAVE ${this.wave} / ${WAVES_PER_LEVEL}`;if(!this.data.get('statusText')){this.data.set('statusText',this.add.text(962,31,'',{fontFamily:'Arial',fontSize:'12px',color:'#dbc99d',lineSpacing:15}).setDepth(10));this.data.set('bottomText',this.add.text(W/2,676,'',{fontFamily:'Arial',fontSize:'12px',color:'#cdc8ac'}).setOrigin(.5).setDepth(10))}(this.data.get('statusText') as Phaser.GameObjects.Text).setText(`${status}\n${this.rescued} SAFE   ·   ${this.kills} UNDEAD DEFEATED\nELOWEN · LEVEL ${this.level} ${this.progression.tier.toUpperCase()}`);(this.data.get('bottomText') as Phaser.GameObjects.Text).setText(this.phase==='play'?this.messageTime>0?this.message:this.clock<6?chapterForLevel(this.level).story.toUpperCase():`${this.total-this.waveKills} ENEMIES THIS WAVE  ·  EMBER STRIKE ${(this.spellCooldowns.ember??0)>0?'RECHARGING':'READY'}`:this.phase==='ending'?'THE LAST REFUGEES ARE ACROSS. ELOWEN STAYS BEHIND.':'SWORD & SHIELD  /  EMBER STRIKE');}
+ if(this.swing>0&&!this.heroAnimator.attack&&!this.risingAttack){g.lineStyle(7,0xe6ddbd,this.swing/.22);g.beginPath();g.arc(this.x,this.y-43,85*(this.reachTime>0?2:1),this.face>0?-1:2.1,this.face>0?1:4.2);g.strokePath();g.lineStyle(2,0xffffff,.7);g.beginPath();g.arc(this.x,this.y-43,92*(this.reachTime>0?2:1),this.face>0?-.8:2.3,this.face>0?.8:4);g.strokePath()}for(const s of this.shots){g.fillStyle(s.spell==='ice'?0x8cd7e5:0xe56c35,.2);g.fillCircle(s.x,s.y,20);if(s.spell==='ember'){g.fillStyle(0xff8b25);g.fillTriangle(s.x-s.dir*24,s.y,s.x+s.dir*10,s.y-7,s.x+s.dir*10,s.y+7);g.fillStyle(0xffffff);g.fillTriangle(s.x-s.dir*12,s.y,s.x+s.dir*8,s.y-3,s.x+s.dir*8,s.y+3)}else{g.fillStyle(0x8cd7e5);g.fillRect(s.x-10,s.y-7,18,14);g.fillStyle(0xffecc0);g.fillRect(s.x-3,s.y-4,8,8)}}for(const p of this.particles){g.fillStyle(p.color,Math.min(1,p.life*3));g.fillRect(p.x,p.y,3,3)}const h=this.hud;h.clear();h.fillStyle(0x0c1e22,.88);h.fillRoundedRect(20,18,350,89,4);const bar=(y:number,v:number,c:number,max=100)=>{h.fillStyle(0x30433f);h.fillRect(125,y,210,5);h.fillStyle(c);h.fillRect(125,y,210*Phaser.Math.Clamp(v/max,0,1),5)};bar(37,this.hp,0xb76051,this.maxHp);bar(59,this.stamina,0xb8a26c);bar(81,this.energy,0x649caa);this.labels.setText(`HEALTH\nSTAMINA\nCHAOS ENERGY`);h.fillStyle(0x0c1e22,.85);h.fillRoundedRect(940,18,320,89,4);const status=this.phase==='title'?'GREYFALL TOWN':`${chapterForLevel(this.level).location.toUpperCase()} · WAVE ${this.wave} / ${WAVES_PER_LEVEL}`;if(!this.data.get('statusText')){this.data.set('statusText',this.add.text(962,31,'',{fontFamily:'Arial',fontSize:'12px',color:'#dbc99d',lineSpacing:15}).setDepth(10));this.data.set('bottomText',this.add.text(W/2,676,'',{fontFamily:'Arial',fontSize:'12px',color:'#cdc8ac'}).setOrigin(.5).setDepth(10))}(this.data.get('statusText') as Phaser.GameObjects.Text).setText(`${status}\n${this.rescued} SAFE   ·   ${this.kills} UNDEAD DEFEATED\nELOWEN · LEVEL ${this.level} ${this.progression.tier.toUpperCase()}`);(this.data.get('bottomText') as Phaser.GameObjects.Text).setText(this.phase==='play'?this.messageTime>0?this.message:this.clock<6?chapterForLevel(this.level).story.toUpperCase():`${this.total-this.waveKills} ENEMIES THIS WAVE  ·  EMBER STRIKE ${(this.spellCooldowns.ember??0)>0?'RECHARGING':'READY'}`:this.phase==='ending'?'THE LAST REFUGEES ARE ACROSS. ELOWEN STAYS BEHIND.':'SWORD & SHIELD  /  EMBER STRIKE');}
 }
 try {new Phaser.Game({type:basicGraphics?Phaser.CANVAS:Phaser.AUTO,parent:'game',width:W,height:H,backgroundColor:'#162e2f',pixelArt:true,roundPixels:true,scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},scene:Stand,audio:{noAudio:true}});
 } catch(error) { startupFailed(error); }

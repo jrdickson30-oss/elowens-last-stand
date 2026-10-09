@@ -1,0 +1,52 @@
+{
+  "image": "Elowen-spiral-attack-spritesheet.png",
+  "frameWidth": 480,
+  "frameHeight": 480,
+  "frameCount": 9,
+  "columns": 3,
+  "durationsMs": [
+    40,
+    50,
+    50,
+    50,
+    60,
+    60,
+    70,
+    80,
+    100
+  ],
+  "bodyHeight": 360,
+  "footAnchors": [
+    427,
+    424,
+    424,
+    410,
+    418,
+    430,
+    432,
+    432,
+    418
+  ],
+  "frameAnchors": [
+    280,
+    244,
+    223,
+    245,
+    234,
+    258,
+    265,
+    234,
+    243
+  ],
+  "bodyTurnDegrees": [
+    0,
+    45,
+    90,
+    135,
+    180,
+    225,
+    270,
+    315,
+    360
+  ]
+}

@@ -31,7 +31,7 @@ export class TouchControls {
   }
   private hold(id:number,button:HTMLButtonElement){
     if(this.held.get(id)?.button===button)return;
-    this.release(id);const key=button.dataset.key!;this.held.set(id,{key,button});this.touch.add(key);button.classList.add('pressed');
+    this.release(id);const key=button.dataset.key!;if(key==='J'&&!this.touch.has(key))this.pending.add('J');this.held.set(id,{key,button});this.touch.add(key);button.classList.add('pressed');
   }
   private release(id:number){
     const held=this.held.get(id);if(!held)return;this.held.delete(id);

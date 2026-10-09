@@ -1,0 +1,52 @@
+{
+  "image": "Elowen-spiral-strike-through-spritesheet.png",
+  "frameWidth": 480,
+  "frameHeight": 480,
+  "frameCount": 9,
+  "columns": 3,
+  "durationsMs": [
+    40,
+    50,
+    50,
+    50,
+    60,
+    60,
+    70,
+    80,
+    100
+  ],
+  "bodyHeight": 285,
+  "footAnchors": [
+    391,
+    405,
+    412,
+    373,
+    379,
+    397,
+    357,
+    364,
+    358
+  ],
+  "frameAnchors": [
+    265,
+    252,
+    224,
+    245,
+    252,
+    249,
+    245,
+    247,
+    244
+  ],
+  "bodyTurnDegrees": [
+    0,
+    45,
+    90,
+    135,
+    180,
+    225,
+    270,
+    315,
+    360
+  ]
+}

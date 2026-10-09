@@ -29,6 +29,17 @@ try{
  assert.equal(await page.evaluate(()=>window.elowen.touch.size),0);
  await touch('touchStart',1,right);await touch('touchStart',2,await centre('[data-key=L]'));await page.waitForFunction(()=>window.elowen.blocking);await touch('touchEnd',2);await touch('touchEnd',1);
  await touch('touchStart',1,await centre('[data-key=W]'));await page.waitForFunction(()=>window.elowen.y<400);await touch('touchEnd',1);await page.waitForFunction(()=>window.elowen.y===422);
+ // A fresh Sword tap suspends a fall; Crouch + another tap buffers the dive.
+ await page.evaluate(()=>{const s=window.elowen;s.begin();s.timer=999;s.spawned=0;s.enemies=[];s.survivors=[];s.y=330;s.vy=120;s.face=-1;s.jumpFacing=-1;s.heroAnimator.startJump();s.scene.pause()});
+ await touch('touchStart',1,sword);await page.evaluate(()=>window.elowen.tick(.02));
+ assert.equal(await page.evaluate(()=>window.elowen.aerialAttack.face),-1);await touch('touchEnd',1);await page.evaluate(()=>window.elowen.tick(.02));
+ await touch('touchStart',2,await centre('[data-key=S]'));await touch('touchStart',1,sword);
+ await page.evaluate(()=>window.elowen.tick(.02));
+ assert.equal(await page.evaluate(()=>window.elowen.queuedAirAttack),'dive');await touch('touchEnd',1);await touch('touchEnd',2);
+ assert.equal(await page.evaluate(()=>{const s=window.elowen;for(let i=0;i<30&&s.aerialAttack?.kind==='spin';i++)s.tick(.02);return s.aerialAttack?.kind}),'dive');
+ assert(await page.evaluate(()=>{const s=window.elowen;for(let i=0;i<60&&s.aerialAttack;i++)s.tick(.02);return !s.aerialAttack&&s.y===422}));
+ await page.evaluate(()=>window.elowen.scene.resume());
+ await page.waitForFunction(()=>window.elowen.sys.isActive());
  await touch('touchStart',1,right);await touch('touchStart',2,await centre('.touch-pause'));await touch('touchEnd',2);
  await page.locator('#resume').waitFor();assert.equal(await page.evaluate(()=>window.elowen.touch.size),0);await touch('touchEnd',1);await page.locator('#resume').click();
  await touch('touchStart',1,right);await page.evaluate(()=>window.dispatchEvent(new Event('blur')));assert.equal(await page.evaluate(()=>window.elowen.touch.size),0);await touch('touchEnd',1);

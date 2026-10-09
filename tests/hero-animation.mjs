@@ -66,6 +66,7 @@ try {
   }
   await page.screenshot({path:`/tmp/elowen-strike-through-${face>0?'right':'left'}.png`});
   await page.evaluate(()=>{const s=window.elowen;s.heroAnimator.attack.elapsed=.2;s.scene.resume()});
+  await page.waitForFunction(()=>window.elowen.sys.isActive());
   await page.keyboard.press('Escape');await page.locator('#resume').waitFor();
   const before=await page.evaluate(()=>window.elowen.heroAnimator.attack?.elapsed);
   await page.waitForTimeout(200);
