@@ -32,7 +32,7 @@ try{
  await page.screenshot({path:'zombie-death-game.png'});
  // Check every enemy type and both impact directions, including an airborne kill.
  const variants=await page.evaluate(()=>{const s=window.elowen;const results=[];s.corpses=[];
-  for(const kind of [0,1,2])for(const dir of [-1,1]){const e={x:1000,y:kind===0?302:422,hp:1,max:1,next:0,speed:0,kind};s.hurt(e,5,dir);const c=s.corpses.at(-1);c.elapsed=.35;s.draw();const pair=s.corpsePool.at(s.corpses.length-1);results.push({kind,dir,texture:pair.body.texture.key,flip:pair.body.flipX,angle:pair.body.angle,y:pair.body.y});c.elapsed=2.3;s.draw();results.at(-1).bonesTexture=(pair.next.visible?pair.next:pair.body).texture.key;}
+  for(const kind of [0,1,2])for(const dir of [-1,1]){const e={x:1000,y:kind===0?302:422,hp:1,max:1,next:0,speed:0,kind};s.hurt(e,5,dir);const c=s.corpses.at(-1);c.variant='fall';c.elapsed=.35;s.draw();const pair=s.corpsePool.at(s.corpses.length-1);results.push({kind,dir,texture:pair.body.texture.key,flip:pair.body.flipX,angle:pair.body.angle,y:pair.body.y});c.elapsed=2.3;s.draw();results.at(-1).bonesTexture=(pair.next.visible?pair.next:pair.body).texture.key;}
   return results});
  variants.forEach(p=>{assert.equal(p.flip,p.dir>0);assert.equal(p.bonesTexture,'zombie-decompose');if(p.kind===0){assert.equal(p.texture,'zombie-fall');assert.equal(p.y,362)}else{assert.equal(p.texture,'characters');assert.equal(Math.sign(p.angle),p.dir)}});
  // A dead Zombie no longer participates in combat; wave transition waits for bones.
