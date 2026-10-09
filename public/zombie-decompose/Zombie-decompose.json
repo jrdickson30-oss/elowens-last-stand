@@ -1,0 +1,11 @@
+{
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 6,
+  "columns": 3,
+  "bodyHeight": 389,
+  "displayHeight": 104,
+  "durationsMs": [200, 200, 200, 200, 200, 200],
+  "frameAnchorX": [213, 213, 213, 213, 213, 213],
+  "frameGroundY": [481, 481, 481, 434, 434, 434]
+}
