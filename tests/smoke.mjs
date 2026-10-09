@@ -7,7 +7,7 @@ await page.goto(process.env.GAME_URL||'http://127.0.0.1:5173');await page.getByR
 await page.waitForFunction(()=>window.elowen.clock>.2);
 await page.keyboard.down('D');await page.waitForFunction(()=>window.elowen.x>530);await page.keyboard.up('D');
 assert(await page.evaluate(()=>window.elowen.x>520),'movement');
-await page.keyboard.down('Space');await page.waitForFunction(()=>window.elowen.y<400);await page.keyboard.up('Space');await page.waitForFunction(()=>window.elowen.y>=422);
+await page.keyboard.down('W');await page.waitForFunction(()=>window.elowen.y<400);await page.keyboard.up('W');await page.waitForFunction(()=>window.elowen.y>=422);
 await page.keyboard.down('S');await page.waitForFunction(()=>window.elowen.crouching);assert(await page.evaluate(()=>window.elowen.crouching),'crouch');await page.keyboard.up('S');
 await page.evaluate(()=>{const s=window.elowen;s.enemies=[{x:s.x+65,hp:76,max:76,next:10,speed:0,kind:0}];s.timer=999;});
 await page.keyboard.down('J');await page.waitForFunction(()=>window.elowen.enemies[0].hp<76);await page.keyboard.up('J');assert(await page.evaluate(()=>window.elowen.enemies[0].hp<76),'sword damage');

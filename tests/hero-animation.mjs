@@ -32,7 +32,7 @@ try {
   }};
   s.events.on('postupdate',observe);s.data.set('jumpObserver',observe);
  });
- await page.keyboard.down('Space');await page.waitForFunction(()=>window.elowen.y<400);await page.keyboard.up('Space');
+ await page.keyboard.down('W');await page.waitForFunction(()=>window.elowen.y<400);await page.keyboard.up('W');
  await page.waitForFunction(()=>window.elowen.y===422&&window.elowen.heroAnimator.landingTime===0);
  const samples=await page.evaluate(()=>{const s=window.elowen;s.events.off('postupdate',s.data.get('jumpObserver'));return s.data.get('jumpSamples')});
  assert.deepEqual([...new Set(samples.map(s=>s.frame))],[0,1,2,3,4,5],'jump follows crouch, launch, rise, apex, fall and landing');

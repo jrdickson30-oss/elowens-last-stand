@@ -28,7 +28,7 @@ try{
  await touch('touchMove',1,await centre('[data-key=A]'));assert(await page.evaluate(()=>window.elowen.touch.has('A')));await touch('touchCancel',1);
  assert.equal(await page.evaluate(()=>window.elowen.touch.size),0);
  await touch('touchStart',1,right);await touch('touchStart',2,await centre('[data-key=L]'));await page.waitForFunction(()=>window.elowen.blocking);await touch('touchEnd',2);await touch('touchEnd',1);
- await touch('touchStart',1,await centre('[data-key=SPACE]'));await page.waitForFunction(()=>window.elowen.y<400);await touch('touchEnd',1);await page.waitForFunction(()=>window.elowen.y===422);
+ await touch('touchStart',1,await centre('[data-key=W]'));await page.waitForFunction(()=>window.elowen.y<400);await touch('touchEnd',1);await page.waitForFunction(()=>window.elowen.y===422);
  await touch('touchStart',1,right);await touch('touchStart',2,await centre('.touch-pause'));await touch('touchEnd',2);
  await page.locator('#resume').waitFor();assert.equal(await page.evaluate(()=>window.elowen.touch.size),0);await touch('touchEnd',1);await page.locator('#resume').click();
  await touch('touchStart',1,right);await page.evaluate(()=>window.dispatchEvent(new Event('blur')));assert.equal(await page.evaluate(()=>window.elowen.touch.size),0);await touch('touchEnd',1);
@@ -37,7 +37,7 @@ try{
  assert(geometry.every(r=>r.x>=0&&r.y>=0&&r.x+r.w<=844.1&&r.y+r.h<=390.1&&r.w>=48&&r.h>=48),JSON.stringify(geometry));
  await touch('touchStart',1,right);await touch('touchStart',2,{x:right.x+4,y:right.y});await touch('touchEnd',1);assert(await page.evaluate(()=>window.elowen.touch.has('D')));await touch('touchEnd',2);
  await touch('touchStart',1,right);await touch('touchStart',2,await centre('[data-ability-key=U]'));await touch('touchEnd',2);assert(await page.evaluate(()=>window.elowen.reachTime>0&&window.elowen.touch.has('D')));await touch('touchEnd',1);
- assert(await page.evaluate(()=>!!document.querySelector('.touch-pad [data-key=SPACE]')),'jump belongs to movement pad');
+ assert(await page.evaluate(()=>!!document.querySelector('.touch-pad [data-key=W]')),'jump belongs to movement pad');
  const dock=await page.evaluate(()=>{const c=document.querySelector('#game canvas'),r=c.getBoundingClientRect(),scale=Math.min(r.width/c.width,r.height/c.height),feet=r.top+(r.height-c.height*scale)/2+422*scale;return ['.spellbar','.championbar','.touch-pad','.touch-actions'].every(selector=>document.querySelector(selector).getBoundingClientRect().top>feet)});assert(dock,'all controls are below gameplay');
  await page.screenshot({path:'mobile-landscape.png'});
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);

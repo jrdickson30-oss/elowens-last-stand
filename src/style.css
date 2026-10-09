@@ -15,7 +15,7 @@
 .touch button.pressed{background:#79623dee;border-color:#ffe4a3;transform:scale(.96)}
 .touch-pad{position:absolute;left:max(12px,env(safe-area-inset-left));bottom:max(8px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,52px);gap:6px}
 .touch-pad button{width:52px;height:52px}
-.touch-pad [data-key=SPACE]{grid-column:2;grid-row:1}
+.touch-pad [data-key=W]{grid-column:2;grid-row:1}
 .touch-pad [data-key=A]{grid-column:1;grid-row:2}
 .touch-pad [data-key=S]{grid-column:2;grid-row:2}
 .touch-pad [data-key=D]{grid-column:3;grid-row:2}

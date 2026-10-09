@@ -33,9 +33,9 @@ try {
   await page.keyboard.down('D');
   await page.waitForFunction(() => window.elowen.x > 530);
   await page.keyboard.up('D');
-  await page.keyboard.down('Space');
+  await page.keyboard.down('W');
   await page.waitForFunction(() => window.elowen.y < 400);
-  await page.keyboard.up('Space');
+  await page.keyboard.up('W');
   await page.waitForFunction(() => window.elowen.y === 422);
   await page.keyboard.down('J');
   await page.waitForFunction(() => !!window.elowen.heroAnimator.attack);
