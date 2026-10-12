@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import type { StoneWounds } from './zombie-stones';
 
 export const ZOMBIE_FALL_DURATION=.7;
 const SETTLE_DURATION=.18,DECOMPOSE_DURATION=1.2,BONES_HOLD=1.5,FADE_DURATION=.6;
@@ -7,8 +8,8 @@ export const ZOMBIE_DEATH_DURATION=ZOMBIE_BONES_AT+BONES_HOLD+FADE_DURATION;
 export const ZOMBIE_IGNITE_DURATION=1.2,ZOMBIE_BURNOUT_DURATION=1.6;
 export const ZOMBIE_ASH_AT=ZOMBIE_IGNITE_DURATION+ZOMBIE_BURNOUT_DURATION;
 export const ZOMBIE_BURN_DEATH_DURATION=ZOMBIE_ASH_AT+BONES_HOLD+FADE_DURATION;
-export type ZombieDeathVariant='fall'|'severed'|'burn'|'radiant';
-export type ZombieCorpse={x:number;y:number;dir:number;kind:number;elapsed:number;variant?:ZombieDeathVariant};
+export type ZombieDeathVariant='fall'|'severed'|'burn'|'radiant'|'stone';
+export type ZombieCorpse={x:number;y:number;dir:number;kind:number;elapsed:number;variant?:ZombieDeathVariant;stoneWounds?:StoneWounds};
 export const zombieRemainsAt=(corpse:ZombieCorpse)=>corpse.variant==='burn'?ZOMBIE_ASH_AT:ZOMBIE_BONES_AT;
 export const zombieDeathDuration=(corpse:ZombieCorpse)=>corpse.variant==='burn'?ZOMBIE_BURN_DEATH_DURATION:ZOMBIE_DEATH_DURATION;
 type DeathClip={
@@ -62,7 +63,7 @@ export class ZombieDeathAnimator {
       this.renderBurn(body,next,corpse,groundY,this.burnIgnite,this.burnOut);return;
     }
     const t=corpse.elapsed,p=Phaser.Math.Clamp(t/ZOMBIE_FALL_DURATION,0,1);
-    const distance=corpse.variant==='radiant'?32:12;
+    const distance=corpse.variant==='radiant'?32:corpse.variant==='stone'?20:12;
     const x=corpse.x+corpse.dir*distance*(1-(1-p)**2),y=Phaser.Math.Linear(corpse.y,groundY,p);
     const dissolve=Phaser.Math.Clamp((t-ZOMBIE_FALL_DURATION-SETTLE_DURATION)/DECOMPOSE_DURATION,0,1);
     const alpha=1-Phaser.Math.Clamp((t-ZOMBIE_BONES_AT-BONES_HOLD)/FADE_DURATION,0,1);
