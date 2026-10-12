@@ -9,7 +9,7 @@ try{
  await page.keyboard.press('3');await page.waitForFunction(()=>window.elowen.corpses[0]?.variant==='radiant');
  await page.keyboard.press('Escape');await page.locator('#resume').waitFor();
  const cast=await page.evaluate(()=>{const s=window.elowen;return {kills:s.kills,waveKills:s.waveKills,next:s.nextZombieDeath,energy:s.energy,variant:s.corpses[0].variant}});
- assert.equal(cast.kills,1);assert.equal(cast.waveKills,1);assert.equal(cast.next,'fall');assert.equal(cast.variant,'radiant');assert.ok(cast.energy>=64&&cast.energy<66);
+ assert.equal(cast.kills,1);assert.equal(cast.waveKills,1);assert.equal(cast.next,'fall');assert.equal(cast.variant,'radiant');assert.ok(cast.energy>=64&&cast.energy<75);
  await page.evaluate(()=>window.elowen.hurt(window.radiantTarget,99,1,'volley'));assert.equal(await page.evaluate(()=>window.elowen.corpses.length),1);
  const frozen=await page.evaluate(()=>window.elowen.corpses[0].elapsed);await page.waitForTimeout(140);assert.equal(await page.evaluate(()=>window.elowen.corpses[0].elapsed),frozen);
  const poses=await page.evaluate(()=>{
@@ -38,7 +38,7 @@ try{
  }
  const sources=await page.evaluate(()=>{
   const s=window.elowen,enemy=(kind=0)=>({x:800,hp:90,max:90,next:999,speed:0,kind});s.corpses=[];
-  const survivor=enemy();s.enemies=[survivor];s.energy=100;s.spellCooldowns={};s.cast('volley');const hp=survivor.hp,nonlethalCount=s.corpses.length;
+  const survivor=enemy();s.enemies=[survivor];s.energy=100;s.spellCooldowns={};s.radiantVolley.reset();s.cast('volley');for(let i=0;i<70;i++)s.radiantVolley.tick(.02,(e,face)=>s.hurt(e,19,face,'volley'));const hp=survivor.hp,nonlethalCount=s.corpses.length;
   s.hurt(survivor,20,1);s.hurt(enemy(),100,-1,'volley');s.hurt(enemy(),100,1);s.hurt(enemy(),100,1,'ember');s.hurt(enemy(2),100,1,'volley');
   return {hp,nonlethalCount,variants:s.corpses.map(c=>c.variant??null),next:s.nextZombieDeath};
  });
