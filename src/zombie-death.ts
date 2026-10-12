@@ -7,7 +7,7 @@ export const ZOMBIE_DEATH_DURATION=ZOMBIE_BONES_AT+BONES_HOLD+FADE_DURATION;
 export const ZOMBIE_IGNITE_DURATION=1.2,ZOMBIE_BURNOUT_DURATION=1.6;
 export const ZOMBIE_ASH_AT=ZOMBIE_IGNITE_DURATION+ZOMBIE_BURNOUT_DURATION;
 export const ZOMBIE_BURN_DEATH_DURATION=ZOMBIE_ASH_AT+BONES_HOLD+FADE_DURATION;
-export type ZombieDeathVariant='fall'|'severed'|'burn';
+export type ZombieDeathVariant='fall'|'severed'|'burn'|'radiant';
 export type ZombieCorpse={x:number;y:number;dir:number;kind:number;elapsed:number;variant?:ZombieDeathVariant};
 export const zombieRemainsAt=(corpse:ZombieCorpse)=>corpse.variant==='burn'?ZOMBIE_ASH_AT:ZOMBIE_BONES_AT;
 export const zombieDeathDuration=(corpse:ZombieCorpse)=>corpse.variant==='burn'?ZOMBIE_BURN_DEATH_DURATION:ZOMBIE_DEATH_DURATION;
@@ -19,7 +19,7 @@ type DeathClip={
 };
 
 export function preloadZombieDeath(scene:Phaser.Scene) {
-  for(const action of ['fall','decompose','severed-fall','severed-decompose','burn-ignite','burn-out']) {
+  for(const action of ['fall','decompose','severed-fall','severed-decompose','burn-ignite','burn-out','radiant-fall']) {
     const path=new URL(`zombie-${action}/Zombie-${action}`,document.baseURI).href;
     scene.load.image(`zombie-${action}`,path+'-spritesheet.png');
     scene.load.json(`zombie-${action}-meta`,path+'.json');
@@ -33,6 +33,7 @@ export class ZombieDeathAnimator {
   readonly severedDecompose?:DeathClip;
   readonly burnIgnite?:DeathClip;
   readonly burnOut?:DeathClip;
+  readonly radiantFall?:DeathClip;
   constructor(readonly scene:Phaser.Scene) {
     this.fall=scene.cache.json.get('zombie-fall-meta') as DeathClip|undefined;
     this.decompose=scene.cache.json.get('zombie-decompose-meta') as DeathClip|undefined;
@@ -40,7 +41,8 @@ export class ZombieDeathAnimator {
     this.severedDecompose=scene.cache.json.get('zombie-severed-decompose-meta') as DeathClip|undefined;
     this.burnIgnite=scene.cache.json.get('zombie-burn-ignite-meta') as DeathClip|undefined;
     this.burnOut=scene.cache.json.get('zombie-burn-out-meta') as DeathClip|undefined;
-    for(const [key,clip] of [['zombie-fall',this.fall],['zombie-decompose',this.decompose],['zombie-severed-fall',this.severedFall],['zombie-severed-decompose',this.severedDecompose],['zombie-burn-ignite',this.burnIgnite],['zombie-burn-out',this.burnOut]] as const) {
+    this.radiantFall=scene.cache.json.get('zombie-radiant-fall-meta') as DeathClip|undefined;
+    for(const [key,clip] of [['zombie-fall',this.fall],['zombie-decompose',this.decompose],['zombie-severed-fall',this.severedFall],['zombie-severed-decompose',this.severedDecompose],['zombie-burn-ignite',this.burnIgnite],['zombie-burn-out',this.burnOut],['zombie-radiant-fall',this.radiantFall]] as const) {
       if(!clip||!scene.textures.exists(key))continue;
       const texture=scene.textures.get(key);
       for(let frame=0;frame<clip.frameCount;frame++) {
@@ -60,16 +62,20 @@ export class ZombieDeathAnimator {
       this.renderBurn(body,next,corpse,groundY,this.burnIgnite,this.burnOut);return;
     }
     const t=corpse.elapsed,p=Phaser.Math.Clamp(t/ZOMBIE_FALL_DURATION,0,1);
-    const x=corpse.x+corpse.dir*12*(1-(1-p)**2),y=Phaser.Math.Linear(corpse.y,groundY,p);
+    const distance=corpse.variant==='radiant'?32:12;
+    const x=corpse.x+corpse.dir*distance*(1-(1-p)**2),y=Phaser.Math.Linear(corpse.y,groundY,p);
     const dissolve=Phaser.Math.Clamp((t-ZOMBIE_FALL_DURATION-SETTLE_DURATION)/DECOMPOSE_DURATION,0,1);
     const alpha=1-Phaser.Math.Clamp((t-ZOMBIE_BONES_AT-BONES_HOLD)/FADE_DURATION,0,1);
     const stage=t<ZOMBIE_FALL_DURATION?'fall':t<ZOMBIE_FALL_DURATION+SETTLE_DURATION?'settle':t<ZOMBIE_BONES_AT?'decompose':t<ZOMBIE_BONES_AT+BONES_HOLD?'bones':'fade';
     body.setData('corpseStage',stage);next.setData('corpseStage',stage);
     next.setVisible(false);
     const severed=corpse.kind===0&&corpse.variant==='severed'&&this.severedFall&&this.severedDecompose&&this.scene.textures.exists('zombie-severed-fall')&&this.scene.textures.exists('zombie-severed-decompose');
-    const fall=severed?this.severedFall:this.fall,decompose=severed?this.severedDecompose:this.decompose;
-    const fallKey=severed?'zombie-severed-fall':'zombie-fall',decomposeKey=severed?'zombie-severed-decompose':'zombie-decompose';
+    const radiant=corpse.kind===0&&corpse.variant==='radiant'&&this.radiantFall&&this.scene.textures.exists('zombie-radiant-fall');
+    const fall=severed?this.severedFall:radiant?this.radiantFall:this.fall,decompose=severed?this.severedDecompose:this.decompose;
+    const fallKey=severed?'zombie-severed-fall':radiant?'zombie-radiant-fall':'zombie-fall',decomposeKey=severed?'zombie-severed-decompose':'zombie-decompose';
     if(corpse.kind===0&&fall&&decompose&&this.scene.textures.exists(fallKey)&&this.scene.textures.exists(decomposeKey)) {
+      // Keep the radiant fall's body scale as its intact corpse becomes bones.
+      const decomposeScale=radiant?fall.displayHeight/fall.bodyHeight:undefined;
       if(t<ZOMBIE_FALL_DURATION) {
         const total=fall.durationsMs.reduce((a,b)=>a+b,0);
         let remaining=p*total,frame=0;
@@ -79,12 +85,12 @@ export class ZombieDeathAnimator {
         // Blend the two sheets at the grounded pose so decomposition starts smoothly.
         const mix=(t-ZOMBIE_FALL_DURATION)/SETTLE_DURATION;
         this.pose(body,fallKey,fall,fall.frameCount-1,x,groundY,corpse.dir,1-mix);
-        this.pose(next,decomposeKey,decompose,0,x,groundY,corpse.dir,mix);
+        this.pose(next,decomposeKey,decompose,0,x,groundY,corpse.dir,mix,decomposeScale);
       }else {
         // Crossfade adjacent decomposition poses; the bones stay opaque until cleanup.
         const position=dissolve*(decompose.frameCount-1),frame=Math.floor(position),mix=position-frame;
-        this.pose(body,decomposeKey,decompose,frame,x,groundY,corpse.dir,alpha*(1-mix));
-        if(frame<decompose.frameCount-1)this.pose(next,decomposeKey,decompose,frame+1,x,groundY,corpse.dir,alpha*mix);
+        this.pose(body,decomposeKey,decompose,frame,x,groundY,corpse.dir,alpha*(1-mix),decomposeScale);
+        if(frame<decompose.frameCount-1)this.pose(next,decomposeKey,decompose,frame+1,x,groundY,corpse.dir,alpha*mix,decomposeScale);
       }
       return;
     }

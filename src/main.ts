@@ -43,7 +43,7 @@ class Stand extends Phaser.Scene{
  phase='title';wave=1;x=500;y=G;vy=0;face=1;hp=100;stamina=100;energy=100;spellDamage=43;shieldCost=14;rescued=0;lost=0;kills=0;spawned=0;total=0;timer=0;clock=0;swing=0;attackCd=0;inv=0;blocking=false;crouching=false;enemies:Enemy[]=[];survivors:Survivor[]=[];shots:Shot[]=[];particles:Particle[]=[];paused=false;touch=new Set<string>();upgrades:string[]=[];waveKills=0;
  scenery!:Phaser.GameObjects.Container;sceneryLevel=0;ambientTime=0;
  endingTime=0;bridgeDestroyed=false;heroSacrificed=false;
- idleFrame=0;idleElapsed=0;idleDurations:number[]=[];heroAnimator!:HeroAnimator;villagerAnimator!:VillagerAnimator;zombieAnimator!:ZombieAnimator;deathAnimator!:ZombieDeathAnimator;corpses:ZombieCorpse[]=[];nextZombieDeath:Exclude<ZombieDeathVariant,'burn'>='fall';corpsePool:{body:Phaser.GameObjects.Image;next:Phaser.GameObjects.Image}[]=[];
+ idleFrame=0;idleElapsed=0;idleDurations:number[]=[];heroAnimator!:HeroAnimator;villagerAnimator!:VillagerAnimator;zombieAnimator!:ZombieAnimator;deathAnimator!:ZombieDeathAnimator;corpses:ZombieCorpse[]=[];nextZombieDeath:Exclude<ZombieDeathVariant,'burn'|'radiant'>='fall';corpsePool:{body:Phaser.GameObjects.Image;next:Phaser.GameObjects.Image}[]=[];
  progression=championProgression(1);
  get level(){return this.progression.level}
  get maxHp(){return this.progression.maxHealth}
@@ -105,12 +105,13 @@ class Stand extends Phaser.Scene{
   if(d>0)e.hitReaction={elapsed:0,dir:Math.sign(dir)||1,fresh:true};
   e.hp-=d;this.burst(e.x,(e.y??G)-40,0xb8c78b,8);e.x+=dir*15;
   if(e.hp<=0){
-   const burning=e.kind===0&&source==='ember';
-   const variant=e.kind===0?(burning?'burn':this.nextZombieDeath):undefined;
-   if(e.kind===0&&!burning)this.nextZombieDeath=variant==='fall'?'severed':'fall';
+   const special=e.kind===0?(source==='ember'?'burn':source==='volley'?'radiant':undefined):undefined;
+   const variant=e.kind===0?(special??this.nextZombieDeath):undefined;
+   if(e.kind===0&&!special)this.nextZombieDeath=variant==='fall'?'severed':'fall';
    this.corpses.push({x:e.x,y:e.y??G,dir:Math.sign(dir)||1,kind:e.kind,elapsed:0,variant});
    e.hitReaction=undefined;this.kills++;this.waveKills++;
    if(variant==='burn')this.burst(e.x,(e.y??G)-65,0xff8c24,12);
+   else if(variant==='radiant')this.burst(e.x,(e.y??G)-82,0xffe4a0,16);
    else if(variant==='severed'){this.burst(e.x,(e.y??G)-85,0xb5151e,18);this.burst(e.x,(e.y??G)-65,0x8e1018,12)}
    else this.burst(e.x,(e.y??G)-30,0xc69d57,16);
    tone(100);
@@ -180,7 +181,7 @@ class Stand extends Phaser.Scene{
   if(id==='ember'){this.resetRisingAttack();this.swing=0;this.heroAnimator.startEmber(this.face);this.pendingEmber={delay:.12,face:this.face,damage:this.spellDamage};}
   if(id==='ice')this.shots.push({x:this.x+this.face*30,y:this.y-48,dir:this.face,life:.8,spell:id,damage:48});
   if(id==='ward')this.wardTime=6;
-  if(id==='volley')for(let i=0;i<4;i++){const e=targets[i%Math.min(4,targets.length)];this.burst(e.x,G-45,spell.color,10);this.hurt(e,19)}
+  if(id==='volley')for(let i=0;i<4;i++){const e=targets[i%Math.min(4,targets.length)];this.burst(e.x,G-45,spell.color,10);this.hurt(e,19,this.face,'volley')}
   if(id==='stone'){for(const e of targets){const dx=(e.x-this.x)*this.face;if(dx<190&&Math.abs(G-44-(this.y-48))<35+dx*.4)this.hurt(e,38)}for(let i=0;i<30;i++)this.particles.push({x:this.x+this.face*20,y:this.y-35,vx:this.face*Phaser.Math.Between(180,430),vy:Phaser.Math.Between(-140,30),life:.45,color:spell.color})}
   if(id==='vines')this.wall={x:Phaser.Math.Clamp(this.x+this.face*130,380,1160),hp:110,max:110};
  }
