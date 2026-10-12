@@ -13,9 +13,28 @@ try{
  assert.equal(cast.hp,38);assert.equal(cast.kills,1);assert.equal(cast.waveKills,1);assert.equal(cast.next,'fall');assert.equal(cast.wounded,true);assert.equal(cast.untouched,false);assert.ok(cast.energy>=70&&cast.energy<73);
  const frozen=await page.evaluate(()=>[window.stoneTarget.stoneWounds.elapsed,window.elowen.corpses[0].elapsed]);await page.waitForTimeout(150);
  assert.deepEqual(await page.evaluate(()=>[window.stoneTarget.stoneWounds.elapsed,window.elowen.corpses[0].elapsed]),frozen);
+ const barrage=await page.evaluate(()=>{
+  const s=window.elowen,e=window.stoneTarget,corpses=s.corpses;s.corpses=[];s.enemies=[e];const sequence=[];
+  for(const age of [.02,.08,.12,.18,.24,.34]){
+   e.stoneWounds.elapsed=age;e.hitReaction={elapsed:age,dir:1};s.draw();const body=s.spritePool.find(im=>im.visible&&im.getData('heroAction')==='enemy');
+   const shards=s.zombieStones.pool.filter(im=>im.visible&&im.getData('stoneOwner')===body);
+   sequence.push({count:shards.length,zones:[...new Set(shards.map(im=>im.getData('stoneZone')))],burst:s.zombieStones.effects.commandBuffer.length,hp:e.hp});
+  }
+  const body=s.spritePool.find(im=>im.visible&&im.getData('heroAction')==='enemy'),shards=s.zombieStones.pool.filter(im=>im.visible&&im.getData('stoneOwner')===body);
+  const centres=[0,1,2].map(zone=>{const pair=shards.filter(im=>im.getData('stoneZone')===zone);return {x:(pair[0].x+pair[1].x)/2,y:(pair[0].y+pair[1].y)/2}});
+  const separation=Math.min(...centres.flatMap((p,i)=>centres.slice(i+1).map(q=>Math.hypot(p.x-q.x,p.y-q.y))));
+  const kicks=[];for(const age of [.04,.109,.15,.219,.26,.34]){e.stoneWounds.elapsed=age;e.hitReaction={elapsed:age,dir:1};s.draw();kicks.push(body.x-e.x)}
+  s.corpses=corpses;s.enemies=[];const fatal=[];corpses[0].stoneWounds.elapsed=0;
+  for(const age of [.04,.14,.28]){corpses[0].elapsed=age;s.draw();fatal.push(s.zombieStones.pool.filter(im=>im.visible&&im.getData('stoneOwner')===s.corpsePool[0].body).length)}
+  return {sequence,separation,kicks,fatal,kills:s.kills};
+ });
+ assert.deepEqual(barrage.sequence.map(s=>s.count),[1,2,3,4,5,6]);assert.deepEqual(barrage.sequence.at(-1).zones,[0,1,2]);assert.ok(barrage.separation>8);
+ for(const s of barrage.sequence){assert.equal(s.hp,38);if(s.count>1)assert.ok(s.burst>0)}
+ for(let i=0;i<6;i++)assert.ok(i%2?barrage.kicks[i]<1:barrage.kicks[i]>5);
+ assert.deepEqual(barrage.fatal,[2,4,6]);assert.equal(barrage.kills,1);
  // Inspect opaque body pixels at every embedded base, through both facing directions.
  const anchors=await page.evaluate(()=>{
-  const s=window.elowen,e=window.stoneTarget,c=s.corpses[0],results=[];s.enemies=[e];
+  const s=window.elowen,e=window.stoneTarget,c=s.corpses[0],results=[];s.enemies=[e];e.stoneWounds.elapsed=c.stoneWounds.elapsed=.4;
   function check(phase){for(const im of s.zombieStones.pool.filter(im=>im.visible)){
    const body=im.getData('stoneOwner'),flip=body.flipX?-1:1,px=body.displayOriginX+flip*(im.x-body.x)/body.scaleX,py=body.displayOriginY+(im.y-body.y)/body.scaleY;
    const canvas=document.createElement('canvas');canvas.width=body.frame.width;canvas.height=body.frame.height;const ctx=canvas.getContext('2d');ctx.drawImage(body.texture.getSourceImage(),body.frame.cutX,body.frame.cutY,body.frame.width,body.frame.height,0,0,canvas.width,canvas.height);
@@ -59,5 +78,5 @@ try{
  await page.waitForTimeout(500);await page.locator('#pause').click();await page.screenshot({path:'zombie-stones-preview.png'});
  await page.locator('#face').click();await page.locator('#pause').click();await page.locator('#stone-death').click();await page.waitForFunction(()=>document.querySelector('#stage').textContent.startsWith('Stoneshard death'));
  await page.waitForFunction(()=>document.querySelector('#stage').textContent==='Walking');await page.locator('#kill').click();await page.waitForFunction(()=>document.querySelector('#stage').textContent.startsWith('Normal death'));
- assert.deepEqual(errors,[]);console.log('PASS: Actual Stoneshard cast, damage/range/energy, surviving wounds, per-pose body attachment in both directions, rock-covered fall and decay, movement, staggered fading, refreshed wounds, later killing attacks, no shard regrowth, pause, expiry, pool cleanup, restart and preview.');
+ assert.deepEqual(errors,[]);console.log('PASS: Six staggered Stoneshard impacts, three separated body zones and recoil pulses, damage applied once, individual chip bursts, actual cast/range/energy, surviving wounds, per-pose body attachment in both directions, rock-covered fall and decay, movement, staggered fading, refreshed wounds, later killing attacks, no shard regrowth, pause, expiry, pool cleanup, restart and preview.');
 }finally{await browser.close()}
