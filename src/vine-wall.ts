@@ -11,7 +11,7 @@ const tints={worn:0xd2d4ae,wilt:0xb2a47b,dead:0x9c8c65};
 
 type VineClip={frameWidth:number;frameHeight:number;frameCount:number;columns:number;displayHeight:number;bodyHeight:number;frameGroundY:number[];frameTopY:number[];frameAnchorX:number[];frameRects:[number,number,number,number][]};
 export function preloadVineWall(scene:Phaser.Scene){
-  const path=new URL('wall-of-vines/Wall-of-vines',document.baseURI).href;
+  const path=new URL('wall-of-vines/Wall-of-vines-growth-24',document.baseURI).href;
   scene.load.image('vine-wall',path+'-spritesheet.png');
   scene.load.json('vine-wall-meta',path+'.json');
 }
@@ -55,7 +55,7 @@ export class VineWall {
   }
   reset(){this.barrier=null;this.elapsed=0;this.collapse=null;this.hits=[];this.fragments=[];this.sequence=0;this.body.setVisible(false);this.next.setVisible(false);}
   private height(){
-    const position=clamp(this.elapsed/VINE_GROW_TIME)*(this.clip.frameCount-1),f=Math.floor(position),next=Math.min(this.clip.frameCount-1,f+1),t=position-f,mix=t*t*(3-2*t);
+    const position=clamp(this.elapsed/VINE_GROW_TIME)*(this.clip.frameCount-1),f=Math.floor(position),next=Math.min(this.clip.frameCount-1,f+1),mix=position-f;
     const height=(i:number)=>this.clip.frameGroundY[i]-this.clip.frameTopY[i];
     return (height(f)*(1-mix)+height(next)*mix)*this.clip.displayHeight/this.clip.bodyHeight;
   }
@@ -89,7 +89,7 @@ export class VineWall {
       const dead=this.collapse===null?0:clamp(this.collapse/VINE_COLLAPSE_TIME);
       const health=clamp(b.hp/b.max),growth=clamp(this.elapsed/VINE_GROW_TIME);
       const position=growth*(this.clip.frameCount-1),frame=Math.floor(position),blend=position-frame;
-      const mix=blend*blend*(3-2*blend),alpha=1-dead;
+      const mix=blend,alpha=1-dead;
       const bend=this.hits.reduce((sum,h)=>sum-h.side*Math.sin(h.age/.32*Math.PI*2)*2*(1-h.age/.32),0);
       const angle=Math.sin(this.elapsed*1.35)*.18*growth+bend+dead*18;
       const scale=this.clip.displayHeight/this.clip.bodyHeight;

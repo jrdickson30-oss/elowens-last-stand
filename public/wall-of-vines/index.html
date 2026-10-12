@@ -14,7 +14,7 @@
   <div id="stage" aria-live="polite">Loading…</div>
 </main>
 <script type="module">
-const meta=await fetch('Wall-of-vines.json').then(r=>r.json()),im=new Image();im.src='Wall-of-vines-spritesheet.png';await im.decode();
+const meta=await fetch('Wall-of-vines-growth-24.json').then(r=>r.json()),im=new Image();im.src='Wall-of-vines-growth-24-spritesheet.png';await im.decode();
 const canvas=document.querySelector('#view'),ctx=canvas.getContext('2d'),pause=document.querySelector('#pause'),stage=document.querySelector('#stage');
 let age=0,playing=true,previous=performance.now();
 document.querySelector('#restart').onclick=()=>{age=0;};
@@ -28,7 +28,7 @@ function draw(now){
  if(age>meta.growDurationMs/1000+2.2&&document.querySelector('#repeat').checked)age=0;
  const gradient=ctx.createLinearGradient(0,0,0,430);gradient.addColorStop(0,'#172925');gradient.addColorStop(1,'#40503a');ctx.fillStyle=gradient;ctx.fillRect(0,0,640,430);
  ctx.fillStyle='#293127';ctx.fillRect(0,360,640,70);ctx.fillStyle='#536044';ctx.fillRect(0,360,640,2);ctx.fillStyle='#1c271f';ctx.beginPath();ctx.ellipse(320,363,153,9,0,0,Math.PI*2);ctx.fill();
- const p=Math.min(1,age/(meta.growDurationMs/1000))*(meta.frameCount-1),f=Math.floor(p),blend=p-f,mix=blend*blend*(3-2*blend);
+ const p=Math.min(1,age/(meta.growDurationMs/1000))*(meta.frameCount-1),f=Math.floor(p),blend=p-f,mix=blend;
  ctx.imageSmoothingEnabled=false;pose(f,1-mix);if(f<meta.frameCount-1)pose(f+1,mix);ctx.globalAlpha=1;
  stage.textContent=p<meta.frameCount-1?'Roots curling and intertwining…':'Fully grown';requestAnimationFrame(draw);
 }
