@@ -12,7 +12,7 @@ try {
   await page.keyboard.press('Escape');await page.locator('#resume').waitFor();
   const frozen=await page.evaluate(()=>({elapsed:window.elowen.vineWall.elapsed,fragments:window.elowen.vineWall.fragments}));await page.waitForTimeout(160);
   assert.deepEqual(await page.evaluate(()=>({elapsed:window.elowen.vineWall.elapsed,fragments:window.elowen.vineWall.fragments})),frozen);
-  await page.locator('#resume').click();await page.waitForFunction(()=>window.elowen.vineWall.elapsed>.8);
+  await page.locator('#resume').click();await page.waitForFunction(()=>window.elowen.vineWall.elapsed>3);
   await page.evaluate(()=>window.elowen.enemies[0].next=0);await page.waitForFunction(()=>window.elowen.wall.hp===98);
   assert(await page.evaluate(x=>window.elowen.vineWall.hits.length>0&&window.elowen.vineWall.fragments.length>0&&window.elowen.enemies[0].x===x,cast.enemyX),'strike animates and barrier still blocks');
   await page.screenshot({path:'wall-vines-game.png'});
@@ -26,9 +26,16 @@ try {
       return [...ctx.getImageData(0,0,110,165).data];
     },{age,hp,collapse});
   }
-  const seed=await pixels(.02),growing=await pixels(.25),mature=await pixels(.85),sway=await pixels(1.8),damaged=await pixels(.85,20),fall=await pixels(.85,0,.3);
+  const anchors=await page.evaluate(()=>{
+    const s=window.elowen,a=s.vineWall,result=[];s.wall.hp=110;
+    for(const time of [0,.56,1.12,1.68,2.24,2.8]){a.elapsed=time;a.collapse=null;s.art.clear();a.render(s.art,422);const im=a.body;result.push({scaleX:im.scaleX,scaleY:im.scaleY,frame:im.frame.name,foot:im.y,origin:im.originY,anchor:a.clip.frameGroundY[im.frame.name]/a.clip.frameHeight});}
+    return result;
+  });
+  assert(anchors.every(p=>p.scaleX===anchors[0].scaleX&&p.scaleX===p.scaleY&&p.foot===422&&p.origin===p.anchor),'fixed trunk scale and grounded roots throughout slow growth');
+  assert.equal(anchors.at(-1).frame,5);assert(anchors[1].frame<=1,'wall stays low during the first half-second');
+  const seed=await pixels(.02),growing=await pixels(1.1),mature=await pixels(3),sway=await pixels(4.1),damaged=await pixels(3,20),fall=await pixels(3,0,.4);
   const changes=(a,b)=>{let count=0;for(let i=0;i<a.length;i+=4)if(Math.abs(a[i]-b[i])+Math.abs(a[i+1]-b[i+1])+Math.abs(a[i+2]-b[i+2])>15)count++;return count;};
-  assert(changes(seed,growing)>400,'stems visibly emerge');assert(changes(growing,mature)>400,'foliage unfurls');assert(changes(mature,sway)>150,'living wall sways');assert(changes(mature,damaged)>400,'damage exposes bare stems');assert(changes(mature,fall)>800,'destroyed vines visibly collapse');
+  assert(changes(seed,growing)>400,'stems visibly emerge');assert(changes(growing,mature)>400,'foliage unfurls');assert(changes(mature,sway)>20,'living wall sways');assert(changes(mature,damaged)>400,'damage wilts and darkens the wall');assert(changes(mature,fall)>800,'destroyed vines visibly collapse');
   await page.evaluate(()=>{const s=window.elowen;window.vineVisibility.forEach(([c,v])=>c.setVisible(v));s.vineWall.collapse=null;s.wall.hp=1;s.enemies[0].next=0;s.scene.resume();});
   await page.waitForFunction(()=>window.elowen.wall===null);
   assert(await page.evaluate(()=>window.elowen.vineWall.collapse!==null&&window.elowen.vineWall.barrier!==null),'collision ends immediately while the plant collapses');
@@ -49,5 +56,7 @@ try {
   for(const method of ['startWave','beginEnding','end','begin']) {
     assert(await page.evaluate(method=>{const s=window.elowen;s.phase='play';s.upgrades=['vines'];s.energy=100;s.spellCooldowns={};s.cast('vines');s.vineWall.strike(1);s[method](false);return !s.wall&&!s.vineWall.barrier&&!s.vineWall.fragments.length&&!s.vineWall.hits.length;},method),method+' clears animation');
   }
-  assert.deepEqual(errors,[]);console.log('PASS: roots and growth, unfolding leaves, idle sway, hit reaction, damaged foliage, collapse/debris, immediate collision removal, movement resumes, key 5, cost/cooldown/gates, placement, replacement, pause and lifecycle cleanup.');
+  await page.goto(new URL('wall-of-vines/',process.env.GAME_URL||'http://127.0.0.1:5181/').href);
+  await page.waitForFunction(()=>window.vinePreviewReady===true);await page.locator('#restart').click();await page.locator('#pause').click();assert.equal(await page.locator('#pause').textContent(),'Resume');
+  assert.deepEqual(errors,[]);console.log('PASS: slow fixed-scale growth, textured intertwined trunks, grounded frames, unfolding leaves, idle sway, hit reaction, damaged foliage, collapse/debris, immediate collision removal, movement resumes, key 5, cost/cooldown/gates, placement, replacement, pause and lifecycle cleanup.');
 } finally {await browser.close();}

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Wall of Vines · Elowen’s Last Stand</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#101e20;color:#e0dcc8;font:16px/1.5 system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;padding:24px}main{max-width:680px;width:100%}h1{font:34px Georgia,serif;margin:0 0 8px}p{color:#aebbb0;margin:0 0 20px}canvas{display:block;width:100%;border:1px solid #42534a;border-radius:6px;background:#1b302b;image-rendering:pixelated}nav{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px}button,a{font:inherit;color:#e0dcc8;background:#263c32;border:1px solid #647354;padding:8px 18px;border-radius:3px;text-decoration:none;cursor:pointer}label{margin-left:auto;font-size:14px}#stage{margin-top:12px;color:#bdcda5}
+</style>
+<main>
+  <h1>Wall of Vines</h1>
+  <p>Heavy roots curl upward and weave into a flowering barrier.</p>
+  <canvas id="view" width="640" height="430" aria-label="Animated growth of a thick twisting vine wall"></canvas>
+  <nav><button id="restart">Regrow</button><button id="pause">Pause</button><a href="../">Play game</a><label><input id="repeat" type="checkbox" checked> Repeat growth</label></nav>
+  <div id="stage" aria-live="polite">Loading…</div>
+</main>
+<script type="module">
+const meta=await fetch('Wall-of-vines.json').then(r=>r.json()),im=new Image();im.src='Wall-of-vines-spritesheet.png';await im.decode();
+const canvas=document.querySelector('#view'),ctx=canvas.getContext('2d'),pause=document.querySelector('#pause'),stage=document.querySelector('#stage');
+let age=0,playing=true,previous=performance.now();
+document.querySelector('#restart').onclick=()=>{age=0;};
+pause.onclick=()=>{playing=!playing;pause.textContent=playing?'Pause':'Resume';};
+function pose(f,alpha){
+ const scale=235/meta.bodyHeight,rect=meta.frameRects[f];ctx.globalAlpha=alpha;
+ ctx.drawImage(im,...rect,320-meta.frameAnchorX[f]*scale,360-meta.frameGroundY[f]*scale,rect[2]*scale,rect[3]*scale);
+}
+function draw(now){
+ if(playing)age+=Math.min(.05,(now-previous)/1000);previous=now;
+ if(age>meta.growDurationMs/1000+2.2&&document.querySelector('#repeat').checked)age=0;
+ const gradient=ctx.createLinearGradient(0,0,0,430);gradient.addColorStop(0,'#172925');gradient.addColorStop(1,'#40503a');ctx.fillStyle=gradient;ctx.fillRect(0,0,640,430);
+ ctx.fillStyle='#293127';ctx.fillRect(0,360,640,70);ctx.fillStyle='#536044';ctx.fillRect(0,360,640,2);ctx.fillStyle='#1c271f';ctx.beginPath();ctx.ellipse(320,363,153,9,0,0,Math.PI*2);ctx.fill();
+ const p=Math.min(1,age/(meta.growDurationMs/1000))*(meta.frameCount-1),f=Math.floor(p),blend=p-f,mix=blend*blend*(3-2*blend);
+ ctx.imageSmoothingEnabled=false;pose(f,1-mix);if(f<meta.frameCount-1)pose(f+1,mix);ctx.globalAlpha=1;
+ stage.textContent=p<meta.frameCount-1?'Roots curling and intertwining…':'Fully grown';requestAnimationFrame(draw);
+}
+window.vinePreviewReady=true;requestAnimationFrame(draw);
+</script>
+</html>
