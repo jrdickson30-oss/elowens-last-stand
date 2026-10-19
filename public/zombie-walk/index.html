@@ -4,14 +4,16 @@
 <style>
 body{margin:0;background:#111b19;color:#e6dfcc;font:16px system-ui;display:grid;place-items:center;min-height:100vh}main{text-align:center;max-width:680px;padding:24px}h1{font-size:24px;margin:0}p{color:#a4b5a8;line-height:1.5}canvas{width:100%;max-width:640px;image-rendering:pixelated}button{background:#30463b;border:1px solid #79907c;color:inherit;border-radius:6px;padding:10px 18px;margin:6px;cursor:pointer}
 </style>
-<main><h1>Standard Zombie</h1><p>Walk · Claw slash · Hit recoil · Two alternating deaths · Ember burn to ash · Radiant impact · Stoneshard wounds</p>
-<canvas width="640" height="380"></canvas><div><button id="pause">Pause</button><button id="face">Face right</button><button id="claw">Claw slash</button><button id="hit">Hit Zombie</button><button id="kill">Kill Zombie</button><button id="burn">Ember death</button><button id="radiant">Radiant death</button><button id="stone-hit">Stoneshard hit</button><button id="stone-death">Stoneshard death</button></div>
+<main><h1>Standard Zombie</h1><p>Slow / fast walk · Idle twitch · Two claw slashes · Block recoil · Heavy stagger · Hit recoil · Two alternating deaths · Ember burn to ash · Radiant impact · Stoneshard wounds</p>
+<canvas width="640" height="380"></canvas><div><button id="pause">Pause</button><button id="face">Face right</button><button data-action="walk">Slow walk</button><button data-action="fast-walk">Fast walk</button><button data-action="idle">Idle twitch</button><button data-action="backhand">Backhand slash</button><button data-action="blocked">Blocked claw</button><button data-action="stagger">Heavy stagger</button><button id="claw">Claw slash</button><button id="hit">Hit Zombie</button><button id="kill">Kill Zombie</button><button id="burn">Ember death</button><button id="radiant">Radiant death</button><button id="stone-hit">Stoneshard hit</button><button id="stone-death">Stoneshard death</button></div>
 <p id="stage">Walking</p></main>
 <script type="module">
 const meta=await(await fetch('./Zombie-walk.json')).json(),img=new Image();
 img.src='./Zombie-walk-spritesheet.png';await img.decode();
 const clawMeta=await(await fetch('../zombie-claw/Zombie-claw.json')).json(),clawImg=new Image();
 clawImg.src='../zombie-claw/Zombie-claw-spritesheet.png';await clawImg.decode();
+const extra={};
+for(const action of ['backhand','blocked','idle','stagger','fast-walk']){const clip=await(await fetch(`../zombie-${action}/Zombie-${action}.json`)).json(),sheet=new Image();sheet.src=`../zombie-${action}/Zombie-${action}-spritesheet.png`;await sheet.decode();extra[action]={clip,sheet};}
 const hitMeta=await(await fetch('../zombie-hit/Zombie-hit.json')).json(),hitImg=new Image();
 hitImg.src='../zombie-hit/Zombie-hit-spritesheet.png';await hitImg.decode();
 const fallMeta=await(await fetch('../zombie-fall/Zombie-fall.json')).json(),fallImg=new Image();
@@ -31,16 +33,18 @@ radiantImg.src='../zombie-radiant-fall/Zombie-radiant-fall-spritesheet.png';awai
 const stoneMeta=await(await fetch('../zombie-stones/Zombie-stones.json?v=impacts2')).json(),stoneImg=new Image();
 stoneImg.src='../zombie-stones/Zombie-stones-spritesheet.png';await stoneImg.decode();
 stoneMeta.torsos['zombie-claw']=clawMeta.stoneTorsos;stoneMeta.zones['zombie-claw']=clawMeta.stoneZones;
+for(const [action,{clip}] of Object.entries(extra)){stoneMeta.torsos[`zombie-${action}`]=clip.stoneTorsos;stoneMeta.zones[`zombie-${action}`]=clip.stoneZones;}
 const ctx=document.querySelector('canvas').getContext('2d'),duration=meta.durationsMs.reduce((a,b)=>a+b,0);
 const hitDuration=hitMeta.durationsMs.reduce((a,b)=>a+b,0);
-let elapsed=0,last=performance.now(),paused=false,face=-1,clawElapsed=null,hitElapsed=null,deathElapsed=null,nextSevered=false,severed=false,burning=false,radiant=false,stoneDeath=false,stoneElapsed=null;
-document.querySelector('#claw').onclick=()=>{if(deathElapsed===null){clawElapsed=0;hitElapsed=null}};
-document.querySelector('#hit').onclick=()=>{if(deathElapsed===null){clawElapsed=null;hitElapsed=0}};
-document.querySelector('#kill').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;burning=radiant=false;severed=nextSevered;nextSevered=!nextSevered;deathElapsed=0;hitElapsed=null;clawElapsed=null};
-document.querySelector('#burn').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;radiant=false;burning=true;deathElapsed=0;hitElapsed=null;clawElapsed=null};
-document.querySelector('#radiant').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;burning=false;radiant=true;deathElapsed=0;hitElapsed=null;clawElapsed=null};
-document.querySelector('#stone-hit').onclick=()=>{if(deathElapsed===null){stoneElapsed=0;hitElapsed=0;clawElapsed=null}};
-document.querySelector('#stone-death').onclick=()=>{if(deathElapsed!==null)return;burning=radiant=severed=false;stoneDeath=true;stoneElapsed=0;deathElapsed=0;hitElapsed=null;clawElapsed=null};
+let elapsed=0,last=performance.now(),paused=false,face=-1,extraAction=null,extraElapsed=null,clawElapsed=null,hitElapsed=null,deathElapsed=null,nextSevered=false,severed=false,burning=false,radiant=false,stoneDeath=false,stoneElapsed=null;
+for(const b of document.querySelectorAll('[data-action]'))b.onclick=()=>{if(deathElapsed!==null)return;clawElapsed=hitElapsed=null;extraAction=b.dataset.action==='walk'?null:b.dataset.action;extraElapsed=extraAction?0:null;};
+document.querySelector('#claw').onclick=()=>{if(deathElapsed===null){clawElapsed=0;hitElapsed=null;extraElapsed=extraAction=null}};
+document.querySelector('#hit').onclick=()=>{if(deathElapsed===null){clawElapsed=null;hitElapsed=0;extraElapsed=extraAction=null}};
+document.querySelector('#kill').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;burning=radiant=false;severed=nextSevered;nextSevered=!nextSevered;deathElapsed=0;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
+document.querySelector('#burn').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;radiant=false;burning=true;deathElapsed=0;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
+document.querySelector('#radiant').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;burning=false;radiant=true;deathElapsed=0;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
+document.querySelector('#stone-hit').onclick=()=>{if(deathElapsed===null){stoneElapsed=0;hitElapsed=0;clawElapsed=null;extraElapsed=extraAction=null}};
+document.querySelector('#stone-death').onclick=()=>{if(deathElapsed!==null)return;burning=radiant=severed=false;stoneDeath=true;stoneElapsed=0;deathElapsed=0;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
 document.querySelector('#pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'Play':'Pause'};
 document.querySelector('#face').onclick=e=>{face*=-1;e.target.textContent=face<0?'Face right':'Face left'};
 function frameAt(clip,time){let frame=0;while(frame<clip.frameCount-1&&time>=clip.durationsMs[frame])time-=clip.durationsMs[frame++];return frame}
@@ -61,7 +65,14 @@ if(stoneElapsed!==null&&torso&&zones){const rotation=Math.atan2(torso[1]-torso[3
    ctx.restore();
   }
  }}ctx.restore()}
-function draw(now){const dt=Math.min(now-last,50);last=now;if(!paused){if(deathElapsed!==null){deathElapsed+=dt;if(deathElapsed>=(burning?4900:4180)){deathElapsed=null;stoneElapsed=null}}else if(hitElapsed!==null){hitElapsed+=dt;if(hitElapsed>=hitDuration)hitElapsed=null}else if(clawElapsed!==null){clawElapsed+=dt;if(clawElapsed>=640)clawElapsed=null}else elapsed+=dt}
+function draw(now){const dt=Math.min(now-last,50);last=now;
+if(!paused){
+ if(deathElapsed!==null){deathElapsed+=dt;if(deathElapsed>=(burning?4900:4180)){deathElapsed=null;stoneElapsed=null}}
+ else if(hitElapsed!==null){hitElapsed+=dt;if(hitElapsed>=hitDuration)hitElapsed=null}
+ else if(clawElapsed!==null){clawElapsed+=dt;if(clawElapsed>=640)clawElapsed=null}
+ else if(extraElapsed!==null){extraElapsed+=dt;const duration=extra[extraAction].clip.durationsMs.reduce((sum,t)=>sum+t,0);if(!['idle','fast-walk'].includes(extraAction)&&extraElapsed>=duration)extraElapsed=extraAction=null}
+ else elapsed+=dt;
+}
 if(!paused&&deathElapsed===null&&stoneElapsed!==null){stoneElapsed+=dt/1000;if(stoneElapsed>=7.35)stoneElapsed=null}
 ctx.clearRect(0,0,640,380);ctx.fillStyle='#263d32';ctx.fillRect(25,331,590,2);
 let stage='Walking';
@@ -77,6 +88,7 @@ if(deathElapsed!==null&&burning){const t=deathElapsed;
  if(t<700)pose(fm,fi,frameAt(fm,t));
  else if(t<880){const mix=(t-700)/180;pose(fm,fi,5,1-mix);pose(bm,bi,0,mix,boneHeight)}
  else{const position=Math.min(1,(t-880)/1200)*5,frame=Math.floor(position),mix=position-frame,alpha=1-Math.max(0,(t-3580)/600);pose(bm,bi,frame,alpha*(1-mix),boneHeight);if(frame<5)pose(bm,bi,frame+1,alpha*mix,boneHeight)}
+ }else if(extraElapsed!==null){const {clip,sheet}=extra[extraAction],duration=clip.durationsMs.reduce((sum,t)=>sum+t,0);pose(clip,sheet,frameAt(clip,extraElapsed%duration));stage={'backhand':'Backhand slash','blocked':'Blocked claw','idle':'Idle twitch','stagger':'Heavy stagger','fast-walk':'Fast walk'}[extraAction];
 }else if(clawElapsed!==null){pose(clawMeta,clawImg,frameAt(clawMeta,clawElapsed));stage='Claw slash';
 }else{const clip=hitElapsed===null?meta:hitMeta;pose(clip,hitElapsed===null?img:hitImg,frameAt(clip,hitElapsed??(elapsed%duration)));if(hitElapsed!==null)stage='Recoiling'}
 if(stoneElapsed!==null&&deathElapsed===null)stage+=' · Embedded shards';

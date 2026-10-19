@@ -1,8 +1,13 @@
 import Phaser from 'phaser';
-import {ZOMBIE_CLAW_DURATION,type ZombieClaw} from './zombie-attack';
+import {ZOMBIE_CLAW_DURATION,ZOMBIE_BLOCK_DURATION,type ZombieClaw,type ZombieBlock} from './zombie-attack';
 
 export const ZOMBIE_HIT_DURATION=.42;
-export type ZombieHit={elapsed:number;dir:number;fresh?:boolean};
+export const ZOMBIE_STAGGER_DURATION=.72;
+export const ZOMBIE_FAST_SPEED=75;
+export type ZombieHit={elapsed:number;dir:number;fresh?:boolean;kind?:'heavy'};
+export const zombieHitDuration=(hit?:ZombieHit)=>hit?.kind==='heavy'?ZOMBIE_STAGGER_DURATION:ZOMBIE_HIT_DURATION;
+export type ZombieMotion={moving:boolean;fast:boolean;idleElapsed?:number;idle?:boolean;blocked?:ZombieBlock};
+export const ZOMBIE_EXTRA_ACTIONS=['backhand','blocked','idle','stagger','fast-walk'] as const;
 
 type WalkClip = {
   frameWidth: number; frameHeight: number; frameCount: number; columns: number;
@@ -12,24 +17,25 @@ type WalkClip = {
 };
 
 export function preloadZombieWalk(scene: Phaser.Scene) {
-  for(const action of ['walk','hit','claw']) {
+  for(const action of ['walk','hit','claw',...ZOMBIE_EXTRA_ACTIONS]) {
     const path=new URL(`zombie-${action}/Zombie-${action}`,document.baseURI).href;
     scene.load.image(`zombie-${action}`,path+'-spritesheet.png');
     scene.load.json(`zombie-${action}-meta`,path+'.json');
   }
 }
 
-// The standard enemy's slow, one-arm shuffle is a separate clip so a later
-// two-arm fast gait can be added without altering this animation.
+// Independent clips keep the slow shuffle, faster gait and combat reactions distinct.
 export class ZombieAnimator {
   readonly clip: WalkClip|undefined;
   readonly hitClip: WalkClip|undefined;
   readonly clawClip: WalkClip|undefined;
+  readonly extra:Partial<Record<typeof ZOMBIE_EXTRA_ACTIONS[number],WalkClip>>={};
   constructor(readonly scene: Phaser.Scene) {
     this.clip=scene.cache.json.get('zombie-walk-meta') as WalkClip|undefined;
     this.hitClip=scene.cache.json.get('zombie-hit-meta') as WalkClip|undefined;
     this.clawClip=scene.cache.json.get('zombie-claw-meta') as WalkClip|undefined;
-    for(const [key,clip] of [['zombie-walk',this.clip],['zombie-hit',this.hitClip],['zombie-claw',this.clawClip]] as const) {
+    for(const action of ZOMBIE_EXTRA_ACTIONS)this.extra[action]=scene.cache.json.get(`zombie-${action}-meta`);
+    for(const [key,clip] of [['zombie-walk',this.clip],['zombie-hit',this.hitClip],['zombie-claw',this.clawClip],...ZOMBIE_EXTRA_ACTIONS.map(action=>[`zombie-${action}`,this.extra[action]] as const)] as const) {
       if(!clip||!scene.textures.exists(key))continue;
       const texture=scene.textures.get(key);
       for(let frame=0;frame<clip.frameCount;frame++)texture.add(frame,0,...(clip.frameRects?.[frame]??[
@@ -40,25 +46,24 @@ export class ZombieAnimator {
   }
   // Other enemy types keep their own artwork and recoil around their feet.
   applyHit(image: Phaser.GameObjects.Image,x: number,hit: ZombieHit) {
-    const progress=Phaser.Math.Clamp(hit.elapsed/ZOMBIE_HIT_DURATION,0,1);
+    const progress=Phaser.Math.Clamp(hit.elapsed/zombieHitDuration(hit),0,1);
     const strength=progress<.2?Math.sin(progress/.2*Math.PI/2):(.5+.5*Math.cos((progress-.2)/.8*Math.PI));
     image.setX(x+hit.dir*6*strength).setAngle(hit.dir*13*strength)
       .setData('enemyHit',true).setData('enemyGait','recoil');
   }
-  render(image: Phaser.GameObjects.Image,x: number,y: number,time: number,face: number,hit?: ZombieHit,attack?:ZombieClaw) {
-    const hasHit=!!hit&&!!this.hitClip&&this.scene.textures.exists('zombie-hit');
-    const hasClaw=!hit&&!!attack&&!!this.clawClip&&this.scene.textures.exists('zombie-claw');
-    const clip=hasHit?this.hitClip:hasClaw?this.clawClip:this.clip,key=hasHit?'zombie-hit':hasClaw?'zombie-claw':'zombie-walk';
+  render(image: Phaser.GameObjects.Image,x: number,y: number,time: number,face: number,hit?: ZombieHit,attack?:ZombieClaw,motion?:ZombieMotion) {
+    const action=hit?(hit.kind==='heavy'?'stagger':'hit'):motion?.blocked?'blocked':attack?(attack.variant??'claw'):motion?.idle?'idle':motion?.moving&&motion.fast?'fast-walk':'walk';
+    const clip=action==='walk'?this.clip:action==='hit'?this.hitClip:action==='claw'?this.clawClip:this.extra[action],key=`zombie-${action}`;
     if(!clip||!this.scene.textures.exists(key))return false;
     const duration=clip.durationsMs.reduce((sum,ms)=>sum+ms,0);
-    let remaining=hasHit?Math.min(hit!.elapsed/ZOMBIE_HIT_DURATION*duration,duration-1):hasClaw?Math.min(attack!.elapsed/ZOMBIE_CLAW_DURATION*duration,duration-1):((time*1000)%duration+duration)%duration,frame=0;
+    const elapsed=hit?hit.elapsed/zombieHitDuration(hit)*duration:motion?.blocked?motion.blocked.elapsed/ZOMBIE_BLOCK_DURATION*duration:attack?attack.elapsed/ZOMBIE_CLAW_DURATION*duration:((motion?.idle?motion.idleElapsed??0:time)*1000%duration+duration)%duration;
+    let remaining=Math.min(elapsed,duration-1),frame=0;
     while(frame<clip.frameCount-1&&remaining>=clip.durationsMs[frame])remaining-=clip.durationsMs[frame++];
     image.setTexture(key,frame)
       .setOrigin(clip.frameAnchorX[frame]/image.frame.width,clip.frameGroundY[frame]/image.frame.height)
       .setPosition(x,y).setScale(clip.displayHeight/clip.bodyHeight)
-      .setFlipX((hasHit?-hit!.dir:hasClaw?attack!.face:face)<0).setAngle(0).setVisible(true).setData('heroAction','enemy')
-      .setData('enemyGait',hit?'recoil':hasClaw?'claw':'shuffle').setData('enemyHit',!!hit);
-    if(hit&&!hasHit)this.applyHit(image,x,hit);
+      .setFlipX((hit?-hit.dir:motion?.blocked?motion.blocked.face:attack?attack.face:face)<0).setAngle(0).setVisible(true).setData('heroAction','enemy')
+      .setData('enemyGait',action==='walk'?'shuffle':action==='hit'?'recoil':action).setData('enemyHit',!!hit);
     return true;
   }
 }

@@ -34,7 +34,7 @@ try{
   await page.waitForFunction(()=>!window.elowen.enemies[0].hitReaction);assert.equal((await state()).texture,'zombie-walk');
  }
  await page.evaluate(()=>{const s=window.elowen,e=s.enemies[0];e.x=s.x+180;e.stunned=e.rooted=0;e.hp=500;s.energy=100;s.cast('ember')});
- await page.waitForFunction(()=>window.elowen.enemies[0].hp<500);assert.equal((await state()).texture,'zombie-hit');
+ await page.waitForFunction(()=>window.elowen.enemies[0].hp<500);assert.equal((await state()).texture,'zombie-stagger');
  await page.waitForFunction(()=>!window.elowen.enemies[0].hitReaction);
  await page.evaluate(()=>{const s=window.elowen,e=s.enemies[0];e.x=1000;e.speed=50;s.hurt(e,1,1)});
  await page.waitForFunction(()=>!window.elowen.enemies[0].hitReaction);await page.waitForTimeout(80);assert.ok((await state()).walk>.5,'walking resumes after recoil');
