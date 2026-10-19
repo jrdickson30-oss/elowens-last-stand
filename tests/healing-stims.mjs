@@ -35,6 +35,19 @@ try {
   const s=window.elowen,random=Math.random;
   try{Math.random=()=>.1;s.hurt({x:800,hp:1,max:1,next:999,speed:0,kind:0},10);return s.healingStims.drops.length}finally{Math.random=random}
  }),0,'failed kill roll produces no stim');
+ // Each drop has its own five-second gameplay lifetime, even at full SP.
+ await fixture();
+ const expiry=await page.evaluate(()=>{
+  const s=window.elowen,d=s.healingStims;s.hp=s.maxHp;d.tryDrop(s.x,0);s.tickHealingStims(4);
+  const atFour=d.drops.length;d.tryDrop(900,0);s.tickHealingStims(.5);
+  const fading=d.drops[0].age;let bodyAlpha;
+  const g=new Proxy({},{get:(_target,key)=>(...args)=>{if(key==='fillStyle'&&args[0]===0x172f2a&&bodyAlpha===undefined)bodyAlpha=args[1]}});
+  d.render(g);s.tickHealingStims(.5);
+  const remaining=d.drops.map(stim=>({x:stim.x,age:stim.age}));
+  s.hp=40;s.x=650;s.tickHealingStims(.01);const noExpiredHeal=s.hp;
+  s.x=900;s.tickHealingStims(.01);return {atFour,fading,bodyAlpha,remaining,noExpiredHeal,collected:s.hp,drops:d.drops.length};
+ });
+ assert.deepEqual(expiry,{atFour:1,fading:4.5,bodyAlpha:.5,remaining:[{x:900,age:1}],noExpiredHeal:40,collected:65,drops:0},'old stim fades and expires; newer drop stays independently collectable');
  // Pickup through the actual game tick: vertical range, clamping and no overheal.
  for(const level of [1,10])for(const face of [-1,1]) {
   await fixture();
@@ -58,13 +71,13 @@ try {
   const s=window.elowen;s.healingStims.tryDrop(s.x,0);s.hp=0;s.tick(.01);return s.hp===0&&s.phase==='dead'&&s.healingStims.drops.length===0;
  }),'stim cannot revive a defeated Elowen');
  // Pausing freezes the visual and prevents collection.
- await fixture();await page.evaluate(()=>window.elowen.healingStims.tryDrop(650,0));
+ await fixture();await page.evaluate(()=>{const d=window.elowen.healingStims;d.tryDrop(650,0);d.drops[0].age=4.95});
  const before=await page.evaluate(()=>({hp:window.elowen.hp,age:window.elowen.healingStims.drops[0].age}));
  await page.waitForTimeout(160);
  assert.deepEqual(await page.evaluate(()=>({hp:window.elowen.hp,age:window.elowen.healingStims.drops[0].age})),before);
  // Same-level wave breaks retain supplies; level changes and restart clear them.
  assert(await page.evaluate(()=>{
-  const s=window.elowen;s.wave++;s.startWave();s.paused=true;return s.healingStims.drops.length===1;
+  const s=window.elowen;s.wave++;s.startWave();s.paused=true;return s.healingStims.drops.length===1&&s.healingStims.drops[0].age===4.95;
  }));
  assert(await page.evaluate(()=>{
   const s=window.elowen;s.applyLevel(2);s.startWave();s.paused=true;return s.healingStims.drops.length===0;
@@ -88,5 +101,5 @@ try {
  const png=await page.evaluate(()=>new Promise(resolve=>window.elowen.game.renderer.snapshotArea(520,280,420,200,img=>resolve(img.src))));
  await writeFile('../downloads/healing-stim-preview.png',Buffer.from(png.split(',')[1],'base64'));
  assert.deepEqual(errors,[]);
- console.log('PASS: exact 10% drop threshold, every enemy/source, no nonlethal/duplicate/leak drops, 25 SP walking pickup, level-10 max cap, full-health retention, no midair pickup/revival, reachable drops, pause and level/wave/run cleanup.');
+ console.log('PASS: five-second independent expiry with final-second fade, no expired healing, 10% chance, all combat sources, 25 SP pickup/cap, full-health retention until expiry, pause and lifecycle cleanup.');
 }finally{await browser.close()}
