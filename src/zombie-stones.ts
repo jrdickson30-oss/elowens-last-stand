@@ -27,6 +27,8 @@ export class ZombieStones {
     this.effects=scene.add.graphics().setDepth(1.03);
     this.meta=scene.cache.json.get('zombie-stones-meta');
     if(!this.meta||!scene.textures.exists('zombie-stones'))return;
+    const claw=scene.cache.json.get('zombie-claw-meta');
+    if(claw?.stoneTorsos&&claw?.stoneZones){this.meta.torsos['zombie-claw']=claw.stoneTorsos;this.meta.zones['zombie-claw']=claw.stoneZones;}
     const tex=scene.textures.get('zombie-stones'),size=this.meta.frameSize;
     for(let frame=0;frame<this.meta.origins.length;frame++)tex.add(frame,0,frame%this.meta.columns*size,Math.floor(frame/this.meta.columns)*size,size,size);
     tex.setFilter(Phaser.Textures.FilterMode.NEAREST);

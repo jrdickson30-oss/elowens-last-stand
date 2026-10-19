@@ -15,12 +15,13 @@ import { VillagerAnimator, preloadVillagers } from './villager-animation';
 import { ZombieAnimator, preloadZombieWalk, ZOMBIE_HIT_DURATION, type ZombieHit } from './zombie-animation';
 import { ZombieDeathAnimator, preloadZombieDeath, zombieRemainsAt, zombieDeathDuration, type ZombieCorpse, type ZombieDeathVariant } from './zombie-death';
 import { ZombieStones, preloadZombieStones, STONE_WOUNDS_DURATION, type StoneWounds } from './zombie-stones';
+import { ZOMBIE_CLAW_DURATION, ZOMBIE_CLAW_IMPACT, type ZombieClaw } from './zombie-attack';
 import { SPELLS, type SpellId } from './spells';
 import { RadiantVolley } from './radiant-volley';
 import { VineWall, preloadVineWall } from './vine-wall';
 import { CHAMPION_ABILITIES, ABILITY_SLOTS, isActiveAbility, type ChampionId, type ActiveAbilityId } from './abilities';
 const W=1280,H=720,G=422;
-type Enemy={x:number,y?:number,hp:number,max:number,next:number,speed:number,kind:number;walkElapsed?:number;hitReaction?:ZombieHit;stoneWounds?:StoneWounds;stunned?:number;rooted?:number};
+type Enemy={x:number,y?:number,hp:number,max:number,next:number,speed:number,kind:number;walkElapsed?:number;hitReaction?:ZombieHit;clawAttack?:ZombieClaw;stoneWounds?:StoneWounds;stunned?:number;rooted?:number};
 type Survivor={x:number,t:number,villager:string};
 type Shot={x:number,y:number,dir:number,life:number,spell:SpellId,damage:number};
 type Particle={x:number,y:number,vx:number,vy:number,life:number,color:number};
@@ -109,7 +110,7 @@ class Stand extends Phaser.Scene{
  burst(x:number,y:number,color:number,n=12){for(let i=0;i<n;i++)this.particles.push({x,y,vx:Phaser.Math.Between(-140,140),vy:Phaser.Math.Between(-180,40),life:Phaser.Math.FloatBetween(.2,.65),color})}
  hurt(e:Enemy,d:number,dir=this.face,source?:SpellId){
   if(e.hp<=0)return;
-  if(d>0)e.hitReaction={elapsed:0,dir:Math.sign(dir)||1,fresh:true};
+  if(d>0){e.clawAttack=undefined;e.hitReaction={elapsed:0,dir:Math.sign(dir)||1,fresh:true};}
   if(d>0&&source==='stone'&&e.kind===0)e.stoneWounds={elapsed:0,dir:Math.sign(dir)||1};
   e.hp-=d;if(source!=='stone')this.burst(e.x,(e.y??G)-40,0xb8c78b,8);e.x+=dir*15;
   if(e.hp<=0){
@@ -373,6 +374,30 @@ class Stand extends Phaser.Scene{
   const restored=this.healingStims.collect(this.x,this.y,this.hp,this.maxHp);
   if(restored>0){this.hp+=restored;this.message=`HEALING STIM · +${restored} SP`;this.messageTime=2.5;this.burst(this.x,this.y-45,0x79e8aa,12);tone(660,.12);}
  }
+ zombieHeroHit(e:Enemy){
+  if(this.blocking&&(e.x-this.x)*this.face>=-8&&this.stamina>=this.shieldCost){this.stamina-=this.shieldCost;this.heroAnimator.blockedHit();e.x+=this.face*28;this.burst(this.x+this.face*25,this.y-40,0xe9d794);tone(360)}
+  else if(this.inv<=0){this.takeDamage(e.kind===2?20:11,true);this.inv=.55;this.burst(this.x,this.y-40,0xd85d4d);tone(85,.14)}
+ }
+ zombieWallHit(e:Enemy,wall:NonNullable<Stand['wall']>){
+  wall.hp-=e.kind===2?24:12;this.vineWall.strike(e.x<wall.x?-1:1);
+  if(wall.hp<=0){this.vineWall.destroy();this.wall=null;}
+ }
+ startZombieClaw(e:Enemy,target:ZombieClaw['target'],x:number){
+  e.clawAttack={elapsed:0,face:Math.sign(x-e.x)||-1,landed:false,target};e.next=target.kind==='wall'?1:1.05;
+ }
+ tickZombieClaw(e:Enemy,dt:number){
+  const a=e.clawAttack;if(!a)return false;
+  if(e.hp<=0||e.stunned!>0||e.hitReaction){e.clawAttack=undefined;return false;}
+  a.elapsed+=dt;
+  if(!a.landed&&a.elapsed>=ZOMBIE_CLAW_IMPACT){
+   a.landed=true;
+   if(a.target.kind==='hero'){
+    if(Math.abs(e.x-this.x)<48&&Math.abs(this.y-G)<72&&(this.x-e.x)*a.face>=-8)this.zombieHeroHit(e);
+   }else if(this.wall===a.target.barrier&&Math.abs(e.x-this.wall.x)<43&&(this.wall.x-e.x)*a.face>=-8)this.zombieWallHit(e,this.wall);
+  }
+  if(a.elapsed>=ZOMBIE_CLAW_DURATION)e.clawAttack=undefined;
+  return true;
+ }
  tickEmber(dt:number){
   const cast=this.pendingEmber;if(!cast)return;
   cast.delay-=dt;if(cast.delay>1e-6)return;
@@ -404,16 +429,30 @@ class Stand extends Phaser.Scene{
  }
  this.survivors=this.survivors.filter(s=>s.x>-500);
  this.vineWall.tick(dt,this.wall);
- for(const e of this.enemies){if(e.stoneWounds){e.stoneWounds.elapsed+=dt;if(e.stoneWounds.elapsed>=STONE_WOUNDS_DURATION)e.stoneWounds=undefined;}if(e.hitReaction){if(e.hitReaction.fresh)e.hitReaction.fresh=false;else e.hitReaction.elapsed+=dt;if(e.hitReaction.elapsed>=ZOMBIE_HIT_DURATION)e.hitReaction=undefined;}e.next-=dt;e.rooted=Math.max(0,(e.rooted??0)-dt);e.stunned=Math.max(0,(e.stunned??0)-dt);if(e.hp<=0||e.stunned>0)continue;
-  const wall=this.wall;if(wall&&Math.abs(e.x-wall.x)<43){if(e.next<=0){wall.hp-=e.kind===2?24:12;e.next=1;this.vineWall.strike(e.x<wall.x?-1:1);if(wall.hp<=0){this.vineWall.destroy();this.wall=null;}}continue}
- const near=Math.abs(e.x-this.x)<48&&Math.abs(this.y-G)<72;if(!near&&!(e.rooted&&e.rooted>0)){e.x-=e.speed*dt;if(e.kind===0&&!e.hitReaction)e.walkElapsed=(e.walkElapsed??0)+dt*e.speed/50;}if(near&&e.next<=0){e.next=1.05;if(this.blocking&&(e.x-this.x)*this.face>=-8&&this.stamina>=this.shieldCost){this.stamina-=this.shieldCost;this.heroAnimator.blockedHit();e.x+=this.face*28;this.burst(this.x+this.face*25,this.y-40,0xe9d794);tone(360)}else if(this.inv<=0){this.takeDamage(e.kind===2?20:11,true);this.inv=.55;this.burst(this.x,this.y-40,0xd85d4d);tone(85,.14)}}if(e.x<300){this.takeDamage(20);e.hp=0;this.burst(e.x,G-40,0xd85d4d)}}
+ for(const e of this.enemies){
+  if(e.stoneWounds){e.stoneWounds.elapsed+=dt;if(e.stoneWounds.elapsed>=STONE_WOUNDS_DURATION)e.stoneWounds=undefined;}
+  if(e.hitReaction){if(e.hitReaction.fresh)e.hitReaction.fresh=false;else e.hitReaction.elapsed+=dt;if(e.hitReaction.elapsed>=ZOMBIE_HIT_DURATION)e.hitReaction=undefined;}
+  e.next-=dt;e.rooted=Math.max(0,(e.rooted??0)-dt);e.stunned=Math.max(0,(e.stunned??0)-dt);
+  if(e.hp<=0||e.stunned>0){e.clawAttack=undefined;continue;}
+  if(this.tickZombieClaw(e,dt))continue;
+  const wall=this.wall;
+  if(wall&&Math.abs(e.x-wall.x)<43){
+   if(e.next<=0){if(e.kind===0&&!e.hitReaction)this.startZombieClaw(e,{kind:'wall',barrier:wall},wall.x);else if(e.kind!==0){e.next=1;this.zombieWallHit(e,wall);}}
+   continue;
+  }
+  const near=Math.abs(e.x-this.x)<48&&Math.abs(this.y-G)<72;
+  if(!near&&!(e.rooted&&e.rooted>0)){e.x-=e.speed*dt;if(e.kind===0&&!e.hitReaction)e.walkElapsed=(e.walkElapsed??0)+dt*e.speed/50;}
+  if(near&&e.next<=0){if(e.kind===0&&!e.hitReaction)this.startZombieClaw(e,{kind:'hero'},this.x);else if(e.kind!==0){e.next=1.05;this.zombieHeroHit(e);}}
+  if(e.x<300){this.takeDamage(20);e.hp=0;this.burst(e.x,G-40,0xd85d4d);}
+ }
+
  this.radiantVolley.tick(dt,(target,face)=>this.hurt(target,19,face,'volley'));
  for(const shot of this.shots){const speed=shot.spell==='ice'?600:510;shot.x+=shot.dir*speed*dt;shot.life-=dt;const color=shot.spell==='ice'?0x8cd7e5:0xf3a25d;this.particles.push({x:shot.x,y:shot.y,vx:-shot.dir*30,vy:-15,life:.2,color});const e=this.enemies.find(e=>e.hp>0&&Math.abs(e.x-shot.x)<25&&Math.abs(G-44-shot.y)<56);if(e){this.hurt(e,shot.damage,shot.dir,shot.spell);shot.life=0}if(shot.spell==='ice'&&shot.life<=0)this.explodeIce(shot)}
  this.shots=this.shots.filter(s=>s.life>0);this.enemies=this.enemies.filter(e=>e.hp>0);for(const p of this.particles){p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=220*dt}this.particles=this.particles.filter(p=>p.life>0);if(this.hp<=0)this.end(false);else if(this.spawned>=this.total&&!this.enemies.length&&!this.survivors.length&&!this.radiantVolley.active&&!this.corpses.some(c=>c.elapsed<zombieRemainsAt(c))){this.completeWave()}}
  drawCorpses(){this.corpsePool.forEach(pair=>{pair.body.setVisible(false);pair.next.setVisible(false)});this.corpses.forEach((corpse,index)=>{let pair=this.corpsePool[index];if(!pair){pair={body:this.add.image(0,0,'characters').setDepth(.8),next:this.add.image(0,0,'characters').setDepth(.81)};this.corpsePool.push(pair)}this.deathAnimator.render(pair.body,pair.next,corpse,G);const stoneAlpha=Phaser.Math.Clamp((zombieRemainsAt(corpse)-corpse.elapsed)/.25,0,1);const impactTime=(corpse.stoneWounds?.elapsed??0)+corpse.elapsed;this.zombieStones.recoil(pair.body,corpse.stoneWounds,impactTime);this.zombieStones.recoil(pair.next,corpse.stoneWounds,impactTime);this.zombieStones.render(pair.body,corpse.stoneWounds,stoneAlpha,impactTime);this.zombieStones.render(pair.next,corpse.stoneWounds,stoneAlpha,impactTime)})}
  drawVillager(s:Survivor){let im=this.spritePool[this.spriteIndex++];if(!im){im=this.add.image(0,0,'characters').setDepth(1);this.spritePool.push(im)}this.villagerAnimator.render(im,s.villager,s.x,G,s.t);this.art.fillStyle(0x061516,.35);this.art.fillEllipse(s.x,G+2,s.villager?.startsWith('rottan-mouse-')?20:40,s.villager?.startsWith('rottan-mouse-')?4:8)}
- sprite(x:number,y:number,zombie=false,kind=0,t=0,face=1,crouch=false,survivor=false,hit?:ZombieHit,stoneWounds?:StoneWounds){const g=this.art;if(!survivor&&this.textures.exists('characters')){let im=this.spritePool[this.spriteIndex++];if(!im){im=this.add.image(0,0,'characters').setDepth(1);this.spritePool.push(im)}im.setData('enemyGait',null).setData('enemyHit',false);if(zombie&&kind===0&&this.zombieAnimator.render(im,x,y,t,face,hit)){this.zombieStones.recoil(im,stoneWounds);this.zombieStones.render(im,stoneWounds);g.fillStyle(0x061516,.35);g.fillEllipse(x,y+2,54,10);return}if(!zombie&&this.heroAnimator.render(im,x,y,face,this.vy,crouch)){const lift=Phaser.Math.Clamp((G-y)/120,0,1);g.fillStyle(0x061516,.35-lift*.18);g.fillEllipse(x,G+2,54-lift*20,10-lift*3);return}im.setData('heroAction',zombie?'enemy':'idle');const animatedHero=!zombie&&this.idleDurations.length>0;const customHero=animatedHero||(!zombie&&this.textures.exists('elowen')&&this.textures.get('elowen').has('hero'));const frame=animatedHero?'idle'+this.idleFrame:customHero?'hero':'figure'+(zombie?kind+1:0);im.setTexture(animatedHero?'elowen-idle':customHero?'elowen':'characters',frame).setOrigin(.5,1).setPosition(x,y).setFlipX(face<0).setVisible(true);const h=(customHero?96:kind===2?124:104)*(crouch?.65:1);const ratio=im.frame.width/im.frame.height;im.setDisplaySize(h*ratio,h);im.setAngle(Math.sin(t*10)*(zombie?2:1));if(zombie&&hit)this.zombieAnimator.applyHit(im,x,hit);g.fillStyle(0x061516,.35);g.fillEllipse(x,y+2,54,10);return}const scale=kind===2?1.35:1;const unit=2.6*scale;const top=y-(crouch?49:78)*scale;const rect=(a:number,b:number,w:number,h:number,c:number)=>{g.fillStyle(c);g.fillRect(Math.round(x+a*unit*face-(face<0?w*unit:0)),Math.round(top+b*unit*(crouch?.63:1)),w*unit,h*unit*(crouch?.63:1))};g.fillStyle(0x061516,.35);g.fillEllipse(x,y+2,52*scale,10);const skin=zombie?0x829978:0xd6ac83;const dark=zombie?0x38473d:0x253445;const cloth=survivor?0x9b8566:zombie?kind===1?0x716451:0x59625a:0x4b7777;const stride=Math.sin(t*10)*2;rect(-5,22,4,7,dark);rect(2,22,4,7,dark);rect(-6+stride,28,6,2,0x342e2a);rect(2-stride,28,6,2,0x342e2a);if(!zombie&&!survivor){rect(-8,10,6,15,0x913f3b);rect(-9,16,3,10,0x6d3033)}rect(-5,10,11,12,cloth);rect(-4,12,9,2,0x82908b);rect(-5,20,11,2,0x9b8458);rect(-3,8,6,3,skin);rect(-4,2,9,7,skin);rect(-5,1,10,3,zombie?0x3d4437:0x57402f);rect(-5,3,3,9,zombie?0x48543f:0x6b4932);rect(2,5,2,1,zombie?0xe4c477:0x142b2d);rect(5,6,1,2,skin);rect(-8,11,3,9,cloth);rect(-8,19,3,3,skin);rect(6,11,3,zombie?5:8,cloth);rect(7,zombie?15:18,zombie?7:3,3,skin);if(zombie){rect(-1,14,3,4,0x424838);rect(3,19,2,3,0x8c5c4e)}else if(!survivor){rect(7,20,2,7,0x9b8553);rect(5,20,6,1,0xd8bd79);rect(8,10,2,10,0xd0dbcf);rect(8,9,1,1,0xf9f1c8);rect(-12,14,6,10,0xb49a64);rect(-11,15,4,8,0x4c6360);rect(-9,16,1,6,0xc2b37d)}}
- draw(){this.zombieStones.reset();this.spriteIndex=0;this.spritePool.forEach(im=>im.setVisible(false));const g=this.art;g.clear();this.drawEnding(g);this.drawCorpses();this.healingStims.render(g);for(let i=0;i<20;i++){const x=(i*79+Math.sin(this.ambientTime/2.5+i)*20)%W;g.fillStyle(0xc6b878,.35);g.fillRect(x,180+(i*37)%290,2,2)}for(const s of this.survivors)this.drawVillager(s);for(const e of this.enemies){this.sprite(e.x,e.y??G,true,e.kind,e.kind===0?(e.walkElapsed??0):this.clock,-1,false,false,e.hitReaction,e.stoneWounds);g.fillStyle(0x15211e);g.fillRect(e.x-21,(e.y??G)-(e.kind===2?115:88),42,3);g.fillStyle(0x9c7754);g.fillRect(e.x-21,(e.y??G)-(e.kind===2?115:88),42*e.hp/e.max,3)}if(!this.heroSacrificed&&(this.inv<=0||Math.floor(this.inv*20)%2===0))this.sprite(this.x,this.y,false,0,this.phase==='play'&&(this.down('A')||this.down('D'))?this.clock:0,this.face,this.crouching);this.heroAnimator.renderBeam(this.x,this.y,this.crouching);this.drawRisingEnergy(g);this.vineWall.render(g,G);
+ sprite(x:number,y:number,zombie=false,kind=0,t=0,face=1,crouch=false,survivor=false,hit?:ZombieHit,stoneWounds?:StoneWounds,clawAttack?:ZombieClaw){const g=this.art;if(!survivor&&this.textures.exists('characters')){let im=this.spritePool[this.spriteIndex++];if(!im){im=this.add.image(0,0,'characters').setDepth(1);this.spritePool.push(im)}im.setData('enemyGait',null).setData('enemyHit',false);if(zombie&&kind===0&&this.zombieAnimator.render(im,x,y,t,face,hit,clawAttack)){this.zombieStones.recoil(im,stoneWounds);this.zombieStones.render(im,stoneWounds);g.fillStyle(0x061516,.35);g.fillEllipse(x,y+2,54,10);return}if(!zombie&&this.heroAnimator.render(im,x,y,face,this.vy,crouch)){const lift=Phaser.Math.Clamp((G-y)/120,0,1);g.fillStyle(0x061516,.35-lift*.18);g.fillEllipse(x,G+2,54-lift*20,10-lift*3);return}im.setData('heroAction',zombie?'enemy':'idle');const animatedHero=!zombie&&this.idleDurations.length>0;const customHero=animatedHero||(!zombie&&this.textures.exists('elowen')&&this.textures.get('elowen').has('hero'));const frame=animatedHero?'idle'+this.idleFrame:customHero?'hero':'figure'+(zombie?kind+1:0);im.setTexture(animatedHero?'elowen-idle':customHero?'elowen':'characters',frame).setOrigin(.5,1).setPosition(x,y).setFlipX(face<0).setVisible(true);const h=(customHero?96:kind===2?124:104)*(crouch?.65:1);const ratio=im.frame.width/im.frame.height;im.setDisplaySize(h*ratio,h);im.setAngle(Math.sin(t*10)*(zombie?2:1));if(zombie&&hit)this.zombieAnimator.applyHit(im,x,hit);g.fillStyle(0x061516,.35);g.fillEllipse(x,y+2,54,10);return}const scale=kind===2?1.35:1;const unit=2.6*scale;const top=y-(crouch?49:78)*scale;const rect=(a:number,b:number,w:number,h:number,c:number)=>{g.fillStyle(c);g.fillRect(Math.round(x+a*unit*face-(face<0?w*unit:0)),Math.round(top+b*unit*(crouch?.63:1)),w*unit,h*unit*(crouch?.63:1))};g.fillStyle(0x061516,.35);g.fillEllipse(x,y+2,52*scale,10);const skin=zombie?0x829978:0xd6ac83;const dark=zombie?0x38473d:0x253445;const cloth=survivor?0x9b8566:zombie?kind===1?0x716451:0x59625a:0x4b7777;const stride=Math.sin(t*10)*2;rect(-5,22,4,7,dark);rect(2,22,4,7,dark);rect(-6+stride,28,6,2,0x342e2a);rect(2-stride,28,6,2,0x342e2a);if(!zombie&&!survivor){rect(-8,10,6,15,0x913f3b);rect(-9,16,3,10,0x6d3033)}rect(-5,10,11,12,cloth);rect(-4,12,9,2,0x82908b);rect(-5,20,11,2,0x9b8458);rect(-3,8,6,3,skin);rect(-4,2,9,7,skin);rect(-5,1,10,3,zombie?0x3d4437:0x57402f);rect(-5,3,3,9,zombie?0x48543f:0x6b4932);rect(2,5,2,1,zombie?0xe4c477:0x142b2d);rect(5,6,1,2,skin);rect(-8,11,3,9,cloth);rect(-8,19,3,3,skin);rect(6,11,3,zombie?5:8,cloth);rect(7,zombie?15:18,zombie?7:3,3,skin);if(zombie){rect(-1,14,3,4,0x424838);rect(3,19,2,3,0x8c5c4e)}else if(!survivor){rect(7,20,2,7,0x9b8553);rect(5,20,6,1,0xd8bd79);rect(8,10,2,10,0xd0dbcf);rect(8,9,1,1,0xf9f1c8);rect(-12,14,6,10,0xb49a64);rect(-11,15,4,8,0x4c6360);rect(-9,16,1,6,0xc2b37d)}}
+ draw(){this.zombieStones.reset();this.spriteIndex=0;this.spritePool.forEach(im=>im.setVisible(false));const g=this.art;g.clear();this.drawEnding(g);this.drawCorpses();this.healingStims.render(g);for(let i=0;i<20;i++){const x=(i*79+Math.sin(this.ambientTime/2.5+i)*20)%W;g.fillStyle(0xc6b878,.35);g.fillRect(x,180+(i*37)%290,2,2)}for(const s of this.survivors)this.drawVillager(s);for(const e of this.enemies){this.sprite(e.x,e.y??G,true,e.kind,e.kind===0?(e.walkElapsed??0):this.clock,-1,false,false,e.hitReaction,e.stoneWounds,e.clawAttack);g.fillStyle(0x15211e);g.fillRect(e.x-21,(e.y??G)-(e.kind===2?115:88),42,3);g.fillStyle(0x9c7754);g.fillRect(e.x-21,(e.y??G)-(e.kind===2?115:88),42*e.hp/e.max,3)}if(!this.heroSacrificed&&(this.inv<=0||Math.floor(this.inv*20)%2===0))this.sprite(this.x,this.y,false,0,this.phase==='play'&&(this.down('A')||this.down('D'))?this.clock:0,this.face,this.crouching);this.heroAnimator.renderBeam(this.x,this.y,this.crouching);this.drawRisingEnergy(g);this.vineWall.render(g,G);
  if(this.focusTime>0){g.lineStyle(4,0xefba55,.85);g.strokeEllipse(this.x,this.y-50,100,125)}
  if(this.shieldFlight){const shield=this.shieldFlight;g.fillStyle(0x23375e);g.lineStyle(2,0xd8bb7e);g.beginPath();g.moveTo(shield.x,shield.y-18);g.lineTo(shield.x+14,shield.y-10);g.lineTo(shield.x+10,shield.y+8);g.lineTo(shield.x,shield.y+22);g.lineTo(shield.x-10,shield.y+8);g.lineTo(shield.x-14,shield.y-10);g.closePath();g.fillPath();g.strokePath();g.lineStyle(1,0xd8bb7e);g.lineBetween(shield.x,shield.y-10,shield.x,shield.y+14);g.lineBetween(shield.x-7,shield.y-4,shield.x,shield.y+3);g.lineBetween(shield.x+7,shield.y-4,shield.x,shield.y+3);g.fillStyle(0x77c7ed);g.fillRect(shield.x-2,shield.y+1,4,5)}
  for(const arrow of this.arrows){if(arrow.delay>0)continue;const t=arrow.progress;const x=130+(arrow.targetX-130)*t,y=G-230+210*t-Math.sin(t*Math.PI)*100;g.lineStyle(2,0xc3ae81);g.lineBetween(x-9,y-5,x+7,y+4);g.fillStyle(0xd8d4bd);g.fillTriangle(x+7,y+4,x+1,y-3,x+1,y+7)}
