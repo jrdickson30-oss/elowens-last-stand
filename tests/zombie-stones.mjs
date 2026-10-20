@@ -63,7 +63,7 @@ try{
   const enemy=(kind=0)=>({x:650,hp:100,max:100,next:999,speed:0,kind});
   const variants=[];for(const source of ['ember','volley',undefined]){const target=enemy();s.hurt(target,38,1,'stone');s.hurt(target,100,-1,source);const c=s.corpses.at(-1);variants.push(c.variant);c.elapsed=.2;s.draw();if(!s.zombieStones.pool.some(im=>im.visible&&im.getData('stoneOwner')===s.corpsePool.at(-1).body))throw Error('Lost rocks on '+source)}
   const normal=enemy();s.enemies=[normal];s.hurt(normal,38,1,'stone');normal.stoneWounds.elapsed=7.34;s.tick(.02);s.corpses=[];s.draw();const expired=!normal.stoneWounds&&s.zombieStones.pool.every(im=>!im.visible);
-  const other=enemy(1);s.hurt(other,38,1,'stone');const otherWounded=!!other.stoneWounds;
+  const other=enemy(2);s.hurt(other,38,1,'stone');const otherWounded=!!other.stoneWounds;
   return {moved,following,alpha,refreshed,remaining,retained,variant,age,variants,expired,otherWounded};
  });
  assert.equal(lifecycle.moved,true);assert.equal(lifecycle.following,true);assert.ok(lifecycle.alpha.some(a=>a<1));assert.equal(lifecycle.refreshed,true);assert.equal(lifecycle.remaining,2);assert.equal(lifecycle.retained,2);assert.equal(lifecycle.variant,'fall');assert.equal(lifecycle.age,6.5);assert.deepEqual(lifecycle.variants,['burn','radiant','severed']);assert.equal(lifecycle.expired,true);assert.equal(lifecycle.otherWounded,false);

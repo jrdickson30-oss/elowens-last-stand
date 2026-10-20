@@ -32,6 +32,6 @@ try{
  poses.forEach((p,i)=>{assert.equal(p.frame,Math.floor(i/2));assert.equal(p.flip,i%2===0);assert.equal(p.scale,initial.scale);assert.equal(p.feet,422)});
  await page.evaluate(()=>{const s=window.elowen;s.enemies=[{x:1000,hp:60,max:60,next:999,speed:88,kind:1},{x:1120,hp:145,max:145,next:999,speed:32,kind:2}]});
  await page.waitForTimeout(80);
- assert.deepEqual(await page.evaluate(()=>window.elowen.spritePool.filter(im=>im.visible&&im.getData('heroAction')==='enemy').map(im=>im.texture.key)),['characters','characters']);
+ assert.deepEqual(await page.evaluate(()=>window.elowen.spritePool.filter(im=>im.visible&&im.getData('heroAction')==='enemy').map(im=>im.texture.key)),['fast-zombie-fast-walk','characters']);
  assert.deepEqual(errors,[]);console.log('PASS: zombie shuffle, six frames, movement, pause, stun, roots, wall/contact stops, both directions, stable scale and other enemy types.');
 }finally{await browser.close()}

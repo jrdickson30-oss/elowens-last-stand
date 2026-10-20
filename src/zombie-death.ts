@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { StoneWounds } from './zombie-stones';
+import {ZOMBIE_FAMILIES,type ZombieFamily} from './zombie-animation';
 
 export const ZOMBIE_FALL_DURATION=.7;
 const SETTLE_DURATION=.18,DECOMPOSE_DURATION=1.2,BONES_HOLD=1.5,FADE_DURATION=.6;
@@ -20,10 +21,10 @@ type DeathClip={
 };
 
 export function preloadZombieDeath(scene:Phaser.Scene) {
-  for(const action of ['fall','decompose','severed-fall','severed-decompose','burn-ignite','burn-out','radiant-fall']) {
-    const path=new URL(`zombie-${action}/Zombie-${action}`,document.baseURI).href;
-    scene.load.image(`zombie-${action}`,path+'-spritesheet.png');
-    scene.load.json(`zombie-${action}-meta`,path+'.json');
+  for(const family of ZOMBIE_FAMILIES)for(const action of ['fall','decompose','severed-fall','severed-decompose','burn-ignite','burn-out','radiant-fall']) {
+    const path=new URL(`${family}-${action}/${family==='zombie'?'Zombie':'Fast-zombie'}-${action}`,document.baseURI).href;
+    scene.load.image(`${family}-${action}`,path+'-spritesheet.png');
+    scene.load.json(`${family}-${action}-meta`,path+'.json');
   }
 }
 
@@ -35,15 +36,15 @@ export class ZombieDeathAnimator {
   readonly burnIgnite?:DeathClip;
   readonly burnOut?:DeathClip;
   readonly radiantFall?:DeathClip;
-  constructor(readonly scene:Phaser.Scene) {
-    this.fall=scene.cache.json.get('zombie-fall-meta') as DeathClip|undefined;
-    this.decompose=scene.cache.json.get('zombie-decompose-meta') as DeathClip|undefined;
-    this.severedFall=scene.cache.json.get('zombie-severed-fall-meta') as DeathClip|undefined;
-    this.severedDecompose=scene.cache.json.get('zombie-severed-decompose-meta') as DeathClip|undefined;
-    this.burnIgnite=scene.cache.json.get('zombie-burn-ignite-meta') as DeathClip|undefined;
-    this.burnOut=scene.cache.json.get('zombie-burn-out-meta') as DeathClip|undefined;
-    this.radiantFall=scene.cache.json.get('zombie-radiant-fall-meta') as DeathClip|undefined;
-    for(const [key,clip] of [['zombie-fall',this.fall],['zombie-decompose',this.decompose],['zombie-severed-fall',this.severedFall],['zombie-severed-decompose',this.severedDecompose],['zombie-burn-ignite',this.burnIgnite],['zombie-burn-out',this.burnOut],['zombie-radiant-fall',this.radiantFall]] as const) {
+  constructor(readonly scene:Phaser.Scene,readonly family:ZombieFamily='zombie') {
+    this.fall=scene.cache.json.get(`${this.family}-fall-meta`) as DeathClip|undefined;
+    this.decompose=scene.cache.json.get(`${this.family}-decompose-meta`) as DeathClip|undefined;
+    this.severedFall=scene.cache.json.get(`${this.family}-severed-fall-meta`) as DeathClip|undefined;
+    this.severedDecompose=scene.cache.json.get(`${this.family}-severed-decompose-meta`) as DeathClip|undefined;
+    this.burnIgnite=scene.cache.json.get(`${this.family}-burn-ignite-meta`) as DeathClip|undefined;
+    this.burnOut=scene.cache.json.get(`${this.family}-burn-out-meta`) as DeathClip|undefined;
+    this.radiantFall=scene.cache.json.get(`${this.family}-radiant-fall-meta`) as DeathClip|undefined;
+    for(const [key,clip] of [[`${this.family}-fall`,this.fall],[`${this.family}-decompose`,this.decompose],[`${this.family}-severed-fall`,this.severedFall],[`${this.family}-severed-decompose`,this.severedDecompose],[`${this.family}-burn-ignite`,this.burnIgnite],[`${this.family}-burn-out`,this.burnOut],[`${this.family}-radiant-fall`,this.radiantFall]] as const) {
       if(!clip||!scene.textures.exists(key))continue;
       const texture=scene.textures.get(key);
       for(let frame=0;frame<clip.frameCount;frame++) {
@@ -59,7 +60,7 @@ export class ZombieDeathAnimator {
       .setData('heroAction','corpse');
   }
   render(body:Phaser.GameObjects.Image,next:Phaser.GameObjects.Image,corpse:ZombieCorpse,groundY:number) {
-    if(corpse.kind===0&&corpse.variant==='burn'&&this.burnIgnite&&this.burnOut&&this.scene.textures.exists('zombie-burn-ignite')&&this.scene.textures.exists('zombie-burn-out')) {
+    if(corpse.kind===(this.family==='fast-zombie'?1:0)&&corpse.variant==='burn'&&this.burnIgnite&&this.burnOut&&this.scene.textures.exists(`${this.family}-burn-ignite`)&&this.scene.textures.exists(`${this.family}-burn-out`)) {
       this.renderBurn(body,next,corpse,groundY,this.burnIgnite,this.burnOut);return;
     }
     const t=corpse.elapsed,p=Phaser.Math.Clamp(t/ZOMBIE_FALL_DURATION,0,1);
@@ -70,11 +71,11 @@ export class ZombieDeathAnimator {
     const stage=t<ZOMBIE_FALL_DURATION?'fall':t<ZOMBIE_FALL_DURATION+SETTLE_DURATION?'settle':t<ZOMBIE_BONES_AT?'decompose':t<ZOMBIE_BONES_AT+BONES_HOLD?'bones':'fade';
     body.setData('corpseStage',stage);next.setData('corpseStage',stage);
     next.setVisible(false);
-    const severed=corpse.kind===0&&corpse.variant==='severed'&&this.severedFall&&this.severedDecompose&&this.scene.textures.exists('zombie-severed-fall')&&this.scene.textures.exists('zombie-severed-decompose');
-    const radiant=corpse.kind===0&&corpse.variant==='radiant'&&this.radiantFall&&this.scene.textures.exists('zombie-radiant-fall');
+    const severed=corpse.kind===(this.family==='fast-zombie'?1:0)&&corpse.variant==='severed'&&this.severedFall&&this.severedDecompose&&this.scene.textures.exists(`${this.family}-severed-fall`)&&this.scene.textures.exists(`${this.family}-severed-decompose`);
+    const radiant=corpse.kind===(this.family==='fast-zombie'?1:0)&&corpse.variant==='radiant'&&this.radiantFall&&this.scene.textures.exists(`${this.family}-radiant-fall`);
     const fall=severed?this.severedFall:radiant?this.radiantFall:this.fall,decompose=severed?this.severedDecompose:this.decompose;
-    const fallKey=severed?'zombie-severed-fall':radiant?'zombie-radiant-fall':'zombie-fall',decomposeKey=severed?'zombie-severed-decompose':'zombie-decompose';
-    if(corpse.kind===0&&fall&&decompose&&this.scene.textures.exists(fallKey)&&this.scene.textures.exists(decomposeKey)) {
+    const fallKey=severed?`${this.family}-severed-fall`:radiant?`${this.family}-radiant-fall`:`${this.family}-fall`,decomposeKey=severed?`${this.family}-severed-decompose`:`${this.family}-decompose`;
+    if(corpse.kind===(this.family==='fast-zombie'?1:0)&&fall&&decompose&&this.scene.textures.exists(fallKey)&&this.scene.textures.exists(decomposeKey)) {
       // Keep the radiant fall's body scale as its intact corpse becomes bones.
       const decomposeScale=radiant?fall.displayHeight/fall.bodyHeight:undefined;
       if(t<ZOMBIE_FALL_DURATION) {
@@ -102,10 +103,10 @@ export class ZombieDeathAnimator {
     body.setDisplaySize(height*body.frame.width/body.frame.height,height);
     body.setPosition(x,y-Math.sin(Math.abs(rotation)*Math.PI/180)*body.displayWidth/2)
       .setAngle(rotation).setAlpha(alpha*(1-dissolve)).setVisible(dissolve<1).setData('heroAction','corpse');
-    if(decompose&&this.scene.textures.exists('zombie-decompose')) {
+    if(decompose&&this.scene.textures.exists(`${this.family}-decompose`)) {
       const frame=decompose.frameCount-1,scale=height/480;
       const bonesX=x+corpse.dir*(495-decompose.frameAnchorX[frame])*scale;
-      this.pose(next,'zombie-decompose',decompose,frame,bonesX,groundY,corpse.dir,alpha*dissolve,scale);
+      this.pose(next,`${this.family}-decompose`,decompose,frame,bonesX,groundY,corpse.dir,alpha*dissolve,scale);
     }else body.setAlpha(alpha*(1-dissolve));
   }
   private renderBurn(body:Phaser.GameObjects.Image,next:Phaser.GameObjects.Image,corpse:ZombieCorpse,groundY:number,ignite:DeathClip,out:DeathClip) {
@@ -116,17 +117,17 @@ export class ZombieDeathAnimator {
     if(t<ZOMBIE_IGNITE_DURATION) {
       const total=ignite.durationsMs.reduce((a,b)=>a+b,0);let remaining=p*total,frame=0;
       while(frame<ignite.frameCount-1&&remaining>=ignite.durationsMs[frame])remaining-=ignite.durationsMs[frame++];
-      this.pose(body,'zombie-burn-ignite',ignite,frame,x,y,corpse.dir,1);
+      this.pose(body,`${this.family}-burn-ignite`,ignite,frame,x,y,corpse.dir,1);
     }else if(t<ZOMBIE_IGNITE_DURATION+SETTLE_DURATION) {
       const mix=(t-ZOMBIE_IGNITE_DURATION)/SETTLE_DURATION;
-      this.pose(body,'zombie-burn-ignite',ignite,ignite.frameCount-1,x,groundY,corpse.dir,1-mix);
-      this.pose(next,'zombie-burn-out',out,0,x,groundY,corpse.dir,mix);
+      this.pose(body,`${this.family}-burn-ignite`,ignite,ignite.frameCount-1,x,groundY,corpse.dir,1-mix);
+      this.pose(next,`${this.family}-burn-out`,out,0,x,groundY,corpse.dir,mix);
     }else {
       const progress=Phaser.Math.Clamp((t-ZOMBIE_IGNITE_DURATION-SETTLE_DURATION)/(ZOMBIE_BURNOUT_DURATION-SETTLE_DURATION),0,1);
       const position=progress*(out.frameCount-1),frame=Math.floor(position),mix=position-frame;
       const alpha=1-Phaser.Math.Clamp((t-ZOMBIE_ASH_AT-BONES_HOLD)/FADE_DURATION,0,1);
-      this.pose(body,'zombie-burn-out',out,frame,x,groundY,corpse.dir,alpha*(1-mix));
-      if(frame<out.frameCount-1)this.pose(next,'zombie-burn-out',out,frame+1,x,groundY,corpse.dir,alpha*mix);
+      this.pose(body,`${this.family}-burn-out`,out,frame,x,groundY,corpse.dir,alpha*(1-mix));
+      if(frame<out.frameCount-1)this.pose(next,`${this.family}-burn-out`,out,frame+1,x,groundY,corpse.dir,alpha*mix);
     }
   }
 }

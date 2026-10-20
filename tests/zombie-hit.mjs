@@ -23,7 +23,7 @@ try{
  for(const kind of [0,1,2])for(const dir of [-1,1]){
   const hit=await page.evaluate(({kind,dir})=>{const s=window.elowen,e=s.enemies[0];e.kind=kind;e.x=1000;e.hp=500;e.hitReaction=undefined;s.hurt(e,10,dir);e.hitReaction.elapsed=.12;s.draw();const im=s.spritePool.find(im=>im.visible&&im.getData('enemyHit'));return {hp:e.hp,x:e.x,texture:im.texture.key,flip:im.flipX,angle:im.angle}}, {kind,dir});
   assert.equal(hit.hp,490);assert.equal(hit.x,1000+15*dir);
-  if(kind===0){assert.equal(hit.texture,'zombie-hit');assert.equal(hit.flip,dir===1)}else{assert.equal(hit.texture,'characters');assert.equal(Math.sign(hit.angle),dir)}
+  if(kind===0||kind===1){assert.equal(hit.texture,kind===1?'fast-zombie-hit':'zombie-hit');assert.equal(hit.flip,dir===1)}else{assert.equal(hit.texture,'characters');assert.equal(Math.sign(hit.angle),dir)}
  }
  const restarted=await page.evaluate(()=>{const s=window.elowen,e=s.enemies[0];e.kind=0;e.hitReaction={elapsed:.3,dir:1};s.hurt(e,1,-1);s.draw();const im=s.spritePool.find(im=>im.visible&&im.getData('enemyHit'));return {elapsed:e.hitReaction.elapsed,dir:e.hitReaction.dir,frame:im.frame.name}});
  assert.deepEqual(restarted,{elapsed:0,dir:-1,frame:0});

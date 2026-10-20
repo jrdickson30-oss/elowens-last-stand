@@ -8,6 +8,9 @@ export type ZombieHit={elapsed:number;dir:number;fresh?:boolean;kind?:'heavy'};
 export const zombieHitDuration=(hit?:ZombieHit)=>hit?.kind==='heavy'?ZOMBIE_STAGGER_DURATION:ZOMBIE_HIT_DURATION;
 export type ZombieMotion={moving:boolean;fast:boolean;idleElapsed?:number;idle?:boolean;blocked?:ZombieBlock};
 export const ZOMBIE_EXTRA_ACTIONS=['backhand','blocked','idle','stagger','fast-walk'] as const;
+export const ZOMBIE_FAMILIES=['zombie','fast-zombie'] as const;
+export type ZombieFamily=typeof ZOMBIE_FAMILIES[number];
+export const isAnimatedZombie=(kind:number)=>kind===0||kind===1;
 
 type WalkClip = {
   frameWidth: number; frameHeight: number; frameCount: number; columns: number;
@@ -17,10 +20,10 @@ type WalkClip = {
 };
 
 export function preloadZombieWalk(scene: Phaser.Scene) {
-  for(const action of ['walk','hit','claw',...ZOMBIE_EXTRA_ACTIONS]) {
-    const path=new URL(`zombie-${action}/Zombie-${action}`,document.baseURI).href;
-    scene.load.image(`zombie-${action}`,path+'-spritesheet.png');
-    scene.load.json(`zombie-${action}-meta`,path+'.json');
+  for(const family of ZOMBIE_FAMILIES)for(const action of ['walk','hit','claw',...ZOMBIE_EXTRA_ACTIONS]) {
+    const path=new URL(`${family}-${action}/${family==='zombie'?'Zombie':'Fast-zombie'}-${action}`,document.baseURI).href;
+    scene.load.image(`${family}-${action}`,path+'-spritesheet.png');
+    scene.load.json(`${family}-${action}-meta`,path+'.json');
   }
 }
 
@@ -30,12 +33,12 @@ export class ZombieAnimator {
   readonly hitClip: WalkClip|undefined;
   readonly clawClip: WalkClip|undefined;
   readonly extra:Partial<Record<typeof ZOMBIE_EXTRA_ACTIONS[number],WalkClip>>={};
-  constructor(readonly scene: Phaser.Scene) {
-    this.clip=scene.cache.json.get('zombie-walk-meta') as WalkClip|undefined;
-    this.hitClip=scene.cache.json.get('zombie-hit-meta') as WalkClip|undefined;
-    this.clawClip=scene.cache.json.get('zombie-claw-meta') as WalkClip|undefined;
-    for(const action of ZOMBIE_EXTRA_ACTIONS)this.extra[action]=scene.cache.json.get(`zombie-${action}-meta`);
-    for(const [key,clip] of [['zombie-walk',this.clip],['zombie-hit',this.hitClip],['zombie-claw',this.clawClip],...ZOMBIE_EXTRA_ACTIONS.map(action=>[`zombie-${action}`,this.extra[action]] as const)] as const) {
+  constructor(readonly scene: Phaser.Scene,readonly family:ZombieFamily='zombie') {
+    this.clip=scene.cache.json.get(`${family}-walk-meta`) as WalkClip|undefined;
+    this.hitClip=scene.cache.json.get(`${family}-hit-meta`) as WalkClip|undefined;
+    this.clawClip=scene.cache.json.get(`${family}-claw-meta`) as WalkClip|undefined;
+    for(const action of ZOMBIE_EXTRA_ACTIONS)this.extra[action]=scene.cache.json.get(`${family}-${action}-meta`);
+    for(const [key,clip] of [[`${family}-walk`,this.clip],[`${family}-hit`,this.hitClip],[`${family}-claw`,this.clawClip],...ZOMBIE_EXTRA_ACTIONS.map(action=>[`${family}-${action}`,this.extra[action]] as const)] as const) {
       if(!clip||!scene.textures.exists(key))continue;
       const texture=scene.textures.get(key);
       for(let frame=0;frame<clip.frameCount;frame++)texture.add(frame,0,...(clip.frameRects?.[frame]??[
@@ -53,7 +56,7 @@ export class ZombieAnimator {
   }
   render(image: Phaser.GameObjects.Image,x: number,y: number,time: number,face: number,hit?: ZombieHit,attack?:ZombieClaw,motion?:ZombieMotion) {
     const action=hit?(hit.kind==='heavy'?'stagger':'hit'):motion?.blocked?'blocked':attack?(attack.variant??'claw'):motion?.idle?'idle':motion?.moving&&motion.fast?'fast-walk':'walk';
-    const clip=action==='walk'?this.clip:action==='hit'?this.hitClip:action==='claw'?this.clawClip:this.extra[action],key=`zombie-${action}`;
+    const clip=action==='walk'?this.clip:action==='hit'?this.hitClip:action==='claw'?this.clawClip:this.extra[action],key=`${this.family}-${action}`;
     if(!clip||!this.scene.textures.exists(key))return false;
     const duration=clip.durationsMs.reduce((sum,ms)=>sum+ms,0);
     const elapsed=hit?hit.elapsed/zombieHitDuration(hit)*duration:motion?.blocked?motion.blocked.elapsed/ZOMBIE_BLOCK_DURATION*duration:attack?attack.elapsed/ZOMBIE_CLAW_DURATION*duration:((motion?.idle?motion.idleElapsed??0:time)*1000%duration+duration)%duration;

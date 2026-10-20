@@ -19,7 +19,7 @@ try{
  assert.equal(sequence.afterNonlethal,'fall');assert.equal(sequence.afterFirst,'severed');
  assert.equal(sequence.afterDuplicate,'severed');assert.equal(sequence.afterOtherKinds,'severed');
  assert.deepEqual(sequence.variants,['fall','severed','fall','severed']);assert.equal(sequence.kills,6);
- assert.deepEqual(sequence.textures,['zombie-fall','characters','characters','zombie-severed-fall','zombie-fall','zombie-severed-fall']);assert.equal(sequence.blood,60);
+ assert.deepEqual(sequence.textures,['zombie-fall','fast-zombie-fall','characters','zombie-severed-fall','zombie-fall','zombie-severed-fall']);assert.equal(sequence.blood,60);
  const poses=await page.evaluate(()=>{
   const s=window.elowen,results=[];
   for(const dir of [-1,1]){
