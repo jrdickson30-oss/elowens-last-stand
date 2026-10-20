@@ -5,58 +5,62 @@
 body{margin:0;background:#111b19;color:#e6dfcc;font:16px system-ui;display:grid;place-items:center;min-height:100vh}main{text-align:center;max-width:680px;padding:24px}h1{font-size:24px;margin:0}p{color:#a4b5a8;line-height:1.5}canvas{width:100%;max-width:640px;image-rendering:pixelated}button{background:#30463b;border:1px solid #79907c;color:inherit;border-radius:6px;padding:10px 18px;margin:6px;cursor:pointer}
 </style>
 <main><h1>Fast Zombie</h1><p>Run / two-arm sprint · Idle twitch · Two claw slashes · Block recoil · Heavy stagger · Hit recoil · Two alternating deaths · Ember burn to ash · Radiant impact · Stoneshard wounds</p>
-<canvas width="640" height="380"></canvas><div><button id="pause">Pause</button><button id="face">Face right</button><button data-action="walk">Run</button><button data-action="fast-walk">Two-arm sprint</button><button data-action="idle">Idle twitch</button><button data-action="backhand">Backhand slash</button><button data-action="blocked">Blocked claw</button><button data-action="stagger">Heavy stagger</button><button id="claw">Claw slash</button><button id="hit">Hit Zombie</button><button id="kill">Kill Zombie</button><button id="burn">Ember death</button><button id="radiant">Radiant death</button><button id="stone-hit">Stoneshard hit</button><button id="stone-death">Stoneshard death</button></div>
+<canvas width="640" height="380"></canvas><div><button id="pause">Pause</button><button id="face">Face right</button><button id="slow">Half speed</button><button id="step">Next frame</button><button data-action="walk">Run</button><button data-action="fast-walk">Two-arm sprint</button><button data-action="idle">Idle twitch</button><button data-action="backhand">Backhand slash</button><button data-action="blocked">Blocked claw</button><button data-action="stagger">Heavy stagger</button><button id="claw">Claw slash</button><button id="hit">Hit Zombie</button><button id="kill">Kill Zombie</button><button id="burn">Ember death</button><button id="radiant">Radiant death</button><button id="stone-hit">Stoneshard hit</button><button id="stone-death">Stoneshard death</button></div>
 <p id="stage">Walking</p></main>
 <script type="module">
 const meta=await(await fetch('./Fast-zombie-walk.json')).json(),img=new Image();
 img.src='./Fast-zombie-walk-spritesheet.png';await img.decode();
-const clawMeta=await(await fetch('../fast-zombie-claw/Fast-zombie-claw.json')).json(),clawImg=new Image();
-clawImg.src='../fast-zombie-claw/Fast-zombie-claw-spritesheet.png';await clawImg.decode();
+const clawMeta=await(await fetch('../fast-zombie-claw/Fast-zombie-claw.json?v=collapse2')).json(),clawImg=new Image();
+clawImg.src='../fast-zombie-claw/Fast-zombie-claw-spritesheet-v2.png';await clawImg.decode();
 const extra={};
-for(const action of ['backhand','blocked','idle','stagger','fast-walk']){const clip=await(await fetch(`../fast-zombie-${action}/Fast-zombie-${action}.json`)).json(),sheet=new Image();sheet.src=`../fast-zombie-${action}/Fast-zombie-${action}-spritesheet.png`;await sheet.decode();extra[action]={clip,sheet};}
+for(const action of ['backhand','blocked','idle','stagger','fast-walk']){const clip=await(await fetch(`../fast-zombie-${action}/Fast-zombie-${action}.json${action==='backhand'?'?v=collapse2':''}`)).json(),sheet=new Image();sheet.src=`../fast-zombie-${action}/Fast-zombie-${action}-spritesheet${action==='backhand'?'-v2':''}.png`;await sheet.decode();extra[action]={clip,sheet};}
 const hitMeta=await(await fetch('../fast-zombie-hit/Fast-zombie-hit.json')).json(),hitImg=new Image();
 hitImg.src='../fast-zombie-hit/Fast-zombie-hit-spritesheet.png';await hitImg.decode();
-const fallMeta=await(await fetch('../fast-zombie-fall/Fast-zombie-fall.json')).json(),fallImg=new Image();
-fallImg.src='../fast-zombie-fall/Fast-zombie-fall-spritesheet.png';await fallImg.decode();
-const boneMeta=await(await fetch('../fast-zombie-decompose/Fast-zombie-decompose.json')).json(),boneImg=new Image();
-boneImg.src='../fast-zombie-decompose/Fast-zombie-decompose-spritesheet.png';await boneImg.decode();
-const severedFallMeta=await(await fetch('../fast-zombie-severed-fall/Fast-zombie-severed-fall.json')).json(),severedFallImg=new Image();
-severedFallImg.src='../fast-zombie-severed-fall/Fast-zombie-severed-fall-spritesheet.png';await severedFallImg.decode();
-const severedBoneMeta=await(await fetch('../fast-zombie-severed-decompose/Fast-zombie-severed-decompose.json')).json(),severedBoneImg=new Image();
-severedBoneImg.src='../fast-zombie-severed-decompose/Fast-zombie-severed-decompose-spritesheet.png';await severedBoneImg.decode();
-const igniteMeta=await(await fetch('../fast-zombie-burn-ignite/Fast-zombie-burn-ignite.json')).json(),igniteImg=new Image();
-igniteImg.src='../fast-zombie-burn-ignite/Fast-zombie-burn-ignite-spritesheet.png';await igniteImg.decode();
-const ashMeta=await(await fetch('../fast-zombie-burn-out/Fast-zombie-burn-out.json')).json(),ashImg=new Image();
-ashImg.src='../fast-zombie-burn-out/Fast-zombie-burn-out-spritesheet.png';await ashImg.decode();
-const radiantMeta=await(await fetch('../fast-zombie-radiant-fall/Fast-zombie-radiant-fall.json')).json(),radiantImg=new Image();
-radiantImg.src='../fast-zombie-radiant-fall/Fast-zombie-radiant-fall-spritesheet.png';await radiantImg.decode();
+const fallMeta=await(await fetch('../fast-zombie-fall/Fast-zombie-fall.json?v=collapse2')).json(),fallImg=new Image();
+fallImg.src='../fast-zombie-fall/Fast-zombie-fall-spritesheet-v2.png';await fallImg.decode();
+const boneMeta=await(await fetch('../fast-zombie-decompose/Fast-zombie-decompose.json?v=collapse2')).json(),boneImg=new Image();
+boneImg.src='../fast-zombie-decompose/Fast-zombie-decompose-spritesheet-v2.png';await boneImg.decode();
+const severedFallMeta=await(await fetch('../fast-zombie-severed-fall/Fast-zombie-severed-fall.json?v=collapse2')).json(),severedFallImg=new Image();
+severedFallImg.src='../fast-zombie-severed-fall/Fast-zombie-severed-fall-spritesheet-v2.png';await severedFallImg.decode();
+const severedBoneMeta=await(await fetch('../fast-zombie-severed-decompose/Fast-zombie-severed-decompose.json?v=collapse2')).json(),severedBoneImg=new Image();
+severedBoneImg.src='../fast-zombie-severed-decompose/Fast-zombie-severed-decompose-spritesheet-v2.png';await severedBoneImg.decode();
+const igniteMeta=await(await fetch('../fast-zombie-burn-ignite/Fast-zombie-burn-ignite.json?v=collapse2')).json(),igniteImg=new Image();
+igniteImg.src='../fast-zombie-burn-ignite/Fast-zombie-burn-ignite-spritesheet-v2.png';await igniteImg.decode();
+const ashMeta=await(await fetch('../fast-zombie-burn-out/Fast-zombie-burn-out.json?v=collapse2')).json(),ashImg=new Image();
+ashImg.src='../fast-zombie-burn-out/Fast-zombie-burn-out-spritesheet-v2.png';await ashImg.decode();
+const radiantMeta=await(await fetch('../fast-zombie-radiant-fall/Fast-zombie-radiant-fall.json?v=collapse2')).json(),radiantImg=new Image();
+radiantImg.src='../fast-zombie-radiant-fall/Fast-zombie-radiant-fall-spritesheet-v2.png';await radiantImg.decode();
 const stoneMeta=await(await fetch('../zombie-stones/Zombie-stones.json?v=impacts2')).json(),stoneImg=new Image();
 stoneImg.src='../zombie-stones/Zombie-stones-spritesheet.png';await stoneImg.decode();
 stoneMeta.torsos['fast-zombie-claw']=clawMeta.stoneTorsos;stoneMeta.zones['fast-zombie-claw']=clawMeta.stoneZones;
 for(const [action,{clip}] of Object.entries(extra)){stoneMeta.torsos[`fast-zombie-${action}`]=clip.stoneTorsos;stoneMeta.zones[`fast-zombie-${action}`]=clip.stoneZones;}
 for(const [action,clip] of Object.entries({walk:meta,hit:hitMeta,fall:fallMeta,decompose:boneMeta,'severed-fall':severedFallMeta,'severed-decompose':severedBoneMeta,'radiant-fall':radiantMeta,'burn-ignite':igniteMeta,'burn-out':ashMeta})){stoneMeta.torsos[`fast-zombie-${action}`]=clip.stoneTorsos;stoneMeta.zones[`fast-zombie-${action}`]=clip.stoneZones;}
 const ctx=document.querySelector('canvas').getContext('2d'),duration=meta.durationsMs.reduce((a,b)=>a+b,0);
+const fallTime=960,settleAt=1140,bonesAt=2340,fadeAt=3840,deathEnd=4440;
+const clawDuration=clawMeta.durationsMs.reduce((a,b)=>a+b,0);
 const hitDuration=hitMeta.durationsMs.reduce((a,b)=>a+b,0);
-let elapsed=0,last=performance.now(),paused=false,face=-1,extraAction=null,extraElapsed=null,clawElapsed=null,hitElapsed=null,deathElapsed=null,nextSevered=false,severed=false,burning=false,radiant=false,stoneDeath=false,stoneElapsed=null;
+let elapsed=0,last=performance.now(),paused=false,playbackRate=1,face=-1,deathFace=-1,extraAction=null,extraElapsed=null,clawElapsed=null,hitElapsed=null,deathElapsed=null,nextSevered=false,severed=false,burning=false,radiant=false,stoneDeath=false,stoneElapsed=null;
 for(const b of document.querySelectorAll('[data-action]'))b.onclick=()=>{if(deathElapsed!==null)return;clawElapsed=hitElapsed=null;extraAction=b.dataset.action==='walk'?null:b.dataset.action;extraElapsed=extraAction?0:null;};
 document.querySelector('#claw').onclick=()=>{if(deathElapsed===null){clawElapsed=0;hitElapsed=null;extraElapsed=extraAction=null}};
 document.querySelector('#hit').onclick=()=>{if(deathElapsed===null){clawElapsed=null;hitElapsed=0;extraElapsed=extraAction=null}};
-document.querySelector('#kill').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;burning=radiant=false;severed=nextSevered;nextSevered=!nextSevered;deathElapsed=0;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
-document.querySelector('#burn').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;radiant=false;burning=true;deathElapsed=0;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
-document.querySelector('#radiant').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;burning=false;radiant=true;deathElapsed=0;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
+document.querySelector('#kill').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;burning=radiant=false;severed=nextSevered;nextSevered=!nextSevered;deathElapsed=0;deathFace=face;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
+document.querySelector('#burn').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;radiant=false;burning=true;deathElapsed=0;deathFace=face;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
+document.querySelector('#radiant').onclick=()=>{if(deathElapsed!==null)return;stoneDeath=false;burning=false;radiant=true;deathElapsed=0;deathFace=face;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
 document.querySelector('#stone-hit').onclick=()=>{if(deathElapsed===null){stoneElapsed=0;hitElapsed=0;clawElapsed=null;extraElapsed=extraAction=null}};
-document.querySelector('#stone-death').onclick=()=>{if(deathElapsed!==null)return;burning=radiant=severed=false;stoneDeath=true;stoneElapsed=0;deathElapsed=0;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
+document.querySelector('#stone-death').onclick=()=>{if(deathElapsed!==null)return;burning=radiant=severed=false;stoneDeath=true;stoneElapsed=0;deathElapsed=0;deathFace=face;hitElapsed=null;clawElapsed=null;extraElapsed=extraAction=null};
 document.querySelector('#pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'Play':'Pause'};
-document.querySelector('#face').onclick=e=>{face*=-1;e.target.textContent=face<0?'Face right':'Face left'};
+document.querySelector('#face').onclick=e=>{if(deathElapsed!==null)return;face*=-1;e.target.textContent=face<0?'Face right':'Face left'};
+document.querySelector('#slow').onclick=e=>{playbackRate=playbackRate===1?.5:1;e.target.textContent=playbackRate===1?'Half speed':'Normal speed'};
 function frameAt(clip,time){let frame=0;while(frame<clip.frameCount-1&&time>=clip.durationsMs[frame])time-=clip.durationsMs[frame++];return frame}
-function pose(clip,sheet,frame,alpha=1,bodyHeight=clip.bodyHeight){ctx.save();ctx.globalAlpha=alpha;const impactTime=stoneElapsed===null?99:stoneElapsed+(deathElapsed??0)/1000;let kick=0;for(const delay of [0,.11,.22]){const k=(impactTime-delay)/.11;if(k>0&&k<1)kick+=Math.sin(k*Math.PI)*(1-k*.35)}ctx.translate(320-face*9*kick*230/104,330-1.5*kick*230/104);ctx.scale(face*230/bodyHeight,230/bodyHeight);ctx.imageSmoothingEnabled=false;
+function pose(clip,sheet,frame,alpha=1,bodyHeight=clip.bodyHeight){ctx.save();ctx.globalAlpha=alpha;const impactTime=stoneElapsed===null?99:stoneElapsed+(deathElapsed??0)/1000;let kick=0;for(const delay of [0,.11,.22]){const k=(impactTime-delay)/.11;if(k>0&&k<1)kick+=Math.sin(k*Math.PI)*(1-k*.35)}ctx.translate(320-face*9*kick*230/104,330-1.5*kick*230/104);ctx.scale((deathElapsed!==null?deathFace:face)*230/bodyHeight,230/bodyHeight);ctx.imageSmoothingEnabled=false;
 const [x,y,w,h]=clip.frameRects?.[frame]??[frame%clip.columns*clip.frameWidth,Math.floor(frame/clip.columns)*clip.frameHeight,clip.frameWidth,clip.frameHeight];
+const canvas=ctx.canvas;canvas.dataset.clip=sheet.src.split('/').at(-1);canvas.dataset.frame=String(frame);canvas.dataset.facing=String(deathElapsed!==null?deathFace:face);
 ctx.drawImage(sheet,x,y,w,h,-clip.frameAnchorX[frame],-clip.frameGroundY[frame],w,h);
-const key=sheet.src.split('/').at(-1).replace('Fast-zombie-','fast-zombie-').replace('-spritesheet.png',''),torso=stoneMeta.torsos[key]?.[frame];
+const key=sheet.src.split('/').at(-1).replace('Fast-zombie-','fast-zombie-').replace('-spritesheet-v2.png','').replace('-spritesheet.png',''),torso=stoneMeta.torsos[key]?.[frame];
 const zones=stoneMeta.zones[key]?.[frame];
 if(stoneElapsed!==null&&torso&&zones){const rotation=Math.atan2(torso[1]-torso[3],torso[0]-torso[2])+Math.PI/2,u=389/104;
  for(let i=0;i<stoneMeta.shards.length;i++){const shard=stoneMeta.shards[i],age=impactTime-shard.delay;if(age<0)continue;
-  const remaining=Math.max(0,Math.min(1,(5.15+i*.44-stoneElapsed)/.65))*(deathElapsed===null?1:Math.max(0,Math.min(1,((burning?2800:2080)-deathElapsed)/250)));if(!remaining)continue;
+  const remaining=Math.max(0,Math.min(1,(5.15+i*.44-stoneElapsed)/.65))*(deathElapsed===null?1:Math.max(0,Math.min(1,((burning?2800:bonesAt)-deathElapsed)/250)));if(!remaining)continue;
   const [zx,zy]=zones[shard.zone],px=zx+shard.offset[0]-clip.frameAnchorX[frame],py=zy+shard.offset[1]-clip.frameGroundY[frame],j=i%4,size=stoneMeta.frameSize,[ox,oy]=stoneMeta.origins[j];
   ctx.save();ctx.globalAlpha=alpha*remaining;ctx.translate(px+Math.max(0,1-age/.035)*28*u,py);ctx.rotate(rotation+shard.angle);ctx.scale(shard.scale,shard.scale);
   ctx.drawImage(stoneImg,j%2*size,Math.floor(j/2)*size,size,size,-ox,-oy,size,size);ctx.restore();
@@ -66,11 +70,28 @@ if(stoneElapsed!==null&&torso&&zones){const rotation=Math.atan2(torso[1]-torso[3
    ctx.restore();
   }
  }}ctx.restore()}
-function draw(now){const dt=Math.min(now-last,50);last=now;
+
+function activeClip(){
+ if(deathElapsed!==null){if(burning)return deathElapsed<1200?igniteMeta:ashMeta;return deathElapsed<fallTime?(radiant?radiantMeta:severed?severedFallMeta:fallMeta):(severed&&!radiant?severedBoneMeta:boneMeta)}
+ return clawElapsed!==null?clawMeta:hitElapsed!==null?hitMeta:extraAction?extra[extraAction].clip:meta;
+}
+function show(action,ms=0){
+ paused=true;document.querySelector('#pause').textContent='Play';clawElapsed=hitElapsed=deathElapsed=extraElapsed=extraAction=null;burning=radiant=severed=stoneDeath=false;stoneElapsed=null;
+ if(action==='claw')clawElapsed=ms;else if(action==='hit')hitElapsed=ms;else if(['fall','severed','burn','radiant','stone'].includes(action)){deathElapsed=ms;deathFace=face;burning=action==='burn';radiant=action==='radiant';severed=action==='severed';stoneDeath=action==='stone';if(stoneDeath)stoneElapsed=0;}else if(action==='walk')elapsed=ms;else{extraAction=action;extraElapsed=ms;}
+}
+window.fastZombiePreview={show,setFacing(value){face=value;},get clip(){return activeClip();}};
+document.querySelector('#step').onclick=()=>{
+ paused=true;document.querySelector('#pause').textContent='Play';
+ if(deathElapsed!==null){const clip=activeClip();if(burning)deathElapsed+=150;else deathElapsed+=deathElapsed<fallTime?120:1200/(clip.frameCount-1);return;}
+ const clip=activeClip(),time=clawElapsed??hitElapsed??extraElapsed??elapsed;let boundary=0;for(const duration of clip.durationsMs){boundary+=duration;if(boundary>time+.1)break;}
+ if(clawElapsed!==null)clawElapsed=Math.min(boundary+.1,clawDuration-1);else if(hitElapsed!==null)hitElapsed=Math.min(boundary+.1,hitDuration-1);else if(extraElapsed!==null)extraElapsed=(boundary+.1)%clip.durationsMs.reduce((a,b)=>a+b,0);else elapsed=(boundary+.1)%duration;
+};
+
+function draw(now){const dt=Math.min(now-last,50)*playbackRate;last=now;
 if(!paused){
- if(deathElapsed!==null){deathElapsed+=dt;if(deathElapsed>=(burning?4900:4180)){deathElapsed=null;stoneElapsed=null}}
+ if(deathElapsed!==null){deathElapsed+=dt;if(deathElapsed>=(burning?4900:deathEnd)){deathElapsed=null;stoneElapsed=null}}
  else if(hitElapsed!==null){hitElapsed+=dt;if(hitElapsed>=hitDuration)hitElapsed=null}
- else if(clawElapsed!==null){clawElapsed+=dt;if(clawElapsed>=640)clawElapsed=null}
+ else if(clawElapsed!==null){clawElapsed+=dt;if(clawElapsed>=clawDuration)clawElapsed=null}
  else if(extraElapsed!==null){extraElapsed+=dt;const duration=extra[extraAction].clip.durationsMs.reduce((sum,t)=>sum+t,0);if(!['idle','fast-walk'].includes(extraAction)&&extraElapsed>=duration)extraElapsed=extraAction=null}
  else elapsed+=dt;
 }
@@ -80,18 +101,18 @@ let stage='Running';
 if(deathElapsed!==null&&burning){const t=deathElapsed;
  stage='Ember death · '+(t<200?'Chest burn':t<800?'Flames spreading':t<1200?'Engulfed':t<2800?'Burning to ash':t<4300?'Ash':'Fading away');
  if(t<1200)pose(igniteMeta,igniteImg,frameAt(igniteMeta,t));
- else if(t<1380){const mix=(t-1200)/180;pose(igniteMeta,igniteImg,5,1-mix);pose(ashMeta,ashImg,0,mix)}
- else{const position=Math.min(1,(t-1380)/1420)*5,frame=Math.floor(position),mix=position-frame,alpha=1-Math.max(0,(t-4300)/600);pose(ashMeta,ashImg,frame,alpha*(1-mix));if(frame<5)pose(ashMeta,ashImg,frame+1,alpha*mix)}
-}else if(deathElapsed!==null){const t=deathElapsed;stage=t<700?'Falling':t<880?'Settling':t<2080?'Fading to bones':t<3580?'Bones':'Fading away';
+ else if(t<1380){const mix=(t-1200)/180;pose(igniteMeta,igniteImg,igniteMeta.frameCount-1,1-mix);pose(ashMeta,ashImg,0,mix)}
+ else{const position=Math.min(1,(t-1380)/1420)*(ashMeta.frameCount-1),frame=Math.floor(position),mix=position-frame,alpha=1-Math.max(0,(t-4300)/600);pose(ashMeta,ashImg,frame,alpha*(1-mix));if(frame<ashMeta.frameCount-1)pose(ashMeta,ashImg,frame+1,alpha*mix)}
+}else if(deathElapsed!==null){const t=deathElapsed;stage=t<fallTime?'Falling':t<settleAt?'Settling':t<bonesAt?'Fading to bones':t<fadeAt?'Bones':'Fading away';
  const fm=radiant?radiantMeta:severed?severedFallMeta:fallMeta,fi=radiant?radiantImg:severed?severedFallImg:fallImg,bm=!radiant&&severed?severedBoneMeta:boneMeta,bi=!radiant&&severed?severedBoneImg:boneImg;
  const boneHeight=radiant?fm.bodyHeight:bm.bodyHeight;
  stage=(stoneDeath?'Stoneshard death · ':radiant?'Radiant death · ':severed?'Severed death · ':'Normal death · ')+stage;
- if(t<700)pose(fm,fi,frameAt(fm,t));
- else if(t<880){const mix=(t-700)/180;pose(fm,fi,5,1-mix);pose(bm,bi,0,mix,boneHeight)}
- else{const position=Math.min(1,(t-880)/1200)*5,frame=Math.floor(position),mix=position-frame,alpha=1-Math.max(0,(t-3580)/600);pose(bm,bi,frame,alpha*(1-mix),boneHeight);if(frame<5)pose(bm,bi,frame+1,alpha*mix,boneHeight)}
+ if(t<fallTime)pose(fm,fi,frameAt(fm,t));
+ else if(t<settleAt){const mix=(t-fallTime)/180;pose(fm,fi,fm.frameCount-1,1-mix);pose(bm,bi,0,mix,boneHeight)}
+ else{const position=Math.min(1,(t-settleAt)/1200)*(bm.frameCount-1),frame=Math.floor(position),mix=position-frame,alpha=1-Math.max(0,(t-fadeAt)/600);pose(bm,bi,frame,alpha*(1-mix),boneHeight);if(frame<bm.frameCount-1)pose(bm,bi,frame+1,alpha*mix,boneHeight)}
  }else if(extraElapsed!==null){const {clip,sheet}=extra[extraAction],duration=clip.durationsMs.reduce((sum,t)=>sum+t,0);pose(clip,sheet,frameAt(clip,extraElapsed%duration));stage={'backhand':'Backhand slash','blocked':'Blocked claw','idle':'Idle twitch','stagger':'Heavy stagger','fast-walk':'Two-arm sprint'}[extraAction];
 }else if(clawElapsed!==null){pose(clawMeta,clawImg,frameAt(clawMeta,clawElapsed));stage='Claw slash';
 }else{const clip=hitElapsed===null?meta:hitMeta;pose(clip,hitElapsed===null?img:hitImg,frameAt(clip,hitElapsed??(elapsed%duration)));if(hitElapsed!==null)stage='Recoiling'}
 if(stoneElapsed!==null&&deathElapsed===null)stage+=' · Embedded shards';
-document.querySelector('#stage').textContent=stage;requestAnimationFrame(draw)}requestAnimationFrame(draw);
+document.querySelector('#face').disabled=deathElapsed!==null;document.querySelector('#stage').textContent=stage;requestAnimationFrame(draw)}requestAnimationFrame(draw);
 </script></html>

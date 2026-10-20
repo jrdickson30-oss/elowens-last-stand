@@ -15,7 +15,7 @@ import { VillagerAnimator, preloadVillagers } from './villager-animation';
 import { ZombieAnimator, preloadZombieWalk, ZOMBIE_FAST_SPEED, isAnimatedZombie, zombieHitDuration, type ZombieHit, type ZombieMotion } from './zombie-animation';
 import { ZombieDeathAnimator, preloadZombieDeath, zombieRemainsAt, zombieDeathDuration, type ZombieCorpse, type ZombieDeathVariant } from './zombie-death';
 import { ZombieStones, preloadZombieStones, STONE_WOUNDS_DURATION, type StoneWounds } from './zombie-stones';
-import { ZOMBIE_CLAW_DURATION, ZOMBIE_CLAW_IMPACT, ZOMBIE_BLOCK_DURATION, type ZombieClaw, type ZombieBlock } from './zombie-attack';
+import { ZOMBIE_CLAW_DURATION, ZOMBIE_CLAW_IMPACT, FAST_ZOMBIE_CLAW_DURATION, FAST_ZOMBIE_CLAW_IMPACT, ZOMBIE_BLOCK_DURATION, type ZombieClaw, type ZombieBlock } from './zombie-attack';
 import { SPELLS, type SpellId } from './spells';
 import { RadiantVolley } from './radiant-volley';
 import { VineWall, preloadVineWall } from './vine-wall';
@@ -110,6 +110,7 @@ class Stand extends Phaser.Scene{
  burst(x:number,y:number,color:number,n=12){for(let i=0;i<n;i++)this.particles.push({x,y,vx:Phaser.Math.Between(-140,140),vy:Phaser.Math.Between(-180,40),life:Phaser.Math.FloatBetween(.2,.65),color})}
  hurt(e:Enemy,d:number,dir=this.face,source?:SpellId){
   if(e.hp<=0)return;
+  const deathFacing=e.clawAttack?.face??e.blockReaction?.face??(e.hitReaction?-e.hitReaction.dir:-1);
   if(d>0){e.clawAttack=undefined;e.blockReaction=undefined;e.hitReaction={elapsed:0,dir:Math.sign(dir)||1,fresh:true,...(isAnimatedZombie(e.kind)&&e.hp>d&&d>=35?{kind:'heavy' as const}:{})};}
   if(d>0&&source==='stone'&&isAnimatedZombie(e.kind))e.stoneWounds={elapsed:0,dir:Math.sign(dir)||1};
   e.hp-=d;if(source!=='stone')this.burst(e.x,(e.y??G)-40,0xb8c78b,8);e.x+=dir*15;
@@ -117,7 +118,7 @@ class Stand extends Phaser.Scene{
    const special=isAnimatedZombie(e.kind)?(source==='ember'?'burn':source==='volley'?'radiant':source==='stone'?'stone':undefined):undefined;
    const variant=isAnimatedZombie(e.kind)?(special??(e.kind===1?this.nextFastZombieDeath:this.nextZombieDeath)):undefined;
    if(isAnimatedZombie(e.kind)&&!special){const next=variant==='fall'?'severed':'fall';if(e.kind===1)this.nextFastZombieDeath=next;else this.nextZombieDeath=next;}
-   this.corpses.push({x:e.x,y:e.y??G,dir:Math.sign(dir)||1,kind:e.kind,elapsed:0,variant,stoneWounds:e.stoneWounds?{...e.stoneWounds}:undefined});
+   this.corpses.push({x:e.x,y:e.y??G,dir:Math.sign(dir)||1,kind:e.kind,...(e.kind===1?{facing:deathFacing}:{}),elapsed:0,variant,stoneWounds:e.stoneWounds?{...e.stoneWounds}:undefined});
    e.stoneWounds=undefined;
    e.hitReaction=undefined;this.kills++;this.waveKills++;
    if(this.healingStims.tryDrop(e.x)){this.message=`HEALING STIM DROPPED · WALK OVER IT FOR ${HEALING_STIM_SP} SP`;this.messageTime=3;}
@@ -383,19 +384,19 @@ class Stand extends Phaser.Scene{
   if(wall.hp<=0){this.vineWall.destroy();this.wall=null;}
  }
  startZombieClaw(e:Enemy,target:ZombieClaw['target'],x:number){
-  const variant=e.nextClaw??'claw';e.nextClaw=variant==='claw'?'backhand':'claw';e.clawAttack={elapsed:0,face:Math.sign(x-e.x)||-1,landed:false,target,variant};e.next=target.kind==='wall'?1:1.05;
+  const variant=e.nextClaw??'claw';e.nextClaw=variant==='claw'?'backhand':'claw';e.clawAttack={elapsed:0,face:Math.sign(x-e.x)||-1,landed:false,target,variant,...(e.kind===1?{duration:FAST_ZOMBIE_CLAW_DURATION,impactAt:FAST_ZOMBIE_CLAW_IMPACT}:{})};e.next=target.kind==='wall'?1:1.05;
  }
  tickZombieClaw(e:Enemy,dt:number){
   const a=e.clawAttack;if(!a)return false;
   if(e.hp<=0||(e.stunned??0)>0||e.hitReaction){e.clawAttack=undefined;return false;}
   a.elapsed+=dt;
-  if(!a.landed&&a.elapsed>=ZOMBIE_CLAW_IMPACT){
+  if(!a.landed&&a.elapsed>=(a.impactAt??ZOMBIE_CLAW_IMPACT)){
    a.landed=true;
    if(a.target.kind==='hero'){
     if(Math.abs(e.x-this.x)<48&&Math.abs(this.y-G)<72&&(this.x-e.x)*a.face>=-8)this.zombieHeroHit(e);
    }else if(this.wall===a.target.barrier&&Math.abs(e.x-this.wall.x)<43&&(this.wall.x-e.x)*a.face>=-8)this.zombieWallHit(e,this.wall);
   }
-  if(a.elapsed>=ZOMBIE_CLAW_DURATION)e.clawAttack=undefined;
+  if(a.elapsed>=(a.duration??ZOMBIE_CLAW_DURATION))e.clawAttack=undefined;
   return true;
  }
  tickEmber(dt:number){

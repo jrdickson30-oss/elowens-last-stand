@@ -34,7 +34,7 @@ try{
  const variants=await page.evaluate(()=>{const s=window.elowen;const results=[];s.corpses=[];
   for(const kind of [0,1,2])for(const dir of [-1,1]){const e={x:1000,y:kind===0?302:422,hp:1,max:1,next:0,speed:0,kind};s.hurt(e,5,dir);const c=s.corpses.at(-1);c.variant='fall';c.elapsed=.35;s.draw();const pair=s.corpsePool.at(s.corpses.length-1);results.push({kind,dir,texture:pair.body.texture.key,flip:pair.body.flipX,angle:pair.body.angle,y:pair.body.y});c.elapsed=2.3;s.draw();results.at(-1).bonesTexture=(pair.next.visible?pair.next:pair.body).texture.key;}
   return results});
- variants.forEach(p=>{assert.equal(p.flip,p.dir>0);assert.equal(p.bonesTexture,p.kind===1?'fast-zombie-decompose':'zombie-decompose');if(p.kind===0||p.kind===1){assert.equal(p.texture,p.kind===1?'fast-zombie-fall':'zombie-fall');assert.equal(p.y,p.kind===0?362:422)}else{assert.equal(p.texture,'characters');assert.equal(Math.sign(p.angle),p.dir)}});
+ variants.forEach(p=>{assert.equal(p.flip,p.kind===1?true:p.dir>0);assert.equal(p.bonesTexture,p.kind===1?'fast-zombie-decompose':'zombie-decompose');if(p.kind===0||p.kind===1){assert.equal(p.texture,p.kind===1?'fast-zombie-fall':'zombie-fall');assert.equal(p.y,p.kind===0?362:422)}else{assert.equal(p.texture,'characters');assert.equal(Math.sign(p.angle),p.dir)}});
  // A dead Zombie no longer participates in combat; wave transition waits for bones.
  await page.evaluate(()=>{const s=window.elowen;s.corpses=[{x:1000,y:422,dir:1,kind:0,elapsed:0}];s.enemies=[];s.spawned=s.total;s.survivors=[];s.hp=100});
  await page.locator('#resume').click();await page.waitForFunction(()=>window.elowen.corpses[0]?.elapsed>1);

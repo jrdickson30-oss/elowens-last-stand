@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import {ZOMBIE_CLAW_DURATION,ZOMBIE_BLOCK_DURATION,type ZombieClaw,type ZombieBlock} from './zombie-attack';
+import {ZOMBIE_BLOCK_DURATION,type ZombieClaw,type ZombieBlock} from './zombie-attack';
 
 export const ZOMBIE_HIT_DURATION=.42;
 export const ZOMBIE_STAGGER_DURATION=.72;
@@ -22,8 +22,9 @@ type WalkClip = {
 export function preloadZombieWalk(scene: Phaser.Scene) {
   for(const family of ZOMBIE_FAMILIES)for(const action of ['walk','hit','claw',...ZOMBIE_EXTRA_ACTIONS]) {
     const path=new URL(`${family}-${action}/${family==='zombie'?'Zombie':'Fast-zombie'}-${action}`,document.baseURI).href;
-    scene.load.image(`${family}-${action}`,path+'-spritesheet.png');
-    scene.load.json(`${family}-${action}-meta`,path+'.json');
+    const revised=family==='fast-zombie'&&['claw','backhand'].includes(action);
+    scene.load.image(`${family}-${action}`,path+(revised?'-spritesheet-v2.png':'-spritesheet.png'));
+    scene.load.json(`${family}-${action}-meta`,path+'.json'+(revised?'?v=collapse2':''));
   }
 }
 
@@ -59,7 +60,7 @@ export class ZombieAnimator {
     const clip=action==='walk'?this.clip:action==='hit'?this.hitClip:action==='claw'?this.clawClip:this.extra[action],key=`${this.family}-${action}`;
     if(!clip||!this.scene.textures.exists(key))return false;
     const duration=clip.durationsMs.reduce((sum,ms)=>sum+ms,0);
-    const elapsed=hit?hit.elapsed/zombieHitDuration(hit)*duration:motion?.blocked?motion.blocked.elapsed/ZOMBIE_BLOCK_DURATION*duration:attack?attack.elapsed/ZOMBIE_CLAW_DURATION*duration:((motion?.idle?motion.idleElapsed??0:time)*1000%duration+duration)%duration;
+    const elapsed=hit?hit.elapsed/zombieHitDuration(hit)*duration:motion?.blocked?motion.blocked.elapsed/ZOMBIE_BLOCK_DURATION*duration:attack?attack.elapsed/(attack.duration??duration/1000)*duration:((motion?.idle?motion.idleElapsed??0:time)*1000%duration+duration)%duration;
     let remaining=Math.min(elapsed,duration-1),frame=0;
     while(frame<clip.frameCount-1&&remaining>=clip.durationsMs[frame])remaining-=clip.durationsMs[frame++];
     image.setTexture(key,frame)
