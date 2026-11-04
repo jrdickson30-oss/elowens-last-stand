@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import type { StoneWounds } from './zombie-stones';
+import {URSA_MAJOR_BODY,renderUrsaMajorRemains} from './ursa-major';
 import {ZOMBIE_FAMILIES,type ZombieFamily} from './zombie-animation';
 
 export const ZOMBIE_FALL_DURATION=.7;
@@ -102,10 +103,12 @@ export class ZombieDeathAnimator {
     // Preserve each other enemy's own body/armour while it falls, then dissolve to bones.
     if(!this.scene.textures.exists('characters')){body.setVisible(false);return;}
     const height=corpse.kind===2?124:104,rotation=corpse.dir*90*(p*p*(3-2*p));
-    body.setTexture('characters','figure'+(corpse.kind+1)).setOrigin(.5,1).setFlipX(corpse.dir>0);
+    if(corpse.kind===2&&this.scene.textures.exists(URSA_MAJOR_BODY))body.setTexture(URSA_MAJOR_BODY,'body');else body.setTexture('characters','figure'+(corpse.kind+1));
+    body.setOrigin(.5,1).setFlipX(corpse.dir>0);
     body.setDisplaySize(height*body.frame.width/body.frame.height,height);
     body.setPosition(x,y-Math.sin(Math.abs(rotation)*Math.PI/180)*body.displayWidth/2)
       .setAngle(rotation).setAlpha(alpha*(1-dissolve)).setVisible(dissolve<1).setData('heroAction','corpse');
+    if(corpse.kind===2&&renderUrsaMajorRemains(this.scene,next,x,groundY,corpse.dir,alpha*dissolve))return;
     if(decompose&&this.scene.textures.exists(`${this.family}-decompose`)) {
       const frame=decompose.frameCount-1,scale=height/480;
       const bonesX=x+corpse.dir*(495-decompose.frameAnchorX[frame])*scale;
