@@ -4,14 +4,14 @@
   "frameCount": 8,
   "columns": 4,
   "durationsMs": [
-    80,
-    80,
+    70,
+    90,
     100,
+    140,
+    170,
+    190,
     100,
-    100,
-    120,
-    100,
-    120
+    100
   ],
   "bodyHeight": 385,
   "footAnchors": [
