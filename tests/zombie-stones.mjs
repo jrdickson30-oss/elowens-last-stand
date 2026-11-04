@@ -10,7 +10,7 @@ try{
  await page.keyboard.press('4');await page.waitForFunction(()=>window.elowen.corpses[0]?.variant==='stone');
  await page.keyboard.press('Escape');await page.locator('#resume').waitFor();
  const cast=await page.evaluate(()=>{const s=window.elowen;return {hp:window.stoneTarget.hp,kills:s.kills,waveKills:s.waveKills,next:s.nextZombieDeath,energy:s.energy,untouched:!!s.enemies[1].stoneWounds,wounded:!!window.stoneTarget.stoneWounds}});
- assert.equal(cast.hp,38);assert.equal(cast.kills,1);assert.equal(cast.waveKills,1);assert.equal(cast.next,'fall');assert.equal(cast.wounded,true);assert.equal(cast.untouched,false);assert.ok(cast.energy>=70&&cast.energy<73);
+ assert.equal(cast.hp,38);assert.equal(cast.kills,1);assert.equal(cast.waveKills,1);assert.equal(cast.next,'fall');assert.equal(cast.wounded,true);assert.equal(cast.untouched,false);assert.ok(cast.energy>=70&&cast.energy<100); // Energy regenerates during the new projectile flight.
  const frozen=await page.evaluate(()=>[window.stoneTarget.stoneWounds.elapsed,window.elowen.corpses[0].elapsed]);await page.waitForTimeout(150);
  assert.deepEqual(await page.evaluate(()=>[window.stoneTarget.stoneWounds.elapsed,window.elowen.corpses[0].elapsed]),frozen);
  const barrage=await page.evaluate(()=>{
@@ -57,7 +57,7 @@ try{
  const lifecycle=await page.evaluate(()=>{
   const s=window.elowen,e=window.stoneTarget;s.corpses=[];s.enemies=[e];e.hitReaction=undefined;e.speed=50;e.stoneWounds.elapsed=4.7;const before=e.x;s.tick(.2);s.draw();
   const moved=e.x<before,following=s.zombieStones.pool.filter(im=>im.visible).every(im=>Math.abs(im.x-e.x)<60),alpha=s.zombieStones.pool.filter(im=>im.visible).map(im=>im.alpha);
-  s.energy=100;s.spellCooldowns={};e.x=620;e.hp=100;s.cast('stone');const refreshed=e.stoneWounds.elapsed===0&&e.hp===62;
+  s.energy=100;s.spellCooldowns={};e.x=620;e.hp=100;s.cast('stone');s.stoneshardBarrage.tick(1,(target,dir)=>s.hurt(target,38,dir,'stone'));const refreshed=e.stoneWounds.elapsed===0&&e.hp===62;
   e.stoneWounds.elapsed=6.5;s.draw();const remaining=s.zombieStones.pool.filter(im=>im.visible).length;
   s.hurt(e,100,1);s.draw();const retained=s.zombieStones.pool.filter(im=>im.visible).length,variant=s.corpses[0].variant,age=s.corpses[0].stoneWounds.elapsed;
   const enemy=(kind=0)=>({x:650,hp:100,max:100,next:999,speed:0,kind});

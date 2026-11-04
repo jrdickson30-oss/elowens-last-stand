@@ -37,7 +37,7 @@ await fixture([35]);await page.evaluate(()=>{window.elowen.hp=100;window.elowen.
 assert(await page.evaluate(()=>window.elowen.wardTime>0&&window.elowen.hp===95),'Warrior’s Shield halves attack damage after armour');
 await fixture([140,200,260,320]);await page.keyboard.press('3');await page.waitForFunction(()=>window.elowen.enemies.every(e=>e.hp===141));
 assert(await page.evaluate(()=>window.elowen.enemies.every(e=>e.hp===141)),'Hunter’s Volley strikes four targets');
-await fixture([70,140,-70,300]);await page.keyboard.press('4');await page.waitForFunction(()=>window.elowen.enemies[0].hp<160);
+await fixture([70,140,-70,300]);await page.keyboard.press('4');await page.waitForFunction(()=>window.elowen.enemies[0].hp<160&&window.elowen.enemies[1].hp<160);
 assert(await page.evaluate(()=>window.elowen.enemies[0].hp<160&&window.elowen.enemies[1].hp<160&&window.elowen.enemies[2].hp===160&&window.elowen.enemies[3].hp===160),'Stoneshard Barrage hits only its forward cone');
 await fixture([140]);await page.evaluate(()=>window.elowen.enemies[0].next=.1);await page.keyboard.press('5');await page.waitForFunction(()=>window.elowen.wall?.hp<110);
 assert(await page.evaluate(()=>window.elowen.wall&&window.elowen.wall.hp<110&&window.elowen.enemies[0].x===window.elowen.x+140),'Vine wall intercepts and takes attacks');
