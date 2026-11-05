@@ -1,12 +1,14 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Undead Ursa Major · Attacks and Walk</title><style>
 body{margin:0;background:#111b19;color:#e6dfcc;font:16px system-ui;display:grid;place-items:center;min-height:100vh}main{text-align:center;max-width:720px;padding:24px}h1{font-size:25px}p{color:#a4b5a8;line-height:1.5}canvas{width:100%;max-width:640px;image-rendering:pixelated}button,a{background:#30463b;border:1px solid #79907c;color:inherit;border-radius:6px;padding:10px 16px;margin:5px;cursor:pointer}a{display:inline-block;text-decoration:none}
-</style><main><h1>Undead Ursa Major</h1><p>Heavy paw steps · Shoulder weight shift · Low sword sway</p>
+</style><main><h1>Undead Ursa Major</h1><p>Planted paw steps · Smooth weight transfer · Continuous stride</p>
 <canvas width="640" height="600"></canvas><div><button id="pause">Pause</button><button id="face">Face right</button><button id="slow">Half speed</button><button id="step">Next frame</button><button id="walk">Walk</button><button id="sword">Sword chop</button><button id="claw">Claw swipe</button><button id="alternate">Alternate attacks</button><button id="design">Character design</button><a href="../">Play game</a></div><p id="stage">Walking</p></main>
 <script type="module">
-const meta=await(await fetch('./Ursa-major.json?v=ursa-motion2')).json(),images={walk:new Image(),sword:new Image(),claw:new Image(),base:new Image()};
-for(const [key,file] of Object.entries({walk:'Ursa-major-walk-spritesheet-v2.png',sword:'Ursa-major-sword-attack-spritesheet.png',claw:'Ursa-major-claw-attack-spritesheet.png',base:'Ursa-major-undead.png'})){images[key].src='./'+file;}
+import {createUrsaWalkAtlas} from './walk-rig.js?v=planted-stride';
+const meta=await(await fetch('./Ursa-major.json?v=planted-stride')).json(),images={walk:new Image(),sword:new Image(),claw:new Image(),base:new Image()};
+for(const [key,file] of Object.entries({walk:'Ursa-major-walk-rig.png',sword:'Ursa-major-sword-attack-spritesheet.png',claw:'Ursa-major-claw-attack-spritesheet.png',base:'Ursa-major-undead.png'})){images[key].src='./'+file;}
 await Promise.all(Object.values(images).map(i=>i.decode()));
+const atlas=createUrsaWalkAtlas(images.walk,meta.walkRig);images.walk=atlas.canvas;meta.walk=atlas.clip;
 const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');
 let elapsed=0,last=performance.now(),paused=false,face=-1,rate=1,design=false,action='walk',alternate=false;
 const activeClip=()=>action==='walk'?meta.walk:meta.attacks[action];
