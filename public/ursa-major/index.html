@@ -1,23 +1,30 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Undead Ursa Major · Heavy Walk</title><style>
+<title>Undead Ursa Major · Attacks and Walk</title><style>
 body{margin:0;background:#111b19;color:#e6dfcc;font:16px system-ui;display:grid;place-items:center;min-height:100vh}main{text-align:center;max-width:720px;padding:24px}h1{font-size:25px}p{color:#a4b5a8;line-height:1.5}canvas{width:100%;max-width:640px;image-rendering:pixelated}button,a{background:#30463b;border:1px solid #79907c;color:inherit;border-radius:6px;padding:10px 16px;margin:5px;cursor:pointer}a{display:inline-block;text-decoration:none}
 </style><main><h1>Undead Ursa Major</h1><p>Heavy paw steps · Shoulder weight shift · Low sword sway</p>
-<canvas width="640" height="440"></canvas><div><button id="pause">Pause</button><button id="face">Face right</button><button id="slow">Half speed</button><button id="step">Next frame</button><button id="design">Character design</button><a href="../">Play game</a></div><p id="stage">Walking</p></main>
+<canvas width="640" height="600"></canvas><div><button id="pause">Pause</button><button id="face">Face right</button><button id="slow">Half speed</button><button id="step">Next frame</button><button id="walk">Walk</button><button id="sword">Sword chop</button><button id="claw">Claw swipe</button><button id="alternate">Alternate attacks</button><button id="design">Character design</button><a href="../">Play game</a></div><p id="stage">Walking</p></main>
 <script type="module">
-const meta=await(await fetch('./Ursa-major.json')).json(),walk=new Image(),base=new Image();walk.src='./Ursa-major-walk-spritesheet.png';base.src='./Ursa-major-undead.png';await Promise.all([walk.decode(),base.decode()]);
-const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d'),clip=meta.walk,duration=clip.durationsMs.reduce((a,b)=>a+b,0);
-let elapsed=0,last=performance.now(),paused=false,face=-1,rate=1,design=false;
-function frameAt(ms){let f=0;while(f<clip.frameCount-1&&ms>=clip.durationsMs[f])ms-=clip.durationsMs[f++];return f;}
+const meta=await(await fetch('./Ursa-major.json?v=ursa-motion2')).json(),images={walk:new Image(),sword:new Image(),claw:new Image(),base:new Image()};
+for(const [key,file] of Object.entries({walk:'Ursa-major-walk-spritesheet-v2.png',sword:'Ursa-major-sword-attack-spritesheet.png',claw:'Ursa-major-claw-attack-spritesheet.png',base:'Ursa-major-undead.png'})){images[key].src='./'+file;}
+await Promise.all(Object.values(images).map(i=>i.decode()));
+const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');
+let elapsed=0,last=performance.now(),paused=false,face=-1,rate=1,design=false,action='walk',alternate=false;
+const activeClip=()=>action==='walk'?meta.walk:meta.attacks[action];
+const total=clip=>clip.durationsMs.reduce((a,b)=>a+b,0);
+function frameAt(clip,ms){let f=0;while(f<clip.frameCount-1&&ms>=clip.durationsMs[f])ms-=clip.durationsMs[f++];return f;}
+function play(which){action=which;elapsed=0;design=false;paused=false;document.querySelector('#pause').textContent='Pause';document.querySelector('#design').textContent='Character design';}
 document.querySelector('#pause').onclick=e=>{paused=!paused;e.target.textContent=paused?'Play':'Pause';};
 document.querySelector('#face').onclick=e=>{face*=-1;e.target.textContent=face<0?'Face right':'Face left';};
 document.querySelector('#slow').onclick=e=>{rate=rate===1?.5:1;e.target.textContent=rate===1?'Half speed':'Normal speed';};
+for(const which of ['walk','sword','claw'])document.querySelector('#'+which).onclick=()=>{alternate=false;play(which);};
+document.querySelector('#alternate').onclick=()=>{alternate=true;play('sword');};
 document.querySelector('#design').onclick=e=>{design=!design;e.target.textContent=design?'Walk cycle':'Character design';};
-document.querySelector('#step').onclick=()=>{paused=true;design=false;document.querySelector('#pause').textContent='Play';document.querySelector('#design').textContent='Character design';const f=(frameAt(elapsed)+1)%clip.frameCount;elapsed=clip.durationsMs.slice(0,f).reduce((a,b)=>a+b,0)+.1;};
-window.ursaPreview={seek(f){paused=true;design=false;elapsed=clip.durationsMs.slice(0,f).reduce((a,b)=>a+b,0)+.1;document.querySelector('#pause').textContent='Play';}};
-function draw(now){const dt=Math.min(now-last,50);last=now;if(!paused&&!design)elapsed=(elapsed+dt*rate)%duration;
- ctx.clearRect(0,0,640,440);ctx.fillStyle='#30443a';ctx.fillRect(28,391,584,2);const f=frameAt(elapsed),c=design?meta.base:null;
- const rect=c?c.rect:clip.frameRects[f],[x,y,w,h]=rect,ax=c?c.anchorX:clip.frameAnchorX[f],gy=c?c.groundY:clip.frameGroundY[f],scale=280/(c?c.bodyHeight:clip.bodyHeight);
- ctx.save();ctx.translate(320,390);ctx.scale(face*scale,scale);ctx.imageSmoothingEnabled=false;ctx.drawImage(design?base:walk,x,y,w,h,-ax,-gy,w,h);ctx.restore();
- canvas.dataset.frame=String(f);canvas.dataset.facing=String(face);document.querySelector('#stage').textContent=design?'Approved undead design':`Heavy walk · ${f+1} / ${clip.frameCount}`;requestAnimationFrame(draw);
+document.querySelector('#step').onclick=()=>{paused=true;design=false;alternate=false;document.querySelector('#pause').textContent='Play';document.querySelector('#design').textContent='Character design';const clip=activeClip(),f=(frameAt(clip,elapsed)+1)%clip.frameCount;elapsed=clip.durationsMs.slice(0,f).reduce((a,b)=>a+b,0)+.1;};
+window.ursaPreview={seek(f,which='walk'){action=which;paused=true;design=false;alternate=false;elapsed=activeClip().durationsMs.slice(0,f).reduce((a,b)=>a+b,0)+.1;document.querySelector('#pause').textContent='Play';},play};
+function draw(now){const dt=Math.min(now-last,50);last=now;let clip=activeClip();if(!paused&&!design){elapsed+=dt*rate;if(action==='walk')elapsed%=total(clip);else if(elapsed>=total(clip)+(alternate?150:0)){play(alternate?(action==='sword'?'claw':'sword'):'walk');clip=activeClip();}}
+ ctx.clearRect(0,0,640,600);ctx.fillStyle='#30443a';ctx.fillRect(28,551,584,2);const f=frameAt(clip,elapsed),c=design?meta.base:null;
+ const rect=c?c.rect:clip.frameRects[f],[x,y,w,h]=rect,ax=c?c.anchorX:clip.frameAnchorX[f],gy=c?c.groundY:clip.frameGroundY[f],scale=280/(c?c.bodyHeight:(clip.frameBodyHeights?.[f]??clip.bodyHeight));
+ ctx.save();ctx.translate(320,550);ctx.scale(face*scale,scale);ctx.imageSmoothingEnabled=false;ctx.drawImage(design?images.base:images[action],x,y,w,h,-ax,-gy,w,h);ctx.restore();
+ canvas.dataset.action=action;canvas.dataset.frame=String(f);canvas.dataset.facing=String(face);document.querySelector('#stage').textContent=design?'Approved undead design':`${alternate?'Alternating · ':''}${{walk:'Heavy walk',sword:'Downward sword chop',claw:'Claw swipe'}[action]} · ${f+1} / ${clip.frameCount}`;requestAnimationFrame(draw);
 }requestAnimationFrame(draw);
 </script></html>
