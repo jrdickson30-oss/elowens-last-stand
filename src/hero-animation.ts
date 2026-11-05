@@ -28,7 +28,7 @@ const assets: Record<Action, {file: string; bodyHeight: number}> = {
   reach: {file: 'strike-through', bodyHeight: 191},
   jump: {file: 'jump', bodyHeight: 188},
   block: {file: 'block', bodyHeight: 432},
-  walk: {file: 'walk', bodyHeight: 454},
+  walk: {file: 'walk', bodyHeight: 424},
   guardWalk: {file: 'guard-walk', bodyHeight: 438},
   crouch: {file: 'crouch', bodyHeight: 410},
   crouchSlash: {file: 'crouch-sword-attack', bodyHeight: 432},

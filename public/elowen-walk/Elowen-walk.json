@@ -2,68 +2,94 @@
   "image": "Elowen-walk-spritesheet.png",
   "frameWidth": 512,
   "frameHeight": 512,
-  "frameCount": 6,
-  "columns": 3,
+  "frameCount": 8,
+  "columns": 4,
   "rows": 2,
   "durationsMs": [
-    120,
-    120,
-    120,
-    120,
-    120,
-    120
+    70,
+    70,
+    70,
+    70,
+    70,
+    70,
+    70,
+    70
   ],
   "direction": "right",
   "loop": true,
   "anchor": {
-    "x": 256,
-    "groundY": 496
+    "x": 268,
+    "groundY": 480
   },
   "footAnchors": [
-    496,
-    496,
-    496,
-    473,
-    473,
-    473
+    480,
+    480,
+    480,
+    480,
+    480,
+    480,
+    480,
+    480
   ],
-  "bodyHeight": 454,
+  "bodyHeight": 424,
   "frameBounds": [
     [
-      29,
-      39,
-      489,
-      496
+      35,
+      53,
+      453,
+      480
     ],
     [
-      17,
-      39,
-      465,
-      495
+      34,
+      52,
+      453,
+      480
     ],
     [
-      29,
-      41,
-      484,
-      496
+      34,
+      55,
+      453,
+      480
     ],
     [
-      38,
-      21,
-      477,
-      473
+      36,
+      55,
+      454,
+      480
     ],
     [
-      26,
-      23,
-      493,
-      473
+      34,
+      55,
+      453,
+      480
     ],
     [
-      15,
-      21,
-      474,
-      473
+      34,
+      55,
+      453,
+      480
+    ],
+    [
+      36,
+      55,
+      453,
+      480
+    ],
+    [
+      36,
+      53,
+      454,
+      480
     ]
+  ],
+  "phases": [
+    "near-contact",
+    "near-down",
+    "far-passing",
+    "far-reach",
+    "far-contact",
+    "far-down",
+    "near-passing",
+    "near-reach"
   ]
 }

@@ -10,13 +10,18 @@ try{
   if(guarded)await page.keyboard.down('L');await page.keyboard.down(dir);
   await page.waitForFunction(kind=>window.elowen.heroAnimator.pose(0)?.kind===kind,guarded?'guardWalk':'walk');
   const frames=await page.evaluate(async()=>{const seen=new Set();for(let i=0;i<30;i++){window.elowen.x=650;seen.add(window.elowen.heroAnimator.pose(0)?.frame);await new Promise(r=>setTimeout(r,40))}return [...seen]});
-  assert.equal(frames.length,6);
-  const pose=await page.evaluate(()=>{const s=window.elowen,im=s.spritePool.find(im=>im.visible&&['walk','guardWalk'].includes(im.getData('heroAction')));return {flip:im.flipX,scale:im.scaleY,kind:im.getData('heroAction')}});
+  assert.deepEqual(frames.sort((a,b)=>a-b),Array.from({length:guarded?6:8},(_,i)=>i));
+  const pose=await page.evaluate(()=>{const s=window.elowen,im=s.spritePool.find(im=>im.visible&&['walk','guardWalk'].includes(im.getData('heroAction'))),clip=s.heroAnimator.clips[im.getData('heroAction')],frame=im.getData('heroFrame');return {flip:im.flipX,scale:im.scaleY,kind:im.getData('heroAction'),expectedScale:96/clip.meta.bodyHeight,foot:im.y+(clip.feet[frame]-im.originY*clip.meta.frameHeight)*im.scaleY}});
   assert.equal(pose.flip,dir==='A');assert.equal(pose.kind,guarded?'guardWalk':'walk');
+  assert(Math.abs(pose.scale-pose.expectedScale)<.001,'body scale is fixed for the full clip');
+  assert(Math.abs(pose.foot-422)<.01,'supporting foot stays at the physics ground');
+  await page.evaluate(()=>window.elowen.x=650);
+  const distance=await page.evaluate(()=>{const s=window.elowen,x=s.x;s.tick(.1);return Math.abs(s.x-x)});
+  assert(Math.abs(distance-(guarded?9:21.5))<.01,'existing movement speed is preserved');
   await page.keyboard.press('Escape');await page.locator('#resume').waitFor();
   const paused=await page.evaluate(()=>window.elowen.heroAnimator.walkElapsed);await page.waitForTimeout(100);assert.equal(await page.evaluate(()=>window.elowen.heroAnimator.walkElapsed),paused);
   await page.keyboard.up(dir);if(guarded)await page.keyboard.up('L');await page.locator('#resume').click();
   await page.waitForFunction(()=>window.elowen.heroAnimator.pose(0)===null);
  }
- assert.deepEqual(errors,[]);console.log('PASS: both walking loops, six frames, both directions, pause and stop transitions.');
+ assert.deepEqual(errors,[]);console.log('PASS: eight normal / six guarded walk poses, both directions, grounded feet, fixed scale, movement speed, pause and stop transitions.');
 }finally{await browser.close()}
