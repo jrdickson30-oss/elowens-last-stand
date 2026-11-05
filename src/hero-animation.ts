@@ -15,7 +15,7 @@ type Metadata = {
 };
 type Clip = {key: string; meta: Metadata; scale: number; anchor: number; feet: number[]};
 type Bounds = {left: number; top: number; right: number; bottom: number};
-const assets: Record<Action, {file: string; bodyHeight: number}> = {
+const assets: Record<Action, {file: string; bodyHeight: number; revision?: string}> = {
   dive: {file: 'downward-slash', bodyHeight: 450},
   diveReach: {file: 'downward-strike-through', bodyHeight: 450},
   rising: {file: 'spiral-attack', bodyHeight: 360},
@@ -28,7 +28,7 @@ const assets: Record<Action, {file: string; bodyHeight: number}> = {
   reach: {file: 'strike-through', bodyHeight: 191},
   jump: {file: 'jump', bodyHeight: 188},
   block: {file: 'block', bodyHeight: 432},
-  walk: {file: 'walk', bodyHeight: 424},
+  walk: {file: 'walk', bodyHeight: 424, revision: 'alternating-8-v2'},
   guardWalk: {file: 'guard-walk', bodyHeight: 438},
   crouch: {file: 'crouch', bodyHeight: 410},
   crouchSlash: {file: 'crouch-sword-attack', bodyHeight: 432},
@@ -39,10 +39,13 @@ const assets: Record<Action, {file: string; bodyHeight: number}> = {
 export function preloadHeroActions(scene: Phaser.Scene) {
   for(const [id,asset] of Object.entries(assets)) {
     const path=`elowen-${asset.file}/Elowen-${asset.file}`;
-    scene.load.json(`hero-${id}-meta`,new URL(path+'.json',document.baseURI).href);
+    // Version the sheet and its layout together so cached six-pose walk files
+    // cannot be paired with the replacement eight-pose animation.
+    const revision=asset.revision?`?v=${asset.revision}`:'';
+    scene.load.json(`hero-${id}-meta`,new URL(path+'.json'+revision,document.baseURI).href);
     // The supplied Strike Through uses the same sword poses. Its separate
     // effect layers let us extend the energy without stretching the heroine.
-    if(id!=='reach')scene.load.image(`hero-${id}`,new URL(path+'-spritesheet.png',document.baseURI).href);
+    if(id!=='reach')scene.load.image(`hero-${id}`,new URL(path+'-spritesheet.png'+revision,document.baseURI).href);
   }
   for(const frame of [3,4])scene.load.image(`hero-energy-${frame}`,new URL(`elowen-strike-through/effects/0${frame}.png`,document.baseURI).href);
 }
