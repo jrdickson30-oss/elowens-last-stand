@@ -1,28 +1,39 @@
 import Phaser from 'phaser';
 import type {ZombieClaw} from './zombie-attack';
+import {prepareWalkPage} from '../public/ursa-major/walk-colour.js';
 
 export const URSA_MAJOR_HEIGHT=124;
 export const URSA_MAJOR_ATTACK_DURATION=1.2,URSA_MAJOR_ATTACK_IMPACT=.6,URSA_MAJOR_ATTACK_COOLDOWN=1.35;
 export const URSA_MAJOR_BODY='ursa-major-undead',URSA_MAJOR_WALK='ursa-major-walk',URSA_MAJOR_REMAINS='ursa-major-remains';
 export const URSA_MAJOR_ATTACKS={sword:'ursa-major-sword-attack',claw:'ursa-major-claw-attack'} as const;
 type Pose={rect:[number,number,number,number];anchorX:number;groundY:number;bodyHeight:number};
-type Walk={frameCount:number;frameRects:[number,number,number,number][];frameAnchorX:number[];frameGroundY:number[];bodyHeight:number;frameBodyHeights?:number[];frameSources?:number[];durationsMs:number[]};
+type Walk={frameCount:number;frameRects:[number,number,number,number][];frameAnchorX:number[];frameGroundY:number[];bodyHeight:number;frameBodyHeights?:number[];frameSources?:number[];frameBrightness?:number[];durationsMs:number[]};
 export type UrsaMajorMetadata={base:Pose;walk:Walk;remains:Pose;attacks:Record<keyof typeof URSA_MAJOR_ATTACKS,Walk>};
 
 export function preloadUrsaMajor(scene:Phaser.Scene){
  const path=new URL('ursa-major/',document.baseURI).href;
  scene.load.image(URSA_MAJOR_BODY,path+'Ursa-major-undead.png');
- scene.load.multiatlas(URSA_MAJOR_WALK,path+'Ursa-major-walk-atlas-v3.json',path);
+ scene.load.image(URSA_MAJOR_WALK+'-page-0',path+'Ursa-major-walk-spritesheet-v3.png');
+ scene.load.image(URSA_MAJOR_WALK+'-page-1',path+'Ursa-major-walk-inbetweens-v3.png');
+ scene.load.json('ursa-major-walk-atlas',path+'Ursa-major-walk-atlas-v3.json');
  scene.load.image(URSA_MAJOR_REMAINS,path+'Ursa-major-remains.png');
  scene.load.image(URSA_MAJOR_ATTACKS.sword,path+'Ursa-major-sword-attack-spritesheet.png');
  scene.load.image(URSA_MAJOR_ATTACKS.claw,path+'Ursa-major-claw-attack-spritesheet.png');
- scene.load.json('ursa-major-meta',path+'Ursa-major.json?v=drawn-walk3');
+ scene.load.json('ursa-major-meta',path+'Ursa-major.json?v=walk-tone4');
 }
 
 export class UrsaMajorAnimator{
  readonly meta?:UrsaMajorMetadata;
  constructor(readonly scene:Phaser.Scene){
   this.meta=scene.cache.json.get('ursa-major-meta');if(!this.meta)return;
+  if(!scene.textures.exists(URSA_MAJOR_WALK)){
+   const pages=[0,1].map(i=>prepareWalkPage(scene.textures.get(URSA_MAJOR_WALK+'-page-'+i).getSourceImage() as HTMLImageElement,this.meta!.walk,i));
+   const texture=scene.textures.create(URSA_MAJOR_WALK,pages);
+   if(texture)scene.textures.addAtlasJSONArray(URSA_MAJOR_WALK,texture,scene.cache.json.get('ursa-major-walk-atlas').textures);
+  }
+  // The shared corrected pages replace the temporary source textures. Applying
+  // this once avoids per-sprite tint leaking when the sprite pool is reused.
+  for(const i of [0,1])if(scene.textures.exists(URSA_MAJOR_WALK+'-page-'+i))scene.textures.remove(URSA_MAJOR_WALK+'-page-'+i);
   for(const [key,pose] of [[URSA_MAJOR_BODY,this.meta.base],[URSA_MAJOR_REMAINS,this.meta.remains]] as const){
    if(!scene.textures.exists(key))continue;const tex=scene.textures.get(key);tex.add('body',0,...pose.rect);tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   }

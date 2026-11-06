@@ -4,9 +4,12 @@ body{margin:0;background:#111b19;color:#e6dfcc;font:16px system-ui;display:grid;
 </style><main><h1>Undead Ursa Major</h1><p>Armoured stride · Sword chop · Claw swipe</p>
 <canvas width="640" height="600"></canvas><div><button id="pause">Pause</button><button id="face">Face right</button><button id="slow">Half speed</button><button id="step">Next frame</button><button id="walk">Walk</button><button id="sword">Sword chop</button><button id="claw">Claw swipe</button><button id="alternate">Alternate attacks</button><button id="design">Character design</button><a href="../">Play game</a></div><p id="stage">Walking</p></main>
 <script type="module">
-const meta=await(await fetch('./Ursa-major.json?v=drawn-walk3')).json(),images={walk:new Image(),walkBetween:new Image(),sword:new Image(),claw:new Image(),base:new Image()};
+import {prepareWalkPage} from './walk-colour.js?v=walk-tone4';
+const meta=await(await fetch('./Ursa-major.json?v=walk-tone4')).json(),images={walk:new Image(),walkBetween:new Image(),sword:new Image(),claw:new Image(),base:new Image()};
 for(const [key,file] of Object.entries({walk:'Ursa-major-walk-spritesheet-v3.png',walkBetween:'Ursa-major-walk-inbetweens-v3.png',sword:'Ursa-major-sword-attack-spritesheet.png',claw:'Ursa-major-claw-attack-spritesheet.png',base:'Ursa-major-undead.png'})){images[key].src='./'+file;}
 await Promise.all(Object.values(images).map(i=>i.decode()));
+images.walk=prepareWalkPage(images.walk,meta.walk,0);
+images.walkBetween=prepareWalkPage(images.walkBetween,meta.walk,1);
 const canvas=document.querySelector('canvas'),ctx=canvas.getContext('2d');
 let elapsed=0,last=performance.now(),paused=false,face=-1,rate=1,design=false,action='walk',alternate=false;
 const activeClip=()=>action==='walk'?meta.walk:meta.attacks[action];
