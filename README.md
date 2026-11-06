@@ -89,3 +89,11 @@ Hunter's Volley's radiant finishing hits trigger a dedicated standard Zombie dea
 Stoneshard Barrage uses eight poses to sheathe the sword, sweep an open hand low-to-high, then return to sword-ready stance. Six warm-toned rock fragments launch from the floor along parallel paths angled 30 degrees upward. Eased motion, gentle turning and a 1.5× travel-speed increase give the attack a quicker, smoother sweep. An expanding dust cloud fills the space from the road to the passing stones, with drifting grit behind the rocks. Its base stays on the floor throughout the attack; character artwork remains in front of the dust. Particle emission scales with speed to keep the wake dense while individual dust particles retain their normal lifetime.
 
 Swept collision checks align impacts with the visible rocks and apply 38 damage once per enemy in the original forward cone. The 30 Chaos cost and three-second cooldown are unchanged. Existing embedded shards, recoil and stone deaths remain attached to the impact. Facing is captured at cast time; pause freezes the cast, rocks and dust, and run/wave transitions clear pending particles and hits. Pooled sprites keep repeated casts from accumulating objects. Artwork and built-in generation prompts are in public/elowen-stoneshard-barrage/ and public/stoneshard-barrage/.
+
+## Audio and test controls
+
+Select SOUND ON to enable combat, spell, creature, jump and footstep effects. On mobile the sound toggle sits beside TEST CONTROLS at the top of the screen. Sound starts off and can be muted at any time. Sound sources and attribution are in [audio credits](public/audio/CREDITS.md).
+
+Open TEST CONTROLS to select a level and wave, then GO TO LEVEL. Check an ability to unlock it temporarily and use its USE button; spells also respond to their normal keys. Normal resource costs and cooldowns apply. Closing the panel clears temporary unlocks without changing your chosen upgrades or key slots. Jumping from the title or an ended run starts a fresh run.
+
+Run `node tests/audio-test-controls.mjs` against GAME_URL for audio loading/playback, temporary ability unlocks, level navigation and mobile control access. It also runs as part of `npm test`.

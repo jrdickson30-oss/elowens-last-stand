@@ -24,6 +24,7 @@ import { ShieldThrow, preloadThrownShield, type ShieldFlight } from './shield-th
 import { StoneshardBarrage, preloadStoneshardBarrage } from './stoneshard-barrage';
 import { VineWall, preloadVineWall } from './vine-wall';
 import { CHAMPION_ABILITIES, ABILITY_SLOTS, isActiveAbility, type ChampionId, type ActiveAbilityId } from './abilities';
+import { gameAudio } from './game-audio';
 const W=1280,H=720,G=422;
 type Enemy={x:number,y?:number,hp:number,max:number,next:number,speed:number,kind:number;walkElapsed?:number;hitReaction?:ZombieHit;clawAttack?:ZombieClaw;nextClaw?:'claw'|'backhand';nextUrsaAttack?:'sword'|'claw';blockReaction?:ZombieBlock;moving?:boolean;idleElapsed?:number;stoneWounds?:StoneWounds;stunned?:number;rooted?:number};
 type Survivor={x:number,t:number,villager:string};
@@ -34,7 +35,8 @@ const overlay=document.querySelector<HTMLDivElement>('#overlay')!;
 let muted=true;
 let audio:AudioContext|undefined;
 function tone(freq:number,duration=.08){if(muted)return;audio??=new AudioContext();void audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type='triangle';o.frequency.value=freq;o.connect(g);g.connect(audio.destination);g.gain.setValueAtTime(.04,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);o.start();o.stop(audio.currentTime+duration);}
-document.querySelector('#sound')!.addEventListener('click',()=>{muted=!muted;document.querySelector('#sound')!.textContent=muted?'SOUND OFF':'SOUND ON';tone(440)});
+function toggleSound(){muted=!muted;gameAudio.setEnabled(!muted);document.querySelectorAll('#sound,.test-sound').forEach(button=>{button.textContent=muted?'SOUND OFF':'SOUND ON';button.setAttribute('aria-pressed',String(!muted))});tone(440)}
+document.querySelector('#sound')!.addEventListener('click',toggleSound);
 class Stand extends Phaser.Scene{
  spritePool:Phaser.GameObjects.Image[]=[];spriteIndex=0;art!:Phaser.GameObjects.Graphics;hud!:Phaser.GameObjects.Graphics;labels!:Phaser.GameObjects.Text;keys!:Record<string,Phaser.Input.Keyboard.Key>;
  touchControls?:TouchControls;
@@ -54,11 +56,12 @@ class Stand extends Phaser.Scene{
  vineWall!:VineWall;
  stoneshardBarrage!:StoneshardBarrage<Enemy>;
  pendingEmber:{delay:number;face:number;damage:number}|null=null;
- phase='title';wave=1;x=500;y=G;vy=0;face=1;hp=100;stamina=100;energy=100;spellDamage=43;shieldCost=14;rescued=0;lost=0;kills=0;spawned=0;total=0;timer=0;clock=0;swing=0;attackCd=0;inv=0;blocking=false;crouching=false;enemies:Enemy[]=[];survivors:Survivor[]=[];shots:Shot[]=[];particles:Particle[]=[];paused=false;touch=new Set<string>();upgrades:string[]=[];waveKills=0;
+ phase='title';wave=1;x=500;y=G;vy=0;face=1;hp=100;stamina=100;energy=100;spellDamage=43;shieldCost=14;rescued=0;lost=0;kills=0;spawned=0;total=0;timer=0;clock=0;swing=0;attackCd=0;inv=0;blocking=false;crouching=false;enemies:Enemy[]=[];survivors:Survivor[]=[];shots:Shot[]=[];particles:Particle[]=[];paused=false;touch=new Set<string>();upgrades:string[]=[];waveKills=0;footstepTime=0;
  scenery!:Phaser.GameObjects.Container;sceneryLevel=0;ambientTime=0;
  endingTime=0;bridgeDestroyed=false;heroSacrificed=false;
  idleFrame=0;idleElapsed=0;idleDurations:number[]=[];heroAnimator!:HeroAnimator;villagerAnimator!:VillagerAnimator;ursaMajor!:UrsaMajorAnimator;zombieAnimator!:ZombieAnimator;fastZombieAnimator!:ZombieAnimator;deathAnimator!:ZombieDeathAnimator;fastDeathAnimator!:ZombieDeathAnimator;zombieStones!:ZombieStones;corpses:ZombieCorpse[]=[];nextZombieDeath:Exclude<ZombieDeathVariant,'burn'|'radiant'|'stone'>='fall';nextFastZombieDeath:Exclude<ZombieDeathVariant,'burn'|'radiant'|'stone'>='fall';corpsePool:{body:Phaser.GameObjects.Image;next:Phaser.GameObjects.Image}[]=[];
  progression=championProgression(1);
+ testMode=false;testAbilities=new Set<string>();testPanel?:HTMLElement;
  get level(){return this.progression.level}
  get maxHp(){return this.progression.maxHealth}
  get damage(){return this.progression.swordDamage}
@@ -84,7 +87,7 @@ class Stand extends Phaser.Scene{
  const pixels=context.getImageData(0,0,source.width,source.height).data;let left=source.width,top=source.height,right=0,bottom=0;
  for(let y=0;y<source.height;y++)for(let x=0;x<source.width;x++)if(pixels[(y*source.width+x)*4+3]>90){left=Math.min(left,x);top=Math.min(top,y);right=Math.max(right,x);bottom=Math.max(bottom,y)}
  if(right>=left&&bottom>=top)texture.add('hero',0,left,top,right-left+1,bottom-top+1);
-}this.createIdleFrames();this.heroAnimator=new HeroAnimator(this);this.shieldThrow=new ShieldThrow<Enemy>(this);this.warriorShield=new WarriorShield(this);this.vineWall=new VineWall(this);this.stoneshardBarrage=new StoneshardBarrage<Enemy>(this);this.villagerAnimator=new VillagerAnimator(this);this.ursaMajor=new UrsaMajorAnimator(this);this.zombieAnimator=new ZombieAnimator(this);this.fastZombieAnimator=new ZombieAnimator(this,'fast-zombie');this.deathAnimator=new ZombieDeathAnimator(this);this.fastDeathAnimator=new ZombieDeathAnimator(this,'fast-zombie');this.zombieStones=new ZombieStones(this);this.art=this.add.graphics().setDepth(2);this.hud=this.add.graphics().setDepth(3);this.labels=this.add.text(35,26,'',{fontFamily:'Arial',fontSize:'12px',color:'#dedaca',lineSpacing:8}).setDepth(10);this.keys=this.input.keyboard!.addKeys('A,D,S,W,J,K,L,E,ONE,TWO,THREE,FOUR,FIVE,U,I,O,ESC') as Record<string,Phaser.Input.Keyboard.Key>;this.input.keyboard!.addCapture(['W','A','D','S','J','K','L','E','ONE','TWO','THREE','FOUR','FIVE','U','I','O']);for(const key of [...SPELLS.map(s=>s.key),'J','K',...ABILITY_SLOTS,'ESC'])this.keys[key].on('down',()=>this.pendingPress.add(key));this.createHotbar();this.controls();this.touchControls!.update(this.phase,this.paused);this.title();startupComplete();(window as unknown as {elowen:Stand}).elowen=this;}
+}this.createIdleFrames();this.heroAnimator=new HeroAnimator(this);this.shieldThrow=new ShieldThrow<Enemy>(this);this.warriorShield=new WarriorShield(this);this.vineWall=new VineWall(this);this.stoneshardBarrage=new StoneshardBarrage<Enemy>(this);this.villagerAnimator=new VillagerAnimator(this);this.ursaMajor=new UrsaMajorAnimator(this);this.zombieAnimator=new ZombieAnimator(this);this.fastZombieAnimator=new ZombieAnimator(this,'fast-zombie');this.deathAnimator=new ZombieDeathAnimator(this);this.fastDeathAnimator=new ZombieDeathAnimator(this,'fast-zombie');this.zombieStones=new ZombieStones(this);this.art=this.add.graphics().setDepth(2);this.hud=this.add.graphics().setDepth(3);this.labels=this.add.text(35,26,'',{fontFamily:'Arial',fontSize:'12px',color:'#dedaca',lineSpacing:8}).setDepth(10);this.keys=this.input.keyboard!.addKeys('A,D,S,W,J,K,L,E,ONE,TWO,THREE,FOUR,FIVE,U,I,O,ESC') as Record<string,Phaser.Input.Keyboard.Key>;this.input.keyboard!.addCapture(['W','A','D','S','J','K','L','E','ONE','TWO','THREE','FOUR','FIVE','U','I','O']);for(const key of [...SPELLS.map(s=>s.key),'J','K',...ABILITY_SLOTS,'ESC'])this.keys[key].on('down',()=>this.pendingPress.add(key));this.createHotbar();this.createTestPanel();this.controls();this.touchControls!.update(this.phase,this.paused);this.title();startupComplete();(window as unknown as {elowen:Stand}).elowen=this;}
  createIdleFrames(){
   if(!this.textures.exists('elowen-idle'))return;
   const meta=this.cache.json.get('elowen-idle-meta') as IdleMetadata|undefined;
@@ -125,7 +128,8 @@ class Stand extends Phaser.Scene{
   const deathFacing=e.clawAttack?.face??e.blockReaction?.face??(e.hitReaction?-e.hitReaction.dir:-1);
   if(d>0){e.clawAttack=undefined;e.blockReaction=undefined;e.hitReaction={elapsed:0,dir:Math.sign(dir)||1,fresh:true,...(isAnimatedZombie(e.kind)&&e.hp>d&&d>=35?{kind:'heavy' as const}:{})};}
   if(d>0&&source==='stone'&&isAnimatedZombie(e.kind))e.stoneWounds={elapsed:0,dir:Math.sign(dir)||1};
-  e.hp-=d;if(source!=='stone')this.burst(e.x,(e.y??G)-40,0xb8c78b,8);e.x+=dir*15;
+   e.hp-=d;if(source!=='stone')this.burst(e.x,(e.y??G)-40,0xb8c78b,8);e.x+=dir*15;
+   if(d>0&&source===undefined)gameAudio.swordHit();
   if(e.hp<=0){
    const special=isAnimatedZombie(e.kind)?(source==='ember'?'burn':source==='volley'?'radiant':source==='stone'?'stone':undefined):undefined;
    const variant=isAnimatedZombie(e.kind)?(special??(e.kind===1?this.nextFastZombieDeath:this.nextZombieDeath)):undefined;
@@ -138,7 +142,7 @@ class Stand extends Phaser.Scene{
    else if(variant==='radiant')this.burst(e.x,(e.y??G)-82,0xffe4a0,16);
    else if(variant==='severed'){this.burst(e.x,(e.y??G)-85,0xb5151e,18);this.burst(e.x,(e.y??G)-65,0x8e1018,12)}
    else if(variant!=='stone')this.burst(e.x,(e.y??G)-30,0xc69d57,16);
-   tone(100);
+    gameAudio.zombieDeath();tone(100);
   }
  }
  hasActiveSlot(){return this.abilitySlots.includes(null)||(!this.shieldAbility&&!this.kActive)}
@@ -189,7 +193,21 @@ class Stand extends Phaser.Scene{
   for(const key of ['K',...ABILITY_SLOTS]){const b=document.createElement('button');b.dataset.abilityKey=key;b.innerHTML=`<kbd>${key}</kbd><span></span><small></small>`;bindTouchAction(b,()=>{if(this.phase==='play'&&!this.paused)this.activateAbilityKey(key)});this.championbar.append(b)}
   const passive=document.createElement('div');passive.className='passive-status';passive.innerHTML='<span>Protector</span><small>PASSIVE · LOCKED</small>';this.championbar.append(passive);this.hotbar.after(this.championbar);
  }
- unlocked(id:SpellId){return id==='ember'||this.upgrades.includes(id)}
+ createTestPanel(){
+  const panel=document.createElement('aside');panel.className='test-panel';panel.innerHTML='<div class="test-heading"><button type="button" class="test-sound" aria-pressed="false">SOUND OFF</button><button type="button" class="test-toggle" aria-expanded="false">TEST CONTROLS</button></div><div class="test-body" hidden></div>';document.body.append(panel);this.testPanel=panel;
+  panel.querySelector<HTMLButtonElement>('.test-sound')!.onclick=toggleSound;
+  const toggle=panel.querySelector<HTMLButtonElement>('.test-toggle')!,body=panel.querySelector<HTMLDivElement>('.test-body')!;
+  toggle.onclick=()=>{this.testMode=!this.testMode;if(!this.testMode)this.testAbilities.clear();body.hidden=!this.testMode;toggle.setAttribute('aria-expanded',String(this.testMode));this.renderTestPanel()};
+  this.renderTestPanel();
+ }
+ renderTestPanel(){
+  const body=this.testPanel?.querySelector<HTMLDivElement>('.test-body');if(!body)return;
+  body.innerHTML=`<label>Level <select data-test-level>${Array.from({length:MAX_LEVEL},(_,i)=>`<option value="${i+1}" ${this.level===i+1?'selected':''}>${i+1} · ${chapterForLevel(i+1).title}</option>`).join('')}</select></label><label>Wave <select data-test-wave>${Array.from({length:WAVES_PER_LEVEL},(_,i)=>`<option value="${i+1}" ${this.wave===i+1?'selected':''}>${i+1}</option>`).join('')}</select></label><button type="button" data-test-jump>GO TO LEVEL</button><p>Toggle an ability, then use its test button or normal spell key. Temporary unlocks leave your chosen upgrades and key slots unchanged.</p><div class="test-list">${SPELLS.map(a=>`<div><label><input type="checkbox" data-test-ability="${a.id}" ${this.testAbilities.has(a.id)?'checked':''}>${a.name}</label><button type="button" data-test-use="${a.id}">USE</button></div>`).join('')}${CHAMPION_ABILITIES.map(a=>`<div><label><input type="checkbox" data-test-ability="${a.id}" ${this.testAbilities.has(a.id)?'checked':''}>${a.name}</label>${a.id==='protector'?'':`<button type="button" data-test-use="${a.id}">USE</button>`}</div>`).join('')}</div>`;
+  body.querySelector<HTMLButtonElement>('[data-test-jump]')!.onclick=()=>{const level=Number(body.querySelector<HTMLSelectElement>('[data-test-level]')!.value),wave=Number(body.querySelector<HTMLSelectElement>('[data-test-wave]')!.value);if(['title','ending','win','dead'].includes(this.phase))this.begin();this.healingStims.reset();this.corpses=[];this.applyLevel(level);this.hp=this.maxHp;this.wave=wave;this.paused=false;this.startWave();this.renderTestPanel()};
+  body.querySelectorAll<HTMLInputElement>('[data-test-ability]').forEach(input=>input.onchange=()=>{if(input.checked)this.testAbilities.add(input.dataset.testAbility!);else this.testAbilities.delete(input.dataset.testAbility!)});
+  body.querySelectorAll<HTMLButtonElement>('[data-test-use]').forEach(button=>button.onclick=()=>{if(this.phase!=='play'||this.paused)return;const id=button.dataset.testUse!;if(!this.testAbilities.has(id)&&!this.upgrades.includes(id)&&id!=='ember')return;const spell=SPELLS.find(a=>a.id===id);if(spell)this.cast(spell.id);else this.activateAbility(id as ChampionId)});
+ }
+ unlocked(id:SpellId){return id==='ember'||this.upgrades.includes(id)||(this.testMode&&this.testAbilities.has(id))}
  notify(text:string){this.message=text;this.messageTime=1.8}
  pressed(key:string){return this.pendingPress.has(key)||(this.down(key)&&!this.previousKeys.has(key))}
  cast(id:SpellId){
@@ -205,14 +223,14 @@ class Stand extends Phaser.Scene{
   if(id==='volley'&&!targets.length){this.notify('No enemies ahead for Hunter’s Volley.');return}
   this.energy-=spell.cost;this.spellCooldowns[id]=spell.cooldown;if(id!=='ember'&&id!=='ice'&&id!=='volley'&&id!=='stone')this.burst(this.x+this.face*30,this.y-48,spell.color);tone(id==='ward'?350:520,.15);
   if(id==='ember'){this.resetRisingAttack();this.swing=0;this.heroAnimator.startEmber(this.face);this.pendingEmber={delay:.12,face:this.face,damage:this.spellDamage};}
-  if(id==='ice'){this.resetRisingAttack();this.swing=0;this.heroAnimator.startIce(this.face);this.iceLance.cast(this.face,this.heroAnimator.iceReleaseDelay());}
-  if(id==='ward')this.wardTime=6;
+  if(id==='ice'){this.resetRisingAttack();this.swing=0;this.heroAnimator.startIce(this.face);this.iceLance.cast(this.face,this.heroAnimator.iceReleaseDelay());gameAudio.iceBuildup();}
+  if(id==='ward'){this.wardTime=6;gameAudio.shield();}
   if(id==='volley'){this.resetRisingAttack();this.swing=0;this.heroAnimator.startRadiant(this.face);this.radiantVolley.cast(targets,this.face);}
   if(id==='stone'){this.resetRisingAttack();this.swing=0;this.heroAnimator.startStone(this.face);this.stoneshardBarrage.cast(this.x,G,this.face,targets.filter(e=>{const dx=(e.x-this.x)*this.face;return dx<190&&Math.abs(G-44-(this.y-48))<35+dx*.4}));}
   if(id==='vines'){this.wall={x:Phaser.Math.Clamp(this.x+this.face*130,380,1160),hp:110,max:110};this.vineWall.summon(this.wall);}
  }
  bash(){
-  if(this.shieldAbility!=='bash'){this.notify('Shield Bash unlocks between levels.');return}
+  if(this.shieldAbility!=='bash'&&!(this.testMode&&this.testAbilities.has('bash'))){this.notify('Shield Bash unlocks between levels.');return}
   if(this.stamina<25){this.notify('Not enough stamina for Shield Bash.');return}
   this.stamina-=25;this.bashTime=.3;tone(190);
   for(const e of this.enemies){if(e.hp>0&&(e.x-this.x)*this.face>-8&&(e.x-this.x)*this.face<100&&Math.abs(this.y-G)<70){e.x+=this.face*(80+20*(this.rank('bash')-1));e.stunned=1.2+.3*(this.rank('bash')-1);this.burst(e.x,G-40,0xe9d794)}}
@@ -220,6 +238,9 @@ class Stand extends Phaser.Scene{
  activateAbilityKey(key:string){
   const id=key==='K'?(this.shieldAbility??this.kActive):this.abilitySlots[ABILITY_SLOTS.indexOf(key as typeof ABILITY_SLOTS[number])];
   if(!id){this.notify(`Unlock an ability for ${key} between levels.`);return}
+  this.activateAbility(id);
+ }
+ activateAbility(id:ChampionId){
   if(id==='bash'){this.bash();return}
   const ability=CHAMPION_ABILITIES.find(a=>a.id===id)!;
   if(ability.cooldown>0&&(this.abilityCooldowns[id]??0)>0){this.notify(`${ability.name} is recharging.`);return}
@@ -241,7 +262,7 @@ class Stand extends Phaser.Scene{
   for(const arrow of this.arrows){arrow.delay-=dt;if(arrow.delay>0)continue;arrow.progress+=dt*1.5;if(arrow.progress>=1){for(const e of this.enemies)if(e.hp>0&&Math.abs(e.x-arrow.targetX)<40)this.hurt(e,20+5*(this.rank('rally')-1),1);this.burst(arrow.targetX,G-20,0xc5ab70,4)}}
   this.arrows=this.arrows.filter(a=>a.progress<1);
  }
- explodeIce(shot:Shot){this.iceLance.impact(shot);for(const e of this.enemies)if(e.hp>0&&Math.hypot(e.x-shot.x,G-44-shot.y)<ICE_SPLASH_RADIUS)this.hurt(e,34,shot.dir)}
+ explodeIce(shot:Shot){this.iceLance.impact(shot);gameAudio.iceImpact();for(const e of this.enemies)if(e.hp>0&&Math.hypot(e.x-shot.x,G-44-shot.y)<ICE_SPLASH_RADIUS)this.hurt(e,34,shot.dir)}
  updateHotbar(){
   this.touchControls?.update(this.phase,this.paused);
   for(const b of Array.from(this.hotbar.querySelectorAll<HTMLButtonElement>('button'))){
@@ -256,7 +277,7 @@ class Stand extends Phaser.Scene{
    const status=!id?'EMPTY':id==='throw'&&this.shieldFlight?'RETURNING':active>0?`ACTIVE ${Math.ceil(active)}s`:cd>0?`${cd.toFixed(1)}s`:id==='rally'?`READY · ${this.abilityCooldown(id)}s`:`${ability!.cost} STAMINA`;
    const name=ability?`${ability.name} · ${this.rank(ability.id)}`:(key==='K'?'Shield ability':'Champion ability');const stamp=name+status;if(b.dataset.status===stamp)continue;b.dataset.status=stamp;b.querySelector('span')!.textContent=name;b.querySelector('small')!.textContent=status;b.classList.toggle('locked',!id);b.classList.toggle('active',active>0);b.setAttribute('aria-label',`${name}, key ${key}, ${status}`);
   }
-  this.championbar.querySelector('.passive-status small')!.textContent=this.upgrades.includes('protector')?`PASSIVE · RANK ${this.rank('protector')}`:'PASSIVE · LOCKED';
+  this.championbar.querySelector('.passive-status small')!.textContent=this.upgrades.includes('protector')||this.testMode&&this.testAbilities.has('protector')?`PASSIVE · RANK ${this.rank('protector')}`:'PASSIVE · LOCKED';
  }
  completeWave(){
   this.resetRisingAttack();
@@ -299,7 +320,7 @@ class Stand extends Phaser.Scene{
   if(kind==='spin'){if(this.airSpinUsed){this.queuedAirAttack=null;return}this.airSpinUsed=true;}
   const a:AerialAttack<Enemy>={kind,elapsed:0,face:this.jumpFacing??this.face,range:SWORD_RANGE*(this.reachTime>0?2:1),extended:this.reachTime>0,
    damage:this.swordDamage(),rootDuration:this.crippleTime>0?2+this.rank('cripple'):0,hits:new Set(),resumeVy:Math.max(120,this.vy),landingElapsed:null};
-  this.aerialAttack=a;this.heroAnimator.startAerial(a);this.queuedAirAttack=null;this.recentSword=null;this.jumpComboTime=0;this.swing=0;this.vy=0;
+  this.aerialAttack=a;this.heroAnimator.startAerial(a);gameAudio.swordSwing();this.queuedAirAttack=null;this.recentSword=null;this.jumpComboTime=0;this.swing=0;this.vy=0;
   this.attackCd=kind==='spin'?AIR_SPIN_DURATION:DIVE_WINDUP+DIVE_RECOVERY;tone(kind==='spin'?230:150);
  }
  handleAirAttackInput(fresh:boolean){
@@ -341,7 +362,7 @@ class Stand extends Phaser.Scene{
  startRisingAttack(recent:typeof this.recentSword=null){
   const attack:RisingAttack<Enemy>={elapsed:0,face:this.face,range:SWORD_RANGE*(this.reachTime>0?2:1),extended:this.reachTime>0,
    damage:recent?.damage??this.swordDamage(),rootDuration:recent?.rootDuration??(this.crippleTime>0?2+this.rank('cripple'):0),hits:new Set(recent?.hits)};
-  this.risingAttack=attack;this.heroAnimator.startRising(attack);this.jumpComboTime=0;this.recentSword=null;this.attackCd=RISING_DURATION;this.swing=0;tone(210);
+  this.risingAttack=attack;this.heroAnimator.startRising(attack);gameAudio.swordSwing();this.jumpComboTime=0;this.recentSword=null;this.attackCd=RISING_DURATION;this.swing=0;tone(210);
   // Resolve immediate melee contact before the sword curls into the air.
   for(const e of this.enemies)if(e.hp>0&&(e.x-this.x)*attack.face>-20&&(e.x-this.x)*attack.face<attack.range&&Math.abs((e.y??G)-this.y)<70)this.hitRisingEnemy(e,attack);
  }
@@ -385,15 +406,15 @@ class Stand extends Phaser.Scene{
   if(restored>0){this.hp+=restored;this.message=`HEALING STIM · +${restored} SP`;this.messageTime=2.5;this.burst(this.x,this.y-45,0x79e8aa,12);tone(660,.12);}
  }
  zombieHeroHit(e:Enemy){
-  if(this.blocking&&(e.x-this.x)*this.face>=-8&&this.stamina>=this.shieldCost){this.stamina-=this.shieldCost;this.heroAnimator.blockedHit();if(isAnimatedZombie(e.kind)){e.blockReaction={elapsed:0,face:e.clawAttack?.face??(Math.sign(this.x-e.x)||-1),fresh:true};e.clawAttack=undefined;}e.x+=this.face*28;this.burst(this.x+this.face*25,this.y-40,0xe9d794);tone(360)}
-  else if(this.inv<=0){this.takeDamage(e.kind===2?20:11,true);this.inv=.55;this.burst(this.x,this.y-40,0xd85d4d);tone(85,.14)}
+  if(this.blocking&&(e.x-this.x)*this.face>=-8&&this.stamina>=this.shieldCost){this.stamina-=this.shieldCost;this.heroAnimator.blockedHit();gameAudio.shield();if(isAnimatedZombie(e.kind)){e.blockReaction={elapsed:0,face:e.clawAttack?.face??(Math.sign(this.x-e.x)||-1),fresh:true};e.clawAttack=undefined;}e.x+=this.face*28;this.burst(this.x+this.face*25,this.y-40,0xe9d794);tone(360)}
+  else if(this.inv<=0){this.takeDamage(e.kind===2?20:11,true);gameAudio.heroHurt();this.inv=.55;this.burst(this.x,this.y-40,0xd85d4d);tone(85,.14)}
  }
  zombieWallHit(e:Enemy,wall:NonNullable<Stand['wall']>){
   wall.hp-=e.kind===2?24:12;this.vineWall.strike(e.x<wall.x?-1:1);
   if(wall.hp<=0){this.vineWall.destroy();this.wall=null;}
  }
  startZombieClaw(e:Enemy,target:ZombieClaw['target'],x:number){
-  if(e.kind===2){const ursaAttack=e.nextUrsaAttack??'sword';e.nextUrsaAttack=ursaAttack==='sword'?'claw':'sword';e.clawAttack={elapsed:0,face:Math.sign(x-e.x)||-1,landed:false,target,ursaAttack,duration:URSA_MAJOR_ATTACK_DURATION,impactAt:URSA_MAJOR_ATTACK_IMPACT};e.next=URSA_MAJOR_ATTACK_COOLDOWN;return;}
+  if(e.kind===2){const ursaAttack=e.nextUrsaAttack??'sword';e.nextUrsaAttack=ursaAttack==='sword'?'claw':'sword';e.clawAttack={elapsed:0,face:Math.sign(x-e.x)||-1,landed:false,target,ursaAttack,duration:URSA_MAJOR_ATTACK_DURATION,impactAt:URSA_MAJOR_ATTACK_IMPACT};e.next=URSA_MAJOR_ATTACK_COOLDOWN;if(ursaAttack==='sword')gameAudio.heavySwing();return;}
   const variant=e.nextClaw??'claw';e.nextClaw=variant==='claw'?'backhand':'claw';e.clawAttack={elapsed:0,face:Math.sign(x-e.x)||-1,landed:false,target,variant,...(e.kind===1?{duration:FAST_ZOMBIE_CLAW_DURATION,impactAt:FAST_ZOMBIE_CLAW_IMPACT}:{})};e.next=target.kind==='wall'?1:1.05;
  }
  tickZombieClaw(e:Enemy,dt:number){
@@ -414,7 +435,7 @@ class Stand extends Phaser.Scene{
  }
  tickIce(dt:number){
   this.iceLance.tick(dt,face=>this.heroAnimator.iceMuzzle(this.x,this.y,face,this.crouching),(tip,face)=>{
-   const shot:Shot={...tip,dir:face,life:.8,spell:'ice',damage:48};this.shots.push(shot);return shot;
+   const shot:Shot={...tip,dir:face,life:.8,spell:'ice',damage:48};this.shots.push(shot);gameAudio.iceLaunch();return shot;
   });
  }
  tickEmber(dt:number){
@@ -422,9 +443,9 @@ class Stand extends Phaser.Scene{
   cast.delay-=dt;if(cast.delay>1e-6)return;
   const tip=this.heroAnimator.emberTip(this.x,this.y,cast.face,this.crouching);
   this.shots.push({...tip,dir:cast.face,life:2,spell:'ember',damage:cast.damage});
-  this.burst(tip.x,tip.y,0xffa13d,8);this.pendingEmber=null;
+   this.burst(tip.x,tip.y,0xffa13d,8);gameAudio.fire();this.pendingEmber=null;
  }
- tick(dt:number){const heldAttack=this.down('J'),freshAttack=this.pendingPress.has('J')||(heldAttack&&!this.attackHeld);this.pendingPress.delete('J');this.attackHeld=heldAttack;this.jumpComboTime=Math.max(0,this.jumpComboTime-dt);if(this.recentSword)this.recentSword.age+=dt;this.tickChampion(dt);for(const id of Object.keys(this.spellCooldowns) as SpellId[])this.spellCooldowns[id]=Math.max(0,(this.spellCooldowns[id]??0)-dt);this.wardTime=Math.max(0,this.wardTime-dt);this.bashTime=Math.max(0,this.bashTime-dt);this.messageTime=Math.max(0,this.messageTime-dt);this.clock+=dt;this.timer-=dt;this.attackCd-=dt;this.inv-=dt;this.swing=Math.max(0,this.swing-dt);this.blocking=this.down('L')&&this.stamina>5&&!this.shieldFlight;this.crouching=this.down('S')&&this.y>=G;const move=(this.down('D')?1:0)-(this.down('A')?1:0);if(move){this.face=move;this.x=Phaser.Math.Clamp(this.x+move*dt*(this.blocking||this.crouching?90:215),355,1000)}if(this.down('W')&&this.y>=G&&!this.crouching&&!this.aerialAttack){this.jumpFacing=this.face;this.airSpinUsed=false;this.vy=-450;this.y-=1;this.heroAnimator.startJump();this.jumpComboTime=JUMP_COMBO_WINDOW;tone(260)}this.tickJumpPhysics(dt);this.stamina=Math.min(100,this.stamina+dt*(this.blocking?4:24));this.energy=Math.min(100,this.energy+dt*7);
+ tick(dt:number){const heldAttack=this.down('J'),freshAttack=this.pendingPress.has('J')||(heldAttack&&!this.attackHeld);this.pendingPress.delete('J');this.attackHeld=heldAttack;this.jumpComboTime=Math.max(0,this.jumpComboTime-dt);if(this.recentSword)this.recentSword.age+=dt;this.tickChampion(dt);for(const id of Object.keys(this.spellCooldowns) as SpellId[])this.spellCooldowns[id]=Math.max(0,(this.spellCooldowns[id]??0)-dt);this.wardTime=Math.max(0,this.wardTime-dt);this.bashTime=Math.max(0,this.bashTime-dt);this.messageTime=Math.max(0,this.messageTime-dt);this.clock+=dt;this.timer-=dt;this.attackCd-=dt;this.inv-=dt;this.swing=Math.max(0,this.swing-dt);this.blocking=this.down('L')&&this.stamina>5&&!this.shieldFlight;this.crouching=this.down('S')&&this.y>=G;const move=(this.down('D')?1:0)-(this.down('A')?1:0);if(move){this.face=move;this.x=Phaser.Math.Clamp(this.x+move*dt*(this.blocking||this.crouching?90:215),355,1000);if(this.y>=G&&!this.crouching){this.footstepTime-=dt;if(this.footstepTime<=0){gameAudio.footstep();this.footstepTime=this.blocking?.48:.32}}}else this.footstepTime=0;if(this.down('W')&&this.y>=G&&!this.crouching&&!this.aerialAttack){this.jumpFacing=this.face;this.airSpinUsed=false;this.vy=-450;this.y-=1;this.heroAnimator.startJump();this.jumpComboTime=JUMP_COMBO_WINDOW;gameAudio.jump();tone(260)}this.tickJumpPhysics(dt);this.stamina=Math.min(100,this.stamina+dt*(this.blocking?4:24));this.energy=Math.min(100,this.energy+dt*7);
  this.tickHealingStims(dt);this.tickRisingAttack(dt);this.tickAerialAttack(dt);
  this.tickShieldThrow(dt);
  this.tickEmber(dt);
@@ -434,7 +455,7 @@ class Stand extends Phaser.Scene{
  const launchRising=this.down('J')&&this.jumpComboTime>0&&!this.down('S')&&!this.blocking&&!this.heroAnimator.casting&&!this.heroAnimator.throwBusy&&!this.risingAttack&&!this.aerialAttack&&(this.attackCd<=0||!!recent);
  if(launchRising)this.startRisingAttack(recent);else this.handleAirAttackInput(freshAttack);
  if(this.down('J')&&this.y>=G&&this.attackCd<=0&&!this.blocking&&!this.heroAnimator.casting&&!this.heroAnimator.throwBusy&&!this.risingAttack&&!this.aerialAttack){
-  this.attackCd=SWORD_INTERVAL;this.swing=.22;tone(180);let landed=false;const range=SWORD_RANGE*(this.reachTime>0?2:1);this.heroAnimator.startAttack(range,this.face,this.reachTime>0,this.crouching);
+   this.attackCd=SWORD_INTERVAL;this.swing=.22;tone(180);gameAudio.swordSwing();let landed=false;const range=SWORD_RANGE*(this.reachTime>0?2:1);this.heroAnimator.startAttack(range,this.face,this.reachTime>0,this.crouching);
   const sword={age:0,damage:this.swordDamage(),rootDuration:this.crippleTime>0?2+this.rank('cripple'):0,hits:new Set<Enemy>()};this.recentSword=sword;
   for(const e of this.enemies)if(e.hp>0&&(e.x-this.x)*this.face>-20&&(e.x-this.x)*this.face<range&&Math.abs(this.y-G)<100){
    this.hurt(e,sword.damage);sword.hits.add(e);landed=true;if(this.crippleTime>0){e.rooted=3+this.rank('cripple')-1;this.burst(e.x,G-25,0x829dca)}
@@ -442,11 +463,11 @@ class Stand extends Phaser.Scene{
   if(landed)this.crippleTime=0;
  }
  for(const spell of SPELLS)if(this.pressed(spell.key))this.cast(spell.id);
- if(this.timer<=0&&this.spawned<this.total){const kind=this.level>=3&&this.spawned%4===0?2:this.level>1&&this.spawned%3===0?1:0;const max=kind===2?145:kind===1?60:76;this.enemies.push({x:1260,hp:max,max,next:0,speed:kind===1?88:kind===2?32:45+this.level*5,kind,nextClaw:this.spawned%2?'backhand':'claw',walkElapsed:Math.random()*1.26});this.spawned++;this.timer=Math.max(.8,2.2-this.level*.25-(this.wave-1)*.1)}
+  if(this.timer<=0&&this.spawned<this.total){const kind=this.level>=3&&this.spawned%4===0?2:this.level>1&&this.spawned%3===0?1:0;const max=kind===2?145:kind===1?60:76;this.enemies.push({x:1260,hp:max,max,next:0,speed:kind===1?88:kind===2?32:45+this.level*5,kind,nextClaw:this.spawned%2?'backhand':'claw',walkElapsed:Math.random()*1.26});gameAudio.zombie();this.spawned++;this.timer=Math.max(.8,2.2-this.level*.25-(this.wave-1)*.1)}
  for(const survivor of this.survivors){
   survivor.t+=dt;survivor.x-=dt*75;if(survivor.x<75){this.rescued++;survivor.x=-1000;continue}
   const enemy=this.enemies.find(e=>e.hp>0&&Math.abs(e.x-survivor.x)<25);
-  if(enemy){if(this.upgrades.includes('protector')&&!this.shieldFlight&&Math.abs(survivor.x-this.x)<120+30*(this.rank('protector')-1)&&this.protectorCd<=0){enemy.x+=(enemy.x>=survivor.x?1:-1)*65;enemy.stunned=.8;this.protectorCd=.8/this.rank('protector');this.burst(survivor.x,G-40,0xe7d297)}else{this.lost++;this.burst(survivor.x,G-40,0xe49276);survivor.x=-1000}}
+  if(enemy){if((this.upgrades.includes('protector')||this.testMode&&this.testAbilities.has('protector'))&&!this.shieldFlight&&Math.abs(survivor.x-this.x)<120+30*(this.rank('protector')-1)&&this.protectorCd<=0){enemy.x+=(enemy.x>=survivor.x?1:-1)*65;enemy.stunned=.8;this.protectorCd=.8/this.rank('protector');this.burst(survivor.x,G-40,0xe7d297)}else{this.lost++;this.burst(survivor.x,G-40,0xe49276);survivor.x=-1000}}
  }
  this.survivors=this.survivors.filter(s=>s.x>-500);
  this.vineWall.tick(dt,this.wall);

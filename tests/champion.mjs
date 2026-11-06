@@ -16,7 +16,7 @@ await choose('rally');await intermission();await choose('focus');await intermiss
 assert.deepEqual(await page.evaluate(()=>window.elowen.abilitySlots),['rally','focus','cripple']);
 await intermission();assert(await page.locator('[data-up="reach"]').isDisabled(),'fourth active choice disabled once U/I/O filled');
 await page.evaluate(()=>window.elowen.unlockUpgrade('reach'));assert(await page.evaluate(()=>!window.elowen.upgrades.includes('reach')&&window.elowen.phase==='upgrade'),'full slots reject replacement');
-assert.equal(await page.locator('select').count(),0,'no swapping controls');await choose('protector');
+assert.equal(await page.locator('#overlay select').count(),0,'upgrade menu has no swapping controls');assert(await page.evaluate(()=>!window.elowen.testMode&&window.elowen.testAbilities.size===0),'test unlocks are off during normal progression');await choose('protector');
 await intermission();await choose('focus');assert(await page.evaluate(()=>window.elowen.abilityRanks.focus===2&&window.elowen.abilitySlots[1]==='focus'),'upgrade keeps same ability and binding');
 await intermission();await choose('bash');assert(await page.evaluate(()=>window.elowen.abilityRanks.bash===2&&window.elowen.shieldAbility==='bash'),'K upgrade preserves shield choice');
 await fixture([60]);await tap('K');assert(await page.evaluate(()=>window.elowen.enemies[0].x>window.elowen.x+150&&window.elowen.enemies[0].stunned>1),'rank-two bash improves shove and stagger');

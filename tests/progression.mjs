@@ -33,6 +33,8 @@ for(const [index,expected] of levels.entries()){
  await page.evaluate(()=>{const s=window.elowen;s.survivors=[];s.timer=999;s.spawned=0;s.enemies=[{x:s.x+60,hp:1000,max:1000,next:999,speed:0,kind:0}];s.attackCd=0;s.hp=s.maxHp;});
  await page.keyboard.down('J');await page.waitForFunction(()=>window.elowen.enemies[0].hp<1000);await page.keyboard.up('J');
  assert.equal(await page.evaluate(()=>window.elowen.enemies[0].hp),1000-expected[5],'milestone damage affects actual sword hits');
+ // Finish sword recoil before arranging the stationary enemy's armour-check attack.
+ await page.waitForFunction(()=>!window.elowen.enemies[0].hitReaction);
  await page.evaluate(()=>{const s=window.elowen;s.hp=s.maxHp;s.inv=0;s.enemies[0].x=s.x+35;s.enemies[0].next=0;});
  await page.waitForFunction(()=>window.elowen.hp<window.elowen.maxHp);
  assert.equal(await page.evaluate(()=>window.elowen.hp),expected[1]-11+expected[6],'armour reduces actual enemy attacks');
