@@ -22,7 +22,7 @@ try {
  await page.locator('#sound').click();
  const decoded=await page.evaluate(async()=>{
   const context=new AudioContext(),files=[...new Set(window.audioAudit.files)];
-  for(const file of files){const response=await fetch(file);if(!response.ok)throw Error(`Missing audio: ${file}`);const clip=await context.decodeAudioData(await response.arrayBuffer());if(!clip.duration)throw Error(`Empty audio: ${file}`)}
+  for(const file of files){const response=await fetch(file);if(!response.ok)throw Error(`Audio HTTP ${response.status}: ${file}`);const clip=await context.decodeAudioData(await response.arrayBuffer());if(!clip.duration)throw Error(`Empty audio: ${file}`)}
   await context.close();return files.length;
  });
  assert(decoded>=50,'all selected WAV and OGG effects load and decode');
@@ -39,9 +39,10 @@ try {
  assert.equal(await page.evaluate(()=>JSON.stringify([window.elowen.upgrades,window.elowen.abilitySlots,window.elowen.abilityRanks,window.elowen.shieldAbility])),build,'test unlocks preserve the real build');
  await page.locator('.test-toggle').click();
  assert(await page.evaluate(()=>!window.elowen.testMode&&!window.elowen.unlocked('ice')&&window.elowen.testAbilities.size===0));
- await page.keyboard.press('J');await page.waitForFunction(()=>window.audioAudit.played.some(url=>url.includes('Dagger_Swing')));
+ await page.waitForFunction(()=>!window.elowen.heroAnimator.casting);
+ await page.keyboard.down('J');await page.waitForFunction(()=>window.audioAudit.played.some(url=>url.includes('Dagger_Swing')));await page.keyboard.up('J');
  await page.keyboard.down('D');await page.waitForFunction(()=>window.audioAudit.played.some(url=>url.includes('footstep_')));await page.keyboard.up('D');
- await page.keyboard.press('W');await page.waitForFunction(()=>window.audioAudit.played.some(url=>url.includes('boots-leather-jump')));
+ await page.keyboard.down('W');await page.waitForFunction(()=>window.audioAudit.played.some(url=>url.includes('boots-leather-jump')));await page.keyboard.up('W');
  await page.locator('#sound').click();assert(await page.evaluate(()=>window.audioAudit.voices.every(voice=>voice.paused)),'mute immediately stops active effects');
  const count=await page.evaluate(()=>window.audioAudit.voices.length);await page.keyboard.press('J');await page.waitForTimeout(150);assert.equal(await page.evaluate(()=>window.audioAudit.voices.length),count);
  await page.locator('.test-toggle').click();
