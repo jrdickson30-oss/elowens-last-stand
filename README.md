@@ -97,3 +97,5 @@ Select SOUND ON to enable combat, spell, creature, jump and footstep effects. On
 Open TEST CONTROLS to select a level and wave, then GO TO LEVEL. Check an ability to unlock it temporarily and use its USE button; spells also respond to their normal keys. Normal resource costs and cooldowns apply. Closing the panel clears temporary unlocks without changing your chosen upgrades or key slots. Jumping from the title or an ended run starts a fresh run.
 
 Run `node tests/audio-test-controls.mjs` against GAME_URL for audio loading/playback, temporary ability unlocks, level navigation and mobile control access. It also runs as part of `npm test`.
+
+Sound effects reuse preloaded clips and skip interactions whose audio is still loading. Each effect category replaces its previous voice, with a six-voice limit and short fading tails. Footsteps stop when movement stops; pausing, leaving the window, changing waves, ending a run and muting clear active effects. Resume does not replay them. Run `node tests/audio-lifecycle.mjs` against GAME_URL for these regression checks.

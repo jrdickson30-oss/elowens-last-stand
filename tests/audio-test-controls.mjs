@@ -13,7 +13,7 @@ try {
   HTMLMediaElement.prototype.play=function(){
    window.audioAudit.voices.push(this);
    const result=play.call(this);
-   result.then(()=>window.audioAudit.played.push(this.src),error=>window.audioAudit.failed.push(error.message));
+   result.then(()=>window.audioAudit.played.push(this.src),error=>{if(error.name!=='AbortError')window.audioAudit.failed.push(error.message)});
    return result;
   };
  });
