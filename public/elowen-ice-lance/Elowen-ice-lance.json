@@ -1,0 +1,100 @@
+{
+  "image": "Elowen-ice-lance-spritesheet.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 8,
+  "columns": 4,
+  "rows": 2,
+  "durationsMs": [
+    80,
+    100,
+    160,
+    140,
+    300,
+    360,
+    100,
+    100
+  ],
+  "direction": "right",
+  "loop": false,
+  "anchor": {
+    "x": 260,
+    "groundY": 480
+  },
+  "footAnchors": [
+    480,
+    480,
+    480,
+    480,
+    480,
+    480,
+    480,
+    480
+  ],
+  "bodyHeight": 400,
+  "releaseFrame": 3,
+  "tip": {
+    "x": 408,
+    "y": 205
+  },
+  "frameBounds": [
+    [
+      40,
+      80,
+      450,
+      480
+    ],
+    [
+      37,
+      80,
+      429,
+      480
+    ],
+    [
+      35,
+      80,
+      419,
+      480
+    ],
+    [
+      38,
+      80,
+      425,
+      480
+    ],
+    [
+      30,
+      80,
+      428,
+      480
+    ],
+    [
+      39,
+      80,
+      424,
+      480
+    ],
+    [
+      41,
+      80,
+      436,
+      480
+    ],
+    [
+      38,
+      80,
+      424,
+      480
+    ]
+  ],
+  "phases": [
+    "raise-shield",
+    "rim-frost",
+    "frost-spreads",
+    "release",
+    "beam-brace",
+    "beam-hold",
+    "shed-frost",
+    "recover"
+  ]
+}
