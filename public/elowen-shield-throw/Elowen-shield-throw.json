@@ -1,0 +1,104 @@
+{
+  "image": "Elowen-shield-throw-spritesheet.png",
+  "frameWidth": 512,
+  "frameHeight": 512,
+  "frameCount": 8,
+  "columns": 4,
+  "rows": 2,
+  "durationsMs": [
+    80,
+    80,
+    80,
+    70,
+    90,
+    80,
+    110,
+    130
+  ],
+  "direction": "right",
+  "loop": false,
+  "bodyHeight": 400,
+  "anchor": {
+    "x": 256,
+    "groundY": 480
+  },
+  "footAnchors": [
+    480,
+    480,
+    480,
+    480,
+    480,
+    480,
+    480,
+    480
+  ],
+  "frameBounds": [
+    [
+      37,
+      80,
+      387,
+      480
+    ],
+    [
+      30,
+      87,
+      385,
+      480
+    ],
+    [
+      32,
+      93,
+      410,
+      480
+    ],
+    [
+      33,
+      90,
+      410,
+      480
+    ],
+    [
+      37,
+      86,
+      387,
+      480
+    ],
+    [
+      27,
+      86,
+      386,
+      480
+    ],
+    [
+      34,
+      87,
+      396,
+      480
+    ],
+    [
+      39,
+      80,
+      387,
+      480
+    ]
+  ],
+  "releaseFrame": 3,
+  "tip": {
+    "x": 416,
+    "y": 166
+  },
+  "catchPoint": {
+    "x": 366,
+    "y": 277
+  },
+  "phases": [
+    "ready",
+    "load",
+    "accelerate",
+    "release",
+    "follow-through",
+    "empty-hand-ready",
+    "catch",
+    "recover"
+  ]
+}
