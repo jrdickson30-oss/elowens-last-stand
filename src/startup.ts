@@ -1,7 +1,8 @@
 const overlay = document.querySelector<HTMLDivElement>('#overlay')!;
 let ready = false;
 
-export const basicGraphics = new URL(location.href).searchParams.get('renderer') === 'canvas';
+// Canvas is the reliable default on GitHub Pages; WebGL remains opt-in for capable browsers.
+export const basicGraphics = new URL(location.href).searchParams.get('renderer') !== 'webgl';
 
 export function loadingProgress(progress: number) {
   if (ready) return;
