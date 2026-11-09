@@ -78,6 +78,7 @@ export class HeroAnimator {
   shieldAction:{kind:'throw'|'catch';elapsed:number;face:number;fresh:boolean}|null=null;
   rising: RisingAttack<unknown>|null=null;
   aerial:AerialAttack<unknown>|null=null;
+  private shieldlessAirAttack:RisingAttack<unknown>|AerialAttack<unknown>|null=null;
   moving=false;
   walkElapsed=0;
   crouchProgress=0;
@@ -127,7 +128,7 @@ export class HeroAnimator {
     this.crouchProgress=0;
     this.moving=false;this.walkElapsed=0;
     this.blocking=false;this.blockElapsed=0;this.blockImpact=null;
-    this.shieldAway=false;this.shieldAction=null;
+    this.shieldAway=false;this.shieldAction=null;this.shieldlessAirAttack=null;
     this.aerial=null;this.rising=null;this.casting=null;this.attack=null;this.nextAttack='slash';this.airborne=false;this.jumpElapsed=this.landingTime=0;this.beam.setVisible(false);
   }
   startAttack(range: number, face: number, extended: boolean, crouching=false) {
@@ -136,8 +137,8 @@ export class HeroAnimator {
     if(!extended&&kind!=='crouchSlash')this.nextAttack=this.nextAttack==='slash'?'thrust':'slash';
     this.attack=this.clips[kind]?{kind,elapsed:0,range,face,extended,fresh:true}:null;
   }
-  startRising(attack:RisingAttack<unknown>) {this.shieldAction=null;this.attack=null;this.rising=attack;}
-  startAerial(attack:AerialAttack<unknown>){this.shieldAction=null;this.attack=null;this.rising=null;this.aerial=attack;}
+  startRising(attack:RisingAttack<unknown>) {this.shieldlessAirAttack=this.shieldAway?attack:null;this.shieldAction=null;this.attack=null;this.rising=attack;}
+  startAerial(attack:AerialAttack<unknown>){this.shieldlessAirAttack=this.shieldAway?attack:null;this.shieldAction=null;this.attack=null;this.rising=null;this.aerial=attack;}
   startEmber(face:number) {this.shieldAction=null;this.aerial=null;this.rising=null;this.attack=null;this.casting=this.clips.ember?{elapsed:0,face,fresh:true}:null;}
   startRadiant(face:number) {this.shieldAction=null;this.aerial=null;this.rising=null;this.attack=null;this.casting=this.clips.radiant?{kind:'radiant',elapsed:0,face,fresh:true}:null;}
   emberTip(x:number,y:number,face:number,crouching:boolean) {
@@ -289,7 +290,8 @@ export class HeroAnimator {
       const action=this.rising??this.aerial!;
       if(this.aerial?.kind==='dive')return {kind:'unshieldedUtility',frame:this.aerial.landingElapsed===null?6:9,face,angle:this.aerial.landingElapsed===null?this.aerial.face*25:0};
       const duration=this.rising?RISING_DURATION:AIR_SPIN_DURATION;
-      return {kind:'unshieldedUtility',frame:6,face,angle:action.face*360*Math.min(1,action.elapsed/duration)};
+      // Animate the sword swing; rotating a single jump bitmap makes her tumble.
+      return {kind:'unshieldedSword',frame:Math.min(3,Math.floor(action.elapsed/duration*4)),face};
     }
     if(this.casting){
       if((this.casting.kind??'ember')==='ember')return {kind:'unshieldedSword',frame:4+Math.min(3,Math.floor(this.casting.elapsed/.09)),face};
@@ -306,7 +308,9 @@ export class HeroAnimator {
     return {kind:'unshieldedUtility',frame:0,face};
   }
   render(image: Phaser.GameObjects.Image, x: number, y: number, face: number, vy: number, crouch: boolean) {
-    const logical=this.pose(vy),pose=this.shieldAway?this.withoutShield(logical,vy):logical;if(!pose)return false;
+    // A returning shield must not swap the atlas halfway through an airborne attack.
+    const finishingShieldless=this.shieldlessAirAttack!==null&&(this.rising===this.shieldlessAirAttack||this.aerial===this.shieldlessAirAttack);
+    const logical=this.pose(vy),pose=this.shieldAway||finishingShieldless?this.withoutShield(logical,vy):logical;if(!pose)return false;
     const clip=this.clips[pose.kind]!,dir=pose.face??face;
     const anchor=(clip.meta.frameAnchors?.[pose.frame]??clip.anchor)/clip.meta.frameWidth;
     image.setTexture(clip.key,`pose-${pose.frame}`).setOrigin(dir<0?1-anchor:anchor,clip.feet[pose.frame]/clip.meta.frameHeight)

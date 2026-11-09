@@ -69,7 +69,47 @@ try {
   return result;
  });
  assert(variants.every(sample=>sample.kind.startsWith('unshielded')||(['stone','radiant'].includes(sample.state)&&sample.kind==='shieldThrow')),'no shield-bearing idle/walk/combat atlas is reused during flight');
- assert(Math.hypot(variants.find(sample=>sample.state==='spin').centre.x-650,variants.find(sample=>sample.state==='spin').centre.y-374)<35,'shieldless airborne spins rotate around her body');
+ assert(Math.hypot(variants.find(sample=>sample.state==='spin').centre.x-650,variants.find(sample=>sample.state==='spin').centre.y-374)<35,'shieldless airborne attacks stay aligned to her body');
+ // The thrown-shield fallback must animate her sword, never rotate a static jump pose.
+ for(const kind of ['rising','spin'])for(const face of [-1,1])for(const extended of [false,true]){
+  const result=await page.evaluate(({kind,face,extended})=>{
+   const s=window.elowen;s.begin();s.paused=true;s.enemies=[];s.survivors=[];s.x=650;s.y=280;s.face=face;s.vy=-100;
+   const a=s.heroAnimator;a.shieldAway=true;
+   const attack={kind,elapsed:0,face,extended};
+   if(kind==='rising')a.startRising(attack);else a.startAerial(attack);
+   const duration=kind==='rising'?.56:.4,samples=[];
+   for(const progress of [.01,.26,.51,.76,.99]){
+    attack.elapsed=duration*progress;
+    if(progress>.5)a.catchShield(-face);
+    s.face=-face;s.draw();
+    const image=s.spritePool.find(image=>image.visible);
+    samples.push({kind:image.getData('heroAction'),frame:image.getData('heroFrame'),angle:image.angle,flip:image.flipX,y:image.y,scale:image.scaleY});
+   }
+   a.rising=null;a.aerial=null;a.airborne=true;s.vy=200;s.draw();
+   const restored=s.spritePool.find(image=>image.visible).getData('heroAction');
+   a.startRising({elapsed:.2,face,extended});s.draw();
+   const normal=s.spritePool.find(image=>image.visible).getData('heroAction');
+   return {samples,restored,normal};
+  },{kind,face,extended});
+  assert.deepEqual(result.samples.map(sample=>sample.frame),[0,1,2,3,3],'each shieldless sword pose plays in order');
+  assert(result.samples.every(sample=>sample.kind==='unshieldedSword'&&sample.angle===0&&sample.flip===(face<0)&&sample.y===280&&Math.abs(sample.scale-.24)<.001),'upright sword poses retain captured facing, scale and air position through the catch');
+  assert.equal(result.restored,'jump','the normal fall sprite returns after the shieldless attack completes');
+  assert.equal(result.normal,extended?'risingReach':'rising','attacks begun with the shield retain the original drawn spiral');
+ }
+ const airborneCatch=await page.evaluate(()=>{
+  const s=window.elowen;s.begin();s.paused=true;s.enemies=[];s.survivors=[];s.timer=999;s.upgrades=['throw'];s.shieldAbility='throw';s.x=650;
+  const step=()=>{s.tick(.01);s.heroAnimator.tick(.01,s.y,422,s.blocking,true);s.draw()};
+  s.activateAbilityKey('K');for(let i=0;i<30;i++)step();
+  s.touch.add('W');s.touch.add('J');step();s.touch.clear();
+  const started=!!s.risingAttack&&s.heroAnimator.shieldAway;
+  const flight=s.shieldFlight,hand=s.heroAnimator.shieldHand(s.x,s.y,s.face,false,true);
+  flight.returning=true;flight.x=hand.x;flight.y=hand.y;step();
+  const image=s.spritePool.find(image=>image.visible),caught=!s.shieldFlight&&!s.heroAnimator.shieldAway;
+  const stable=image.getData('heroAction')==='unshieldedSword'&&image.angle===0;
+  let sawFall=false;for(let i=0;i<140;i++){step();sawFall||=!s.risingAttack&&s.y<422&&s.vy>80&&s.spritePool.some(image=>image.visible&&image.getData('heroAction')==='jump'&&image.getData('heroFrame')===4)}
+  return {started,caught,stable,sawFall,landed:s.y===422,angle:s.spritePool.find(image=>image.visible).angle};
+ });
+ assert(airborneCatch.started&&airborneCatch.caught&&airborneCatch.stable&&airborneCatch.sawFall&&airborneCatch.landed&&airborneCatch.angle===0,'throw + jump attack stays upright through a real midair catch and returns to the normal fall/landing');
  await page.evaluate(()=>{const s=window.elowen;s.begin();s.paused=true;s.timer=999;s.enemies=[];s.survivors=[];s.shieldAbility='throw';s.upgrades=['throw'];s.activateAbilityKey('K');s.tickShieldThrow(.4);s.heroAnimator.tick(.4,s.y,422,false,true);s.draw()});
  const frozen=await page.evaluate(()=>({x:window.elowen.shieldFlight.x,y:window.elowen.shieldFlight.y,angle:window.elowen.shieldFlight.angle,pose:window.elowen.heroAnimator.shieldAction?.elapsed}));
  await page.waitForTimeout(120);assert.deepEqual(await page.evaluate(()=>({x:window.elowen.shieldFlight.x,y:window.elowen.shieldFlight.y,angle:window.elowen.shieldFlight.angle,pose:window.elowen.heroAnimator.shieldAction?.elapsed})),frozen);
